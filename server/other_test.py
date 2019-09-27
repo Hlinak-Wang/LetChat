@@ -1,3 +1,5 @@
+import objectToTest as ot
+
 def test_standup_start():
 
     pass
