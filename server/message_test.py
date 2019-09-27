@@ -1,3 +1,5 @@
+import objectToTest as ot
+
 def test_sendlater():
 
     token = 'abc'
@@ -7,11 +9,7 @@ def test_sendlater():
     for i in range(0,1010):
         message += "a"
     
-    assert message_sendlater(token, channel_id, message, time_send) == "Message more than 1000 characters"
-
-
-    
-
+    assert ot.message_sendlater(token, channel_id, message, time_send) == "Message more than 1000 characters"
 
 def test_send():
 
@@ -19,20 +17,20 @@ def test_send():
     for i in range(0,1010):
         message += "a"
 
-    assert message_send(token, channel_id, message) == "Message more than 1000 characters"
+    assert ot.message_send(token, channel_id, message) == "Message more than 1000 characters"
 
 def test_remove():
     
     #message not exist
     token = 'asdf'
     message_id = 2342
-    assert message_remove(token, message_id) == 'Message no longer exists'
+    assert ot.message_remove(token, message_id) == 'Message no longer exists'
 
     #user have no permission to remove the row
     token = 'nopermission'
     message_id = 3451
-    assert message_remove(token, message_id) == 'User does not have permission to remove that row'
-    
+    assert ot.message_remove(token, message_id) == 'User does not have permission to remove that row'
+
  
 
     pass
@@ -44,7 +42,7 @@ def test_edit():
     #invalid message: sent by authorised user
     message_id = '123'
     message = 'asdfagda'
-    assert message_edit(token, message_id, message) == 'message_id not valid'
+    assert ot.message_edit(token, message_id, message) == 'message_id not valid'
 
 
     pass
