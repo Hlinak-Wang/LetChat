@@ -1,9 +1,4 @@
-def test_profile():
-    valid_email = '1234545@abc.com'
-    valid_password = 21345123
-    token = auth_login(valid_email,valid_password)
-    email, user_profile(token)
-    pass
+
 
 def test_setname():
 
@@ -19,17 +14,40 @@ def test_setname():
     name_first = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     assert user_profile_setname(token, name_first, name_last) == 'Last name more than 50 characters'
 
+    #name_last and name_first are both less than 50 characters
+    name_first = 'asdf'
+    name_last = 'xzv'
+    assert ???
 
 def test_setemail():
+    token = 'asdf'
+    #invalid email
+    invalid_email = 'dffgfddfsa.com'
+    assert user_profile_setemail(token,invalid_email) == 'Invalid email'
 
+    #email is already being used by other
+    invalid_email = '1234567@gmail.com'
+    assert user_profile_setemail(token,invalid_email) == 'Email is already being used by other'
 
-    pass
 
 def test_sethandle():
 
-    pass
+    token = 'asdf'
+
+    #handle_str with over 20 characters
+    handle_str = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' 
+    assert user_profile_sethandle(token, handle_str) = 'handle_str is more than 20 characters'
+
+    ???
 
 def test_uploadphoto():
 
+    
 
     pass
+
+def test_profile():
+    valid_email = '1234545@abc.com'
+    valid_password = 21345123
+    token = auth_login(valid_email,valid_password)
+    email, user_profile(token)
