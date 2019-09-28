@@ -1,9 +1,16 @@
 import objectToTest as ot
 
+# This function is to create a valid account
+# which would be used in other test_function
+def account_register():
+
+    token = ot.auth_register('123@gmail.com', 123412, 'HHH', 'LLLL')
+
+    return token
+
 def test_setname():
 
-    token = 'asdf'
-
+    token = account_register()
     #name_first more than 50 characters but not name_last
     name_first = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     name_last = 'abcd'
@@ -17,10 +24,12 @@ def test_setname():
     #name_last and name_first are both less than 50 characters
     name_first = 'asdf'
     name_last = 'xzv'
-    assert ???
+    
+    #assert what?
 
 def test_setemail():
-    token = 'asdf'
+
+    token = account_register()
     #invalid email
     invalid_email = 'dffgfddfsa.com'
     assert ot.user_profile_setemail(token,invalid_email) == 'Invalid email'
@@ -32,22 +41,21 @@ def test_setemail():
 
 def test_sethandle():
 
-    token = 'asdf'
+    token = account_register()
 
     #handle_str with over 20 characters
     handle_str = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' 
     assert ot.user_profile_sethandle(token, handle_str) = 'handle_str is more than 20 characters'
 
-    ???
+    #what to do with name_last???
 
 def test_uploadphoto():
 
-
+    
 
     pass
 
 def test_profile():
-    valid_email = '1234545@abc.com'
-    valid_password = 21345123
-    token = ot.auth_login(valid_email,valid_password)
-    email, user_profile(token)
+
+    token = account_register()
+    # where can we get u_id??
