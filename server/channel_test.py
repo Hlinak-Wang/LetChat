@@ -40,109 +40,171 @@ import channels_list
 import channels_listall
 import channels_create
 
+def test_channel_invite_ok():
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
 
-def test_channel_invite():
+    channel_id = channels_create("token", "12345", is_public)
+
+    channel_invite(token, channel_id, u_id1)
+
+
+def test_channel_invite_bad():
  
-    auth_login("123456@gmail.com", "123456789") = token
-    auth_login("123456789@gmail.com", "123456789") = token1
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
 
     channel_id = channels_create("token", "12345", is_public)
     #ValueError
-    assert channel_invite(token, "2222", token1) = "Channel (based on ID) does not exist"
+    with pytest.raises(Exception, match=r"*Channel (based on ID) does not exist*"):
+        channel_invite(token, "2222", u_id1)
 
-    assert channel_invite(token1, channel_id, token) = "User is not part of Channel"
+    with pytest.raises(Exception, match=r"*User is not part of Channel*"):
+        channel_invite(token1, channel_id, u_id)
 
-    assert channel_invite(token, channel_id, "55555") = "u_id does not refer to a valid user"
+    with pytest.raises(Exception, match=r"*u_id does not refer to a valid user*"):
+        channel_invite(token, channel_id, "55555")
 
-    channel_invite(token, channel_id, token1) = "u_id does not refer to a valid user"
 
+def test_channel_details_ok():
 
-def test_channel_details():
-    auth_login("123456@gmail.com", "123456789") = token
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
 
     channel_id = channels_create("token", "12345", is_public)
-    #ValueError
-    assert channel_details(token, "123456") = "Channel (based on ID) does not exist"
-
-    #AccessError 
-    assert channel_details("123456", channel_id) = "User is not a member of Channel"
 
     channel_details(token, channel_id)
 
 
-def test_channel_messages():
-    auth_login("123456@gmail.com", "123456789") = token
-    auth_login("123456789@gmail.com", "123456789") = token1
+def test_channel_details_bad():
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
 
     channel_id = channels_create("token", "12345", is_public)
-    #ValueError
-    assert channel_messages(token, channel_id, 0) = "Channel (based on ID) does not exist"
 
-    assert channel_messages(token, channel_id, 999999999) = "start is greater than the total number of messages in the channel"
+    #ValueError
+    with pytest.raises(Exception, match=r"*Channel (based on ID) does not exist*"):
+        channel_details(token, "123456")
 
     #AccessError 
-    assert channel_messages(token1, channel_id, 0) = "User is not a member of Channel"
+    with pytest.raises(Exception, match=r"*User is not a member of Channel*"):
+        channel_details("123456", channel_id)
 
-    assert type(channel_messages(token, channel_id, 0)) = int
 
-    assert channel_messages(token, channel_id, 0) = 50 or -1
+def test_channel_messages_ok():
 
-def test_channel_leave():
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
+
+    channel_id = channels_create("token", "12345", is_public)
+
+    channel_messages(token, channel_id, 0) = {messages, start, end}
+    assert end = start + 50 or -1
+
+
+def test_channel_messages_bad():
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
+
     channel_id = channels_create("token", "12345", is_public)
     #ValueError
-    assert channel_leave("token", 11111) = "Channel (based on ID) does not exist"
+    with pytest.raises(Exception, match=r"*Channel (based on ID) does not exis*"):
+        channel_messages(token, channel_id, 0)
+
+    with pytest.raises(Exception, match=r"*start is greater than the total number of messages in the channel*"):
+        channel_messages(token, channel_id, 999999999)
+
+    #AccessError 
+    with pytest.raises(Exception, match=r"*User is not a member of Channel*"):
+        channel_messages(token1, channel_id, 0)
+
+
+
+
+def test_channel_leave_ok():
+
+    channel_id = channels_create("token", "12345", is_public)
 
     channel_leave("token", channel_id)
 
-
-def test_channel_join():
+def test_channel_leave_bad():
     channel_id = channels_create("token", "12345", is_public)
     #ValueError
-    assert channel_join("token", 11111) = "Channel (based on ID) does not exist"
+    with pytest.raises(Exception, match=r"*Channel (based on ID) does not exist*"):
+        channel_leave("token", 11111)
 
 
-    channel_id = channels_create("token", "12345", is_private)
-    #AccessError 
-    assert channel_join("token1", channel_id) =  "channel is private"
+def test_channel_join_ok():
 
     channel_id = channels_create("token", "12345", is_public)
 
     channel_join("token", channel_id)
 
 
-
-
-def test_channel_addowner():
-    auth_login("123456@gmail.com", "123456789") = token
-    auth_login("123456789@gmail.com", "123456789") = token1
-
+def test_channel_join_bad():
     channel_id = channels_create("token", "12345", is_public)
     #ValueError
-    assert channel_addowner(token, "2222", token1) = "Channel (based on ID) does not exist"
+    with pytest.raises(Exception, match=r"*Channel (based on ID) does not exist*"):
+        channel_join("token", 11111)
 
-    assert channel_addowner(token, channel_id, token) = "User already an owner of the channel"
 
-    #AccessError 
-    assert channel_addowner(token1, channel_id, token) = "user is not an owner of the slackr, or an owner of this channel"
+    #AccessError
+    channel_id = channels_create("token", "12345", is_private)
+    with pytest.raises(Exception, match=r"*channel is private*"):
+        channel_join("token1", channel_id)
+
+
+
+def test_channel_addowner_ok():
+
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
+
+    channel_id = channels_create("token", "12345", is_public)
 
     channel_addowner(token, channel_id, token1)
 
 
-
-def test_channel_removeowner():
-    auth_login("123456@gmail.com", "123456789") = token
-    auth_login("123456789@gmail.com", "123456789") = token1
+def test_channel_addowner_bad():
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
 
     channel_id = channels_create("token", "12345", is_public)
     #ValueError
-    assert channel_removeowner(token, "2222", token1) = "Channel (based on ID) does not exist"
+    with pytest.raises(Exception, match=r"*Channel (based on ID) does not exist*"):
+    channel_addowner(token, "2222", u_id1)
 
-    assert channel_removeowner(token, channel_id, token1) = "User is not an owner of the channel"
+    with pytest.raises(Exception, match=r"*User already an owner of the channel*"):
+    channel_addowner(token, channel_id, u_id)
 
     #AccessError 
-    assert channel_addowner(token1, channel_id, token) = "user is not an owner of the slackr, or an owner of this channel"
+    with pytest.raises(Exception, match=r"*user is not an owner of the slackr, or an owner of this channel*"):
+    channel_addowner(token1, channel_id, u_id)
 
-    channel_addowner(token, channel_id, token1)
+
+def test_channel_removeowner_ok():
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
+
+    channel_id = channels_create("token", "12345", is_public)
+
+    channel_removeowner(token, channel_id, token1)
+
+
+
+def test_channel_removeowner()_bad:
+    {u_id, token } = auth_login("123456@gmail.com", "123456789")
+    {u_id1, token1 } = auth_login("123456789@gmail.com", "123456789")
+
+    channel_id = channels_create("token", "12345", is_public)
+    #ValueError
+    with pytest.raises(Exception, match=r"*Channel (based on ID) does not exist*"):
+        channel_removeowner(token, "2222", token1)
+
+    with pytest.raises(Exception, match=r"*User is not an owner of the channel*"):
+        channel_removeowner(token, channel_id, token1)
+
+    #AccessError 
+    with pytest.raises(Exception, match=r"*user is not an owner of the slackr, or an owner of this channel*"):
+    channel_addowner(token1, channel_id, token)
 
 
 def test_channels_list():
@@ -151,8 +213,13 @@ def test_channels_list():
 def test_channels_listall():
     assert channels_listall(token) = channels
 
-def test_channels_create():
-    #ValueError
-    assert channels_create("token", "012345678901234567890123456789", is_public) = "Name too long"
+
+def test_channels_create_ok():
 
     assert type(channels_create("token", "012345", is_public)) = int
+
+
+def test_channels_create_bad():
+    #ValueError
+    with pytest.raises(Exception, match=r"*Name too long*"):
+        channels_create("token", "012345678901234567890123456789", is_public)
