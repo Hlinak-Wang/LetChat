@@ -123,7 +123,6 @@ def test_uploadphoto():
         user_profile_uploadphoto(auth_key["token"], img_URL, x_start_out, y_start_out, x_end_out, y_end_out)
         
     
-
 def test_profile():
 
     auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
