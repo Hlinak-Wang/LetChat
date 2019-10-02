@@ -40,13 +40,14 @@ def message_unpin(token, message_id):
 	pass
 def userpermission_change(token, u_id, permission_id):
     pass
+
 # This function is to create a valid account
 # and a public channel 
 # which would be used in other test_function
 def create_join_send():
     
     # Create valid token and channel for testing
-    auth_key = auth_register('123@gmail.com', 12345, 'Hello', 'bye')
+    auth_key = auth_register('123@gmail.com', '12345', 'Hello', 'bye')
     channel = channels_create(auth_key["token"], 'hello', True)
     
     # Assume the user join the channel before send the message
@@ -56,12 +57,12 @@ def create_join_send():
     return_value = channel_messages(auth_key["token"],channel["id"], 0)
     message_list = return_value["messages"]
     
-    return auth_key, channel, message_list
+    return (auth_key, channel, message_list)
 
 def test_sendlater():
     
     # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
+    (auth_key, channel, message_list) = create_join_send()
     channel_notexist = channel["id"] - 100
     
     message_long = ""
@@ -93,7 +94,7 @@ def test_sendlater():
 def test_send():
     
     # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
+    (auth_key, channel, message_list) = create_join_send()
     
     message_long = ""
     for i in range(0,1010):
@@ -113,54 +114,74 @@ def test_send():
     
 def test_remove():
     
-    # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
-
-    # Invalid input
-    with pytest.raises(ValueError, match=r".* Message no longer exists *."):
-        message_remove(auth_key["token"], message_list[0]["message_id"])
-
-    with pytest.raises(Exception, match=r".* User does not have permission to remove that row *."):
-        message_remove(auth_key["token"], message_list[0]["message_id"])
+    # Create an admin
+    auth_key_admin = auth_register('asdf@gmail.com','asdfagf','adsffgdhf','sdfdgfhg')
     
-    # Valid input
-    message_send(auth_key["token"], channel["id"], 'testing')
-    return_value = channel_messages(auth_key["token"],channel["id"], 0)
+    # basic setup for testing assuming this user is owner of channel
+    (auth_key_owner, channel, message_list) = create_join_send()
+    
+    # let the admin to join the channel
+    channel_join(auth_key_admin["token"], channel["id"])
+    message_send(auth_key_admin["token"], channel["id"], "admin's message")
+    # Create other user again
+    auth_key = auth_register('asdf@gmail.com','asdfagf','adsffgdhf','sdfdgfhg')
+    channel_join(auth_key["token"], channel["id"])
+    message_send(auth_key["token"], channel["id"], "normal user's message")
+    message_send(auth_key["token"], channel["id"], "normal user's message 2")
+    
+    # Obtain the message list
+    return_value = channel_messages(auth_key_owner["token"],channel["id"], 0)
     message_list = return_value["messages"]
-    # Remove one message
-    message_send(auth_key["token"], 'testing')
+    
+    # Invalid input 
+    # All requirement fail
+    with pytest.raises(Exception,match=r".*AccessError.*"):
+        message_remove(auth_key["token"], message_list[1]["message_id"])
+    
+    # One of the reequirement sucess
+    # Message with message_id was sent by the authorised user making this request
     message_remove(auth_key["token"], message_list[0]["message_id"])
-    assert message_list[0]["message"] == "presend message"
     
+    # Message with message_id was sent by an owner of this channel 
+    message_remove(auth_key_owner["token"], message_list[1]["message_id"])
+    
+    # Message with message_id was sent by an admin or owner of the slack
+    message_remove(auth_key_admin["token"], message_list[3]["message_id"])
+    
+    # If the message removed above is successful, the next test should raises exception
+    with pytest.raises(ValueError, match=r".* Message no longer exists.*"):
+        message_remove(auth_key["token"], message_list[0]["message_id"])
+        message_remove(auth_key_admin["token"], message_list[1]["message_id"])
+        message_remove(auth_key_owner["token"], message_list[3]["message_id"])
+        
 def test_edit():
-
-    # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
     
-    # change this user's permission to admin
-    userpermission_change(auth_key["token"], auth_key["token"], 2)
+    # Create an admin
+    auth_key_admin = auth_register('asdf@gmail.com','asdfagf','adsffgdhf','sdfdgfhg') 
+    # basic setup for testing assuming this user is channel owner
+    (auth_key_owner, channel, message_list) = create_join_send()
     
-    # Other user setup for testing
-    auth2_key, channel, message2_list = create_join_send()
+    # let the admin to join the channel
+    channel_join(auth_key_admin["token"], channel["id"])
+    message_send(auth_key_admin["token"], channel["id"], "admin's message")
     
+    # Create normal user and join the channel
+    auth_key = auth_register('assadfghjdzfdf@gmail.com','asdfagf','adsffgdhf','sdfdgfhg') 
+    channel_join(auth_key_admin["token"], channel["id"])
+    message_send(auth_key_admin["token"], channel["id"], "normal user's message")
+    
+    # Obtain message list
+    return_value = channel_messages(auth_key_owner["token"],channel["id"], 0)
+    message_list = return_value["messages"]
     # Invalid input
-    # Assuming the message used to recover is less than 1000 characters
-    with pytest.raises(ValueError, match=r".* Message with message_id edited by authorised user is not the poster of the message *."):
-
-        message_edit(auth_key["token"], message2_list[0]["message_id"], "new_message")
-        
-    with pytest.raises(ValueError, match=r".* Message with message_ id not a valid message *."):
-        
-		# Authorised user is not poster
-    	message_edit(auth_key["token"], message2_list[0]["message_id"], "new_message")
-
-    	# Authorised user is not admin
-        
+    # All reequirement fail (normal user try to edit other's message)
+    with pytest.raises(ValueError, match=r".*AccessError*."):
+        message_edit(auth_key["token"], message_list[1]["message_id"], "new_message")
 
 def test_react():
 
     # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
+    (auth_key, channel, message_list) = create_join_send()
 
     message_notValid = message_list[0]["message_id"] + 1000
     react_valid = 12
@@ -185,7 +206,7 @@ def test_react():
 def test_unreact():
 
     # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
+    (auth_key, channel, message_list) = create_join_send()
 
     message_notValid = message_list[0]["message_id"] + 1000
     react_valid = 12
@@ -212,7 +233,7 @@ def test_unreact():
 def test_pin():
 
     # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
+    (auth_key, channel, message_list) = create_join_send()
 
     # Invalid input
     with pytest.raises(ValueError, match=r".*message_id is not a valid message.*"):
@@ -238,7 +259,7 @@ def test_pin():
 def test_unpin():
 
     # basic setup for testing
-    auth_key, channel, message_list = create_join_send()
+    (auth_key, channel, message_list) = create_join_send()
     
     # Change the user's permission_id to 2(Admin)
     userpermission_change(auth_key["token"], auth_key["token"], 2)
