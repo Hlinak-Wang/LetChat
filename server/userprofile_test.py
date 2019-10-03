@@ -26,6 +26,7 @@ def user_profile(token, u_id):
 
 def test_setname():
 
+    # create one user
     auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
 
     #name_first more than 50 characters but not name_last
@@ -46,9 +47,9 @@ def test_setname():
 
     # Valid input
     user_profile_setname(auth_key["token"], first_short, last_short)
-    return_value = user_profile(auth_key["token"], auth_key["u_id"])
-    assert return_value["name_first"] == first_short
-    assert return_value["name_last"] == last_short
+    profile = user_profile(auth_key["token"], auth_key["u_id"])
+    assert profile["name_first"] == first_short
+    assert profile["name_last"] == last_short
     
 def test_setemail():
     
@@ -70,8 +71,8 @@ def test_setemail():
     
     # Valid input
     user_profile_setemail(auth_key["token"], 'newemail@gmail.com')
-    return_value = user_profile(auth_key["token"], auth_key["u_id"])
-    assert return_value["email"] == 'newemail@gmail.com'
+    profile = user_profile(auth_key["token"], auth_key["u_id"])
+    assert profile["email"] == 'newemail@gmail.com'
 
 def test_sethandle():
 
@@ -87,11 +88,12 @@ def test_sethandle():
     
     # Valid input
     user_profile_sethandle(auth_key["token"], 'testing')
-    return_value = user_profile(auth_key["token"], auth_key["u_id"])
-    assert return_value["handle_str"] == 'testing'
+    profile = user_profile(auth_key["token"], auth_key["u_id"])
+    assert profile["handle_str"] == 'testing'
     
 def test_uploadphoto():
 
+    # Create one user for testing
     auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
     img_notURL = 'asdfzxvzdsaewrasdf'
     
@@ -124,7 +126,8 @@ def test_uploadphoto():
         
     
 def test_profile():
-
+    
+    # Create one user for testing
     auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
     invalid_u_id = auth_key["token"] + 1234562345462134546
     
