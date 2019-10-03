@@ -35,13 +35,13 @@ def test_auth_login_bad():
     #ValueError
     {u_id, token} = auth_register("123456@gmail.com","123456789","W","S")
 
-    with pytest.raises(Exception, match=r"*Invalid Email*"):
+    with pytest.raises(ValueError, match=r"*Invalid Email*"):
         auth_login("123456.gmail.com", "123456789")
 
-    with pytest.raises(Exception, match=r"*Email not registed*"):
+    with pytest.raises(ValueError, match=r"*Email not registed*"):
         auth_login("123@gmail.com", "123456789")
 
-    with pytest.raises(Exception, match=r"*Wrong Password*"):
+    with pytest.raises(ValueError, match=r"*Wrong Password*"):
         auth_login("123456.gmail.com", "12345")
 
 
@@ -67,7 +67,7 @@ def test_auth_register_ok():
 
 def test_auth_register_bad():
     #ValueError
-    with pytest.raises(Exception, match=r"*Invalid Email*"):
+    with pytest.raises(ValueError, match=r"*Invalid Email*"):
 
         email = "ankitrai326.gmail.com"
         password = "123456789"
@@ -76,7 +76,7 @@ def test_auth_register_bad():
 
         auth_register(email, password, name_first, name_last)
 
-    with pytest.raises(Exception, match=r"*Invalid Password*"):
+    with pytest.raises(ValueError, match=r"*Invalid Password*"):
         email = "ankitrai326@gmail.com"
         password = "1234"
         name_first = "Yimeng"
@@ -84,7 +84,7 @@ def test_auth_register_bad():
 
         auth_register(email, password, name_first, name_last) = ""
 
-    with pytest.raises(Exception, match=r"*Invalid name_first*"):
+    with pytest.raises(ValueError, match=r"*Invalid name_first*"):
         email = "ankitrai326@gmail.com"
         password = "123456789"
         name_first = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -92,7 +92,7 @@ def test_auth_register_bad():
 
         auth_register(email, password, name_first, name_last)
 
-    with pytest.raises(Exception, match=r"*Invalid name_last*"):
+    with pytest.raises(ValueError, match=r"*Invalid name_last*"):
         email = "ankitrai326@gmail.com"
         password = "123456789"
         name_first = "Yimeng"
@@ -120,9 +120,9 @@ def test_auth_passwordreset_reset_bad():
 
     reset_code = auth_passwordreset_request(ankitrai326@gmail.com)
 
-    with pytest.raises(Exception, match=r"*Invalid reset code*"):
+    with pytest.raises(ValueError, match=r"*Invalid reset code*"):
         auth_passwordreset_reset("8888", "123456")
 
-    with pytest.raises(Exception, match=r"*Invalid Password*"):
+    with pytest.raises(ValueError, match=r"*Invalid Password*"):
         auth_passwordreset_reset(reset_code, "1234")
  
