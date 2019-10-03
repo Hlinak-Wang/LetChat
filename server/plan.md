@@ -15,10 +15,9 @@ Mon 7th Oct: Prepare for demonstration to tutor, start thinking about iteration 
 Tue 8th Oct: Demo for iteration 1 to tutor in our lab.
 
 Iteration 2:
-Week 4: 
-Week 5: 
-Week 6: 
-Thu 24th Oct: Debugging as a team, functions finalised.
+Week 4: Everyone modifies the pytests from iteration 1 to better suit the new specs, and Angeline finishes working on functions starting with "auth_".
+Week 5: Meilin finish working on "channel" functions, Angeline finish working on "standup" and "search" and "admin" functions, Eric finishes working on "messages" functions and Yimeng finishes working on "user_profile" functions.
+Week 6: Testing and debugging.
 Sat 26th Oct: Submit iteration 2 on gitlab.
 Sun 27th Oct: Due date for iteration 2 at 8 pm.
 Mon 28th Oct: Prepare for demonstration to tutor, start thinking about iteration 3.
@@ -29,7 +28,7 @@ Sun 17th Nov: Iteration 3 due.
 Tue 19th Nov: Demo for iteration 3 to tutor in our lab.
 
 Timeline diagram
-
+<img src = "Timetable.png">
 
 Conclusion
 To conclude, our team has made a strong plan which we believe we will be able to stick to through this and future iterations of the project. We are content with our ability to work as a team and expect the project to progress smoothly.
