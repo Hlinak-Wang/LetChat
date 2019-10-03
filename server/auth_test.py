@@ -26,14 +26,14 @@ import auth_passwordreset_reset
       
 def test_auth_login_ok():
 
-    {u_id, token} = auth_register("123456@gmail.com","123456789","W","S")
+    u_id, token = auth_register("123456@gmail.com","123456789","W","S")
 
     assert auth_login("123456@gmail.com", "123456789") = {u_id, token}
 
 
 def test_auth_login_bad():
     #ValueError
-    {u_id, token} = auth_register("123456@gmail.com","123456789","W","S")
+    u_id, token = auth_register("123456@gmail.com","123456789","W","S")
 
     with pytest.raises(ValueError, match=r"*Invalid Email*"):
         auth_login("123456.gmail.com", "123456789")
