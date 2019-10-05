@@ -140,5 +140,5 @@ def test_profile():
     assert return_key["email"] == '123@gmail.com'
     assert return_key["name_first"] == 'HHH'
     assert return_key["name_last"] == 'LLLL'
-    # Assume the default handle is the last_name
-    assert return_key["handle_str"] == 'LLLL'
+    # Assume the default handle is the first_namelast_name
+    assert return_key["handle_str"] == 'HHHLLLL'
