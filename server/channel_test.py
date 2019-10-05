@@ -31,20 +31,26 @@ def channels_create(token, name, is_public):
     return channel_id  
 
 def test_channel_invite_ok():
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
+    
+    
+    
+    auth_key_admin = auth_login("123456@gmail.com", "123456789")
+    auth_key = auth_login("123456789@gmail.com", "123456789")
 
-    channel_id = channels_create("token", "12345", is_public)
+    channel = channels_create(auth_key_admin["token"], "12345", True)
 
-    channel_invite(token, channel_id, u_id1)
-
+    channel_invite(auth_key_admin["token"], channel["id"], auth_key["u_id"])
+    
+    # Check the user is successfully added into channel 
+    channel_profile = channel_details(auth_key_admin["token"], channel["id"])
+    
 
 def test_channel_invite_bad():
  
     u_id, token = auth_login("123456@gmail.com", "123456789")
     u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
 
-    channel_id = channels_create("token", "12345", is_public)
+    channel_id = channels_create("token", "12345", True)
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
         channel_invite(token, "2222", u_id1)
