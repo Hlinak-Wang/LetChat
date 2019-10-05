@@ -1,221 +1,295 @@
 from Error import AccessError
+import pytest
+
+def auth_register(email, password, name_first, name_last):
+    pass
 
 def channel_invite(token, channel_id, u_id):
-    return 
+    pass
 
 def channel_details(token, channel_id):
-    return name, owner_members, all_members 
-
+    pass
 def channel_messages(token, channel_id, start):
-    return messages, start, end 
+    pass
 
 def channel_leave(token, channel_id):
-    return 
+    pass
 
 def channel_join(token, channel_id):
-    return token 
+    pass
 
-def channel_addowner(token, channel_id, u_id)):
-    return 
+def channel_addowner(token, channel_id, u_id):
+    pass
 
 def channel_removeowner(token, channel_id, u_id):
-    return token 
+    pass
 
 def channels_list(token):
-    return channels  
+    pass
 
-def channels_listall(token)):
-    return channels 
-
+def channels_listall(token):
+    pass
 def channels_create(token, name, is_public):
-    return channel_id  
+    pass
+
+def message_send(token, channel_id, message):
+    pass
 
 def test_channel_invite_ok():
     
-    
-    
-    auth_key_admin = auth_login("123456@gmail.com", "123456789")
-    auth_key = auth_login("123456789@gmail.com", "123456789")
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
 
     channel = channels_create(auth_key_admin["token"], "12345", True)
 
     channel_invite(auth_key_admin["token"], channel["id"], auth_key["u_id"])
     
-    # Check the user is successfully added into channel 
+    # Check the user is successfully added into channel
     channel_profile = channel_details(auth_key_admin["token"], channel["id"])
-    
+    member_list = channel_profile["all_members"]
+    assert member_list[0]["u_id"] == auth_key_admin["u_id"]
+    assert member_list[1]["u_id"] == auth_key["u_id"]
 
 def test_channel_invite_bad():
  
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
 
-    channel_id = channels_create("token", "12345", True)
+    channel = channels_create(auth_key_admin["token"], "12345", True)
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
-        channel_invite(token, "2222", u_id1)
+        channel_invite(auth_key_admin["token"], "2222", auth_key["u_id"])
 
     with pytest.raises(ValueError, match=r"*User is not part of Channel*"):
-        channel_invite(token1, channel_id, u_id)
+        channel_invite(auth_key["token"], channel["id"], auth_key_admin["u_id"])
 
     with pytest.raises(ValueError, match=r"*u_id does not refer to a valid user*"):
-        channel_invite(token, channel_id, "55555")
+        channel_invite(auth_key_admin["token"], channel["id"], "55555")
 
 
 def test_channel_details_ok():
 
-    u_id, token = auth_login("123456@gmail.com", "123456789")
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
 
-    channel_id = channels_create("token", "12345", is_public)
+    channel = channels_create("token", "12345", True)
 
-    channel_details(token, channel_id)
+    channel_details(auth_key_admin["token"], channel["id"])
 
+    channel_profile = channel_details(auth_key_admin["token"], channel["id"])
+    member_list = channel_profile["all_members"]
+    assert member_list[0]["u_id"] == auth_key_admin["u_id"]
 
 def test_channel_details_bad():
-    u_id, token  = auth_login("123456@gmail.com", "123456789")
 
-    channel_id = channels_create("token", "12345", is_public)
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+
+    channel = channels_create("token", "12345", True)
 
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
-        channel_details(token, "123456")
+        channel_details(auth_key_admin["token"], "123456")
 
     #AccessError 
     with pytest.raises(AccessError, match=r"*User is not a member of Channel*"):
-        channel_details("123456", channel_id)
+        channel_details("123456", channel["id"])
 
 
 def test_channel_messages_ok():
 
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
+    auth_key = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
 
-    channel_id = channels_create("token", "12345", is_public)
+    channel = channels_create(auth_key["token"], "12345", True)
+    message_send(auth_key["token"], channel["id"], "testing")
 
-    channel_messages(token, channel_id, 0) = {messages, start, end}
-    assert end = start + 50 or -1
+    message_channel = channel_messages(auth_key["token"], channel["id"], 0)
+    messages = message_channel["message"]
+    assert messages[0]["message"] == "testing"
+    assert messages[0]["u_id"] == auth_key["u_id"]
 
 
 def test_channel_messages_bad():
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
 
-    channel_id = channels_create("token", "12345", is_public)
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+
+    channel = channels_create(auth_key["token"], "12345", True)
+
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exis*"):
-        channel_messages(token, channel_id, 0)
+        channel_messages(auth_key["token"], channel["id"] - 123, 0)
 
     with pytest.raises(ValueError, match=r"*start is greater than the total number of messages in the channel*"):
-        channel_messages(token, channel_id, 999999999)
+        channel_messages(auth_key["token"], channel["id"], 999999999)
 
     #AccessError 
     with pytest.raises(AccessError, match=r"*User is not a member of Channel*"):
-        channel_messages(token1, channel_id, 0)
-
-
+        channel_messages(auth_key_admin["token"], channel["id"], 0)
 
 
 def test_channel_leave_ok():
 
-    channel_id = channels_create("token", "12345", is_public)
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    channel = channels_create(auth_key["token"], "12345", True)
 
-    channel_leave("token", channel_id)
+    channel_join(auth_key["token"], channel["id"])
+    channel_leave(auth_key_admin["token"], channel["id"])
+
+    channel_profile = channel_details(auth_key_admin["token"], channel["id"])
+    member_list = channel_profile["all_members"]
+    assert member_list[0]["u_id"] == auth_key["u_id"]
 
 def test_channel_leave_bad():
-    channel_id = channels_create("token", "12345", is_public)
+
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    channel = channels_create(auth_key["token"], "12345", True)
+
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
-        channel_leave("token", 11111)
-
+        channel_leave(auth_key["token"], channel["id"] - 123)
 
 def test_channel_join_ok():
 
-    channel_id = channels_create("token", "12345", is_public)
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    channel = channels_create(auth_key["token"], "12345", True)
 
-    channel_join("token", channel_id)
+    channel_join(auth_key["token"], channel["id"])
+    channel_profile = channel_details(auth_key_admin["token"], channel["id"])
+    member_list = channel_profile["all_members"]
+    assert member_list[0]["u_id"] == auth_key["u_id"]
+    assert member_list[1]["u_id"] == auth_key_admin["u_id"]
 
 
 def test_channel_join_bad():
-    channel_id = channels_create("token", "12345", is_public)
+
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    channel = channels_create(auth_key_admin["token"], "12345", True)
+
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
-        channel_join("token", 11111)
-
+        channel_join(auth_key["token"], channel["id"] - 123)
 
     #AccessError
-    channel_id = channels_create("token", "12345", is_private)
+    channel2 = channels_create("token", "12345", False)
     with pytest.raises(AccessError, match=r"*channel is private*"):
-        channel_join("token1", channel_id)
-
+        channel_join(auth_key_admin["token"], channel2["id"])
 
 
 def test_channel_addowner_ok():
 
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    channel = channels_create(auth_key_admin["token"], "12345", True)
 
-    channel_id = channels_create("token", "12345", is_public)
+    channel_join(auth_key["token"], channel["id"])
 
-    channel_addowner(token, channel_id, token1)
+    channel_addowner(auth_key_admin["token"], channel["id"], auth_key["u_id"])
+    channel_profile = channel_details(auth_key_admin["token"], channel["id"])
+    owner_list = channel_profile["owner_members"]
+    assert owner_list[0]["u_id"] == auth_key["u_id"]
+    assert owner_list[1]["u_id"] == auth_key_admin["u_id"]
 
 
 def test_channel_addowner_bad():
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
 
-    channel_id = channels_create("token", "12345", is_public)
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key1 = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    auth_key2 = auth_register("123456789adsf@gmail.com", "123456789", "asdfasdff", "asdfcxcxvv")
+    auth_key3 = auth_register("123dsf@gmail.com", "123456789", "assdff", "asdfv")
+    channel = channels_create(auth_key_admin["token"], "12345", True)
+
+    channel_join(auth_key1["token"], channel["id"])
+    channel_join(auth_key2["token"], channel["id"])
+    channel_join(auth_key3["token"], channel["id"])
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
-    channel_addowner(token, "2222", u_id1)
+        channel_addowner(auth_key_admin["token"], channel["id"] - 123, auth_key1["u_id"])
 
+    channel_addowner(auth_key_admin["token"], channel["id"], auth_key1["u_id"])
     with pytest.raises(ValueError, match=r"*User already an owner of the channel*"):
-    channel_addowner(token, channel_id, u_id)
+        channel_addowner(auth_key_admin["token"], channel["id"], auth_key1["u_id"])
 
     #AccessError 
     with pytest.raises(AccessError, match=r"*user is not an owner of the slackr, or an owner of this channel*"):
-    channel_addowner(token1, channel_id, u_id)
+        channel_addowner(auth_key2["token"], channel["id"], auth_key3["u_id"])
 
 
 def test_channel_removeowner_ok():
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
 
-    channel_id = channels_create("token", "12345", is_public)
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    channel = channels_create(auth_key_admin["token"], "12345", True)
 
-    channel_removeowner(token, channel_id, token1)
+    channel_join(auth_key["token"], channel["id"])
 
+    channel_addowner(auth_key_admin["token"], channel["id"], auth_key["u_id"])
+    channel_removeowner(auth_key_admin["token"], channel["id"], auth_key["u_id"])
 
+    channel_profile = channel_details(auth_key_admin["token"], channel["id"])
+    owner_list = channel_profile["owner_members"]
+    
+    if auth_key["u_id"] in owner_list:
+        exist = 0
+    else:
+        exist = 1
+    assert exist == 0
 
-def test_channel_removeowner()_bad:
-    u_id, token = auth_login("123456@gmail.com", "123456789")
-    u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
+    assert owner_list[0]["u_id"] == auth_key_admin["u_id"]
 
-    channel_id = channels_create("token", "12345", is_public)
+def test_channel_removeowner_bad():
+
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    auth_key1 = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    auth_key2 = auth_register("123456789adsf@gmail.com", "123456789", "asdfasdff", "asdfcxcxvv")
+    channel = channels_create(auth_key_admin["token"], "12345", True)
+
+    channel_join(auth_key["token"], channel["id"])
+    channel_join(auth_key1["token"], channel["id"])
+    channel_join(auth_key2["token"], channel["id"])
+
+    channel_addowner(auth_key_admin["token"], channel["id"], auth_key["u_id"])
     #ValueError
     with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
-        channel_removeowner(token, "2222", token1)
+        channel_removeowner(auth_key_admin["token"], channel["id"] - 123, auth_key["u_id"])
 
     with pytest.raises(ValueError, match=r"*User is not an owner of the channel*"):
-        channel_removeowner(token, channel_id, token1)
+        channel_removeowner(auth_key_admin["token"], channel["id"], auth_key1["u_id"])
 
     #AccessError 
     with pytest.raises(AccessError, match=r"*user is not an owner of the slackr, or an owner of this channel*"):
-    channel_addowner(token1, channel_id, token)
+        channel_addowner(auth_key2["token"], channel["id"], auth_key1["u_id"])
 
 
 def test_channels_list():
-    assert channels_list(token) = channels
+
+    auth_key = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    channel1 = channels_create(auth_key["token"], "12345", True)
+    channel2 = channels_create(auth_key["token"], "123asdf45", True)
+
+    channels = channels_list(auth_key["token"])
+    assert channels[0]["id"] == channel1["id"]
+    assert channels[1]["id"] == channel2["id"]
 
 def test_channels_listall():
-    assert channels_listall(token) = channels
 
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
 
-def test_channels_create_ok():
+    channel1 = channels_create(auth_key["token"], "12345", True)
+    channel2 = channels_create(auth_key["token"], "123asdf45", True)
+    channels = channels_listall(auth_key_admin["token"])
 
-    assert type(channels_create("token", "012345", is_public)) = int
+    assert channels[0]["id"] == channel1["id"]
+    assert channels[1]["id"] == channel2["id"]
 
 
 def test_channels_create_bad():
+
     #ValueError
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+
     with pytest.raises(ValueError, match=r"*Name too long*"):
-        channels_create("token", "012345678901234567890123456789", is_public)
+        channels_create(auth_key["token"], "012345678901234567890123456789", True)
