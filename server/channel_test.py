@@ -30,18 +30,6 @@ def channels_listall(token)):
 def channels_create(token, name, is_public):
     return channel_id  
 
-
-import channel_invite
-import channel_details
-import channel_messages
-import channel_leave
-import channel_join
-import channel_addowner
-import channel_removeowner
-import channels_list
-import channels_listall
-import channels_create
-
 def test_channel_invite_ok():
     u_id, token = auth_login("123456@gmail.com", "123456789")
     u_id1, token1 = auth_login("123456789@gmail.com", "123456789")
