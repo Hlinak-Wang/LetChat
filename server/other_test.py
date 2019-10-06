@@ -1,6 +1,6 @@
 import pytest
 import datetime
-from error import AccessError
+from Error import AccessError
 
 def auth_register(email, password, first_nanme, last_name):
 	
