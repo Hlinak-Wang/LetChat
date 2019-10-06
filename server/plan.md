@@ -46,7 +46,8 @@ Sun 17th Nov: Iteration 3 due.
 
 Tue 19th Nov: Demo for iteration 3 to tutor in our lab.
 
-Timeline diagram
+Timeline diagram:
+
 <img src = "Timetable.png">
 
 Conclusion:
