@@ -1,5 +1,7 @@
+from json import dumps
 from flask import Flask
 import re
+#import functions from another file
 
 APP = Flask(__name__)
 
@@ -9,24 +11,40 @@ class Member:
 
 #self.handle = first + last;
 
-data = []
+data = {
+    
+
+}
+
+def getData():
+    global data
+    return data
 
 regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
 
-def check(email):  
+def check_valid_email(email):  
         global regex
         if(re.search(regex,email)):  
             pass
-        else:  
+        else:
             raise ValueError
+def check_user_email(email):
+    data = getData()
+    
 
 @APP.route("auth/login", methods=['POST'])
 def auth_login():
-    global data
+    # fn_auth_login(request.args.get('email'), request.form.get('password'))
+    #return dumps({})
+    
+    data = getData()
     email = dumps((request.args.get('email'))
     password = dumps(request.args.get('password'))
-    check(email)
     #get returns a dictionary ?
+    check_valid_email(email)
+    check_user_email(email)
+    check_user_password(password)
+    
     
 
 @APP.route("auth/logout")
