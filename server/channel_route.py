@@ -1,26 +1,24 @@
 from flask import Flask, request
 from json import dumps
-
+from channel_function import ch_create, ch_invite,ch_details
 APP = Flask(__name__)
 
-
-stack_channel = []
-APP.route('/channel/create', methods=['POST'])
+APP.route('channel/create', methods=['POST'])
 def channel_create():
-    channel_name = request.form.get('channel_name')
-    is_public = request.form.get('is_public')
-    channel = Channel(channel_name, is_public)
-    channel = channel.__dict__
-    stack_channel.append(channel)
-    return dumps(stack_channel)
-
+    channel_id = ch_create()
+    return dumps({channel_id})
 
 APP.route('/channel/invite', methods=['POST'])
-def channel_invite(channel_id, u_id):
+def channel_invite():
+    ch_invite()
     return dumps({})
-
 
 @APP.route('channel/details', methods=['GET'])
 def channel_details(token, channel_id):
-    global data
-    channelinformation = getData()
+    detail = ch_details()
+    return dumps({detail})
+
+@APP.route('channel/message', methods=['GET'])
+def cahnnel_message():
+
+    return dumps({})
