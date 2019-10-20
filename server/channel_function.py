@@ -22,10 +22,42 @@ class Channel:
 
 
 data = {
-    "user_data": {234: {"mail": "23@23.com", "name_first": "ads", "name_last": "fkk", "token": "123", "photo": "nal.img", "handle": adsfkk}}
-    "channel": {channel_id: {"name": "aed", "all_member": [{"u_id": 234, "name_first": "ads", "name_last": "fkk"}], "owner_member": [{"u_id": 234, "name_first": "ads", "name_last": "fkk"}]}}
-    "message": {message_id: {"u_id": 677, "content": "hey", "time_send": "datetime", "is_unread": True, "is_pinned": True, "is_react":[{react_id}: 1, "u_ids": 2]}}
-
+    "user_data": {
+        234: {
+            "mail": "23@23.com",
+            "name_first": "ads", 
+            "name_last": "fkk", 
+            "token": "123", 
+            "photo": "nal.img", 
+            "handle": "adsfkk",
+        },
+    },
+    "channel": {
+        "channel_id": {
+            "name": "aed", 
+            "all_member": [{
+                "u_id": 234,
+                "name_first": "ads", 
+                "name_last": "fkk",
+            }], 
+            "owner_member": [{
+                "u_id": 234, 
+                "name_first": "ads", 
+                "name_last": "fkk",
+            }],
+        },
+    },
+    "message": {
+        "message_id": {
+            "u_id": 677, 
+            "content": "hey", 
+            "time_send": "datetime", 
+            "is_unread": True, 
+            "is_pinned": True, 
+            "is_react":[{"react_id": 1, "u_ids": 2}]
+        },
+    },
+}
 def getData():
     global data
     return data.get('channel')
@@ -109,7 +141,12 @@ def ch_details():
     token = request.args.get('token')
     channel_id = request.args.get('channel_id')
     data = getData()
-    if channel_id is not in data:
+    count = 0
+    for channelid in data[i]:
+        if channel_id == channelid:
+            count = 1
+        i = i + 1
+    if count == 0:
         raise ValueError("Invalid channel")
     # assume auth_uid
     auth_uid = 123
@@ -135,7 +172,13 @@ def ch_leave():
     token = request.form.get('token')
     channel_id = request.form.get('channel_id')
     # check validation of ch_id
-    if channel_id is not in data:   # or use token to check
+    count = 0
+    for channelid in data[i]:
+        if channel_id == channelid:
+            count = 1
+        i = i + 1
+    
+    if count == 0:   # or use token to check
         raise ValueError("Channel ID is invalid")
     u_id = self.get_u_id()
     # assume user_data
@@ -153,7 +196,12 @@ def ch_join():
     token = request.form.get('token')
     channel_id = request.form.get('channel_id')
     # check validation of ch_id
-    if channel_id is not in data:
+    count = 0
+    for channelid in data[i]:
+        if channel_id == channelid:
+            count = 1
+        i = i + 1
+    if count == 0:
         raise ValueError("Channel ID is invalid")
     # check the channel is public or private
     # assume the admin has u_id 1
@@ -179,14 +227,19 @@ def ch_addowner():
     # accesserror when the auth_user is not an owner of the slackr or channel
     # Write something here...
     
-    # check validation of teh channel id
-    if channel_id is not in data:
+    # check validation of the channel id
+    count = 0
+    for channelid in data[i]:
+        if channel_id == channelid:
+            count = 1
+        i = i + 1
+    if count == 0:
         raise ValueError("Invalid Channel ID")
     
     # check the user is already the owner or not
     i = 0
     for uid in data[channel_id]['owner_member'][i]:
-        if u_id == uid.get('u_id')
+        if u_id == uid.get('u_id'):
             raise ValueError("Already an owner of that channel")
         i = i + 1 
     # assume user_data
@@ -208,15 +261,18 @@ def ch_removeowner():
     
     # check validation of teh channel id
     count = 0
-    if channel_id is not in data:
+    for channelid in data[i]:
+        if channel_id == channelid:
+            count = 1
+        i = i + 1
+    if count == 0:
         raise ValueError("Invalid Channel ID")
         
-    # check teh user is owner or not
-    i = 0
+    # check the user is owner or not
     for uid in data[channel_id]['owner_member'][i]:
         if u_id == uid.get('u_id'):
-            count = 1;
-    if count == 0:
+            count = 2;
+    if count == 1:
         raise ValueError("Not an owner")
     user_data = {
         'u_id': u_id,
@@ -297,4 +353,4 @@ def ch_listall():
     return dumps({data})
     
 if __name__ == '__main__':
-    APP.run(debug = True)
+    APP.run(port=1128,debug = True)
