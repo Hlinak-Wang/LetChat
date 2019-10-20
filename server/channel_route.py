@@ -3,12 +3,13 @@ from json import dumps
 from channel_function import ch_create, ch_invite,ch_details, ch_leave, ch_join, ch_addowner, ch_removeowner, ch_lists, ch_listall
 APP = Flask(__name__)
 
-APP.route('/channels/create', methods=['POST'])
+@APP.route('/channels/create', methods=['POST'])
 def channel_create():
+    
     channel_id = ch_create()
     return dumps({channel_id})
 
-APP.route('/channel/invite', methods=['POST'])
+@APP.route('/channel/invite', methods=['POST'])
 def channel_invite():
     ch_invite()
     return dumps({})
@@ -53,4 +54,4 @@ def channel_listall():
     return dumps({listall})
     
 if __name__ == '__main__':
-    APP.run(port=2000,debug = True)
+    APP.run(port=11280,debug = True)

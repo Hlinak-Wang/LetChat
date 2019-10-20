@@ -61,7 +61,7 @@ data = {
 def getData():
     global data
     return data.get('channel')
-stack_channel = {}
+stack_channel = []
 
 # create a channel
 def ch_create():
@@ -74,7 +74,7 @@ def ch_create():
         raise ValueError("The maximum characters of name is 20.")
     # set a channel to public or private
     is_public = request.form.get('is_public')
-    channel = Channel(channel_name, is_public)
+    channel = Channel(channel_name, is_public, 123, 145)
     channel = channel.__dict__
     stack_channel.append(channel)
     # stack_channel here is a channel_id
@@ -82,10 +82,10 @@ def ch_create():
     data[stack_channel] = {
         'name': channel_name,
         'all_member': [{
-            'u_id': self.get_u_id(),
-            'name_first': [],       # -----> name first
-            'name_last': [],        # -----> name last
-        }]
+            'u_id': 123,
+            'name_first': 'asd',       # -----> name first
+            'name_last': 'zxc',        # -----> name last
+        }],
     }
     
     # return a channel id
