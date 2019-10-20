@@ -1,5 +1,6 @@
 from flask import Flask, request
 from json import dumps
+from Error import AccessError
 
 APP = Flask(__name__)
 
@@ -44,24 +45,26 @@ def ch_invite():
     # check the u_id is valid
     u_id = request.form.get('u_id')
     detail = getData()
-    if uid in not in detail:    # uid need to change
-        raise Exception(f"Access Error -> Not a authorised user")
+    if uid in not in detail[channel_id]['all_member']:    # uid need to change
+        raise AccessError("Access Error -> Not a authorised user")
     
     # update the data, a new member
-
+    detail[channel_id]['all_member'].append(u_id) # name_first and name_last
     return dumps({})
 
 def ch_details():
     global stack_channel
-    # AccessError whenAuthorised user is not a 
-    # member of channel with channel_id
-    channel_id = request.form.get('channel_id')
-    channelinformation = getData()
-    if channel_id is in channelinformation:
-        stack_channel.append(channelinformation['name'])
-        stack_channel.append(channelinformation['owner_member'])
-        stack_channel.append(channelinformation['all_member'])
-    return dumps({stack_channel})
+    # channel_id is invalid
+    # check it with token
+    channel_id = request.args.get('channel_id')
+    information = getData()
+    if channel_id is not in information:
+        raise AccessError("User is not a member of that channel")
+    else:
+        stack_channel.append(information[self.get_name()])
+        stack_channel.append(information['owner_member'])
+        stack_channel.append(information['all_member'])
+        return dumps({stack_channel})
 
 # create a channel
 def ch_create():
@@ -76,23 +79,102 @@ def ch_create():
     channel = Channel(channel_name, is_public)
     channel = channel.__dict__
     stack_channel.append(channel)
+    # stack_channel here is a channel_id
+    data = getData()
+    data[stack_channel] = {
+        'name': channel_name,
+        'all_member': [{
+            'u_id': self.get_u_id(),
+            'name_first': [],       # -----> name first
+            'name_last': [],        # -----> name last
+        }]
+    }
+    
     # return a channel id
     return dumps(stack_channel)
 
+'''
 def ch_message():
     return dumps({})
+'''
 
 def ch_leave():
+    data = getData()
+    channel_id = request.form.get('channel_id')
+    # check validation of ch_id
+    if channel_id is not in data:   # or use token to check
+        raise ValueError("Channel ID is invalid")
+    u_id = self.get_u_id()
+    # not sure what is inside the remove()
+    data[channel_id]['all_member'].remove(u_id)
+    return dumps({})
 
 def ch_join():
-
+    data = getData()
+    channel_id = request.form.get('channel_id')
+    # check validation of ch_id
+    if channel_id is not in data:
+        raise ValueError("Channel ID is invalid")
+    # check the channel is public or private
+    # assume the admin has u_id 1
+    if self.get_state_of_channel() == False and self.get_u_id == 1:
+        raise AccessError("The channel is private")
+    u_id = self.get_u_id()
+    # remove a list of that user's data
+    data[channel_id]['all_member'].append(u_id)
+    return dumps({})
+    
 def ch_addowner():
-
+    channel_id = request.form.get('channel_id')
+    u_id = request.form.get('u_id')
+    data = getData()
+    # how to get the authrised user id
+    # accesserror when not an owner of slackr or teh channel
+    if channel_id is not in data:
+        raise ValueError("Invalid Channel ID")
+    for uid in data[channel_id]['owner_member']:
+        if u_id == uid[0]['u_id']:
+            raise ValueError("Already an owner of that channel")
+    data[channel_id]['owner_member'] = {
+        'u_id': u_id,
+        name_first: [],
+        name_last: [],
+    }
+    return dumps({})
+    
 def ch_removeowner():
-
+    channel_id = request.form.get('channel_id')
+    u_id = request.form.get('u_id')
+    data = getData()
+    count = 0
+    # how to get the authrised user id
+    # accesserror when not an owner of slackr or teh channel
+    if channel_id is not in data:
+        raise ValueError("Invalid Channel ID")
+    for uid in data[channel_id]['owner_member']:
+        if u_id == uid[0]['u_id']:
+            count = 1;
+    if count == 0:
+        raise ValueError("Not an owner")
+    data[channel_id]['owner_member'].remove(u_id) # <-a string of data
+    return dumps({})
+    
 def ch_lists():
-
+    data = getData()
+    token = request.args.get('token')
+    global stack_channel
+    # check the token is valid or not
+    # go through lists, if the user is part of channel,
+    # using stack_channel to append
+    # Provide a list of all channels the the user is part of
+    return dumps({stack_channel})
+    
 def ch_listall():
-
+    data = getData()
+    token = request.args.get('token')
+    # if token is valid
+    # a list of all channels will be provided
+    return dumps({data})
+    
 if __name__ == '__main__':
     APP.run(debug = True)
