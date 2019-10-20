@@ -1,6 +1,8 @@
 from json import dumps
 from flask import Flask
 import re
+import jwt
+
 #import functions from another file
 
 APP = Flask(__name__)
@@ -12,16 +14,19 @@ class Member:
 #self.handle = first + last;
 
 data = {
-    "messages": {} 
-    "user_data": {}  
-    "channel_id": {}
+    "messages": {}, 
+    "user_data": {},  
+    "channel_id": {},
 }
+
+SECRET = 'IE4';
 
 #in user_data:
 #{u_id: {"email": email, "password": password, "name_first": name_first, "name_last": name_last, "handle": handle, "reset_code": reset_code, "token": token}, nextu_id, etc}
 
 def get_user_data():
     global data
+    global SECRET
     return data.get("user_data")
     #return specific type of data?
 
@@ -34,17 +39,21 @@ def check_valid_email(email):
     else:
         raise ValueError
 
-def check_user_details(email, password, u_id):
+def check_user_details(email, password):
     #fix this for new data representation!!
     u_data = get_user_data()
-    
-    if email in u_data:
-        if u_data.get(email) == password:
-            pass
-        else:
-            raise ValueError  
-    else:
+    is_found = 0;
+    for u_id, u_info in u_data.items():
+        if u_info.get(email) == email:
+            if u_info.get(password) == password:
+                is_found = 1
+                ID = u_id
+                break
+            else:
+                raise ValueError  
+    if is_found == 0:
         raise ValueError
+    return ID
         
 def check_valid_password(password):
     if len(password) < 6:
@@ -76,25 +85,33 @@ def auth_login():
     #return dumps({})
     
     u_data = get_user_data()
-    email = dumps((request.args.get('email'))
-    password = dumps(request.args.get('password'))
+    email = request.args.get('email')
+    password = request.args.get('password')
     #get returns a dictionary ?
     check_valid_email(email)
-    check_user_details(email, password)
+    u_id = check_user_details(email, password)
     
+    token = jwt.encode({'password': password}, SECRET, algorithm = 'HS256')
+    
+    return dumps({u_id, token},
+    })
     
 
-@APP.route("auth/logout")
+@APP.route("auth/logout", methods = ['POST'])
 def auth_logout():
-    pass
+    u_data = get_user_data()
+    is_success = 1
+    
+    
+    return dumps({is_sucess})
     
 @APP.route("auth/register", methods =['POST'])
 def auth_register():
     u_data = get_user_data()
-    email = dumps((request.args.get('email'))
-    password = dumps(request.args.get('password'))
-    name_first = dumps(request.args.get('name_first'))
-    name_last = dumps(request.args.get('name_last'))
+    email = (request.args.get('email')
+    password = request.args.get('password')
+    name_first = request.args.get('name_first')
+    name_last = request.args.get('name_last')
     
     check_valid_email(email)
     check_valid_password(password)
@@ -102,8 +119,8 @@ def auth_register():
     check_email_already_exists(email)
     
     u_id = len(u_data) + 1;
-    
-    
+    handle = generate_handle(name_first, name_last) # implement this
+    token = jwt.encode({'password': password}, SECRET, algorithm = 'HS256')
     
     
     return {u_id, token}
