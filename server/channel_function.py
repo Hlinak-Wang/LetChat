@@ -352,5 +352,4 @@ def ch_listall():
     stack_channel.append(channel2_data)
     return dumps({data})
     
-if __name__ == '__main__':
-    APP.run(port=1128,debug = True)
+
