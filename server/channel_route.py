@@ -1,6 +1,6 @@
 from flask import Flask, request
 from json import dumps
-from channel_function import ch_create, ch_invite,ch_details, ch_leave, ch_join, ch_addowner, ch_removeowner, ch_lists, ch_listall, ch_me
+from channel_function import ch_create, ch_invite,ch_details, ch_leave, ch_join, ch_addowner, ch_removeowner, ch_lists, ch_listall
 APP = Flask(__name__)
 
 APP.route('/channels/create', methods=['POST'])
@@ -51,3 +51,6 @@ def channel_list():
 def channel_listall():
     listall = ch_listall()
     return dumps({listall})
+    
+if __name__ == '__main__':
+    APP.run(port=2000,debug = True)
