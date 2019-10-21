@@ -2,7 +2,6 @@ from flask import Flask, request
 from json import dumps
 from Error import AccessError
 
-APP = Flask(__name__)
 '''
 class Channel:
     def __init__(self, name, is_public, u_id, channel_id):
@@ -20,55 +19,7 @@ class Channel:
         return self.channel_id
 '''   
 
-Data = {
-    'users': [
-            {'u_id': 123,
-             'name_first': 'test',
-             'name_last': 'test',
-             'token': '12345',
-             'handle_str': 'testtest',
-             'email': 'test@test.com',
-             'password': 'test',
-             'permission_id': 1,
-             'channel_involve': [1]  # channel_id
-             },
-            {'u_id': 1234,
-             'name_first': 'test2',
-             'name_last': 'test2',
-             'token': '123456',
-             'handle_str': 'testtest2',
-             'email': 'test2@test2.com',
-             'password': 'test2',
-             'permission_id': 3,
-             'channel_involve': [1]  # channel_id
-             }
-        ],
-        'channels': [{
-            'name': 'test',
-            'channel_id': 1,
-            'user_list': [
-                {'u_id': 123, 'name_first': 'test', 'name_last': 'test', 'is_owner': True},
-                {'u_id': 1234, 'name_first': 'test2', 'name_last': 'test2', 'is_owner': False}
-            ],
-            'is_public': True
-        }],
-        'messages': [
-            {
-                'message': 'test',
-                'u_id': 123,
-                'reacts': [{'react_id': 1, 'u_ids': []}],
-                'is_pinned': False,
-                'time_created': '10/20/2019, 23:25:33',
-                'channel_id': 1,
-                'message_id': 0
-            }
-        ],
-        'counter': {
-            'user': 1,
-            'channel': 1,
-            'message': 1
-        }
-}
+
 
 def find_user(data, token):
     for user in data['users']:
@@ -143,18 +94,18 @@ def ch_create():
     if (len(channel_name) > 20):
         raise ValueError('The maximum characters of name is 20.')
         
-    stack_channel = 2
-    # stack_channel here is a channel_id
+    channel_id = Data['counter'].get('channel') + 1
     detail = get_channels(Data)
     # assume channel_data
     channel_data = {
         'name': channel_name,
-        'channel_id': stack_channel,
+        'channel_id': channel_id,
         'user_list': [
-            {'u_id': 456, 
-             'name_first': 'test2', 
-             'name_last': 'test2', 
-             'is_owner': True
+            {
+                'u_id': 456, 
+                'name_first': 'test2', 
+                'name_last': 'test2', 
+                'is_owner': True
             }
         ],
         'is_public': is_public
@@ -162,7 +113,9 @@ def ch_create():
     detail.append(channel_data)
     
     # return a channel id
-    return dumps(stack_channel)
+    return {
+        'channel_id': channel_id
+    }
 
 def ch_invite():
     '''
@@ -171,13 +124,11 @@ def ch_invite():
     part of.
     u_id does not refer to a valid user
     '''
-    global Data
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    u_id = int(request.form.get('u_id'))
+    
+    
     
     # check validation of channel id
-    if find_channel_id(Data, channel_id) == None:
+    if find_channel(Data, channel_id) == None:
         raise ValueError('Invalid channel')
     # check validation of uid
     valid_user = find_uid(Data, u_id)
@@ -186,11 +137,12 @@ def ch_invite():
     
     # check is the auth user is a member or not of that channel
     user = find_user(Data, token)
+    auth_uid = 0
     if user != None:
         auth_uid = user['u_id']
         
     detail = get_channels(Data)
-    if find_uid_in_channel(detail, channel_id, auth_id) == None:
+    if find_uid_in_channel(detail, channel_id, auth_uid) == None:
         raise AccessError('Not a member')
     
     # update the data, a new member added
@@ -200,7 +152,7 @@ def ch_invite():
         'name_last': valid_user['name_last']
     }
     detail['user_list'].append(user_data)
-    return dumps({})
+    return {}
 
 def ch_details():
     stack_channel = []
@@ -209,7 +161,7 @@ def ch_details():
     channel_id = int(request.args.get('channel_id'))
     detail = get_channels(Data)
     # check validation of channel id
-    if find_channel_id(Data, channel_id) == None:
+    if find_channel(Data, channel_id) == None:
         raise ValueError('Invalid channel')
     # check auth user is a member or not
     user = find_user(Data, token)
@@ -226,7 +178,7 @@ def ch_details():
     stack_channel.append(name)
     stack_channel.append(owner)
     stack_channel.append(channel['user_list'])
-    return dumps(stack_channel)
+    return {stack_channel}
 
 '''
 def ch_message():
@@ -250,7 +202,7 @@ def ch_leave():
         channel['user_list'].remove(member)
         user['channel_involve'].remove(channel_id)
     
-    return dumps({})
+    return {}
 
 def ch_join():
     global Data
@@ -275,7 +227,7 @@ def ch_join():
             'name_last': user['name_last'],
         }
         channel['user_list'].append(user_data)
-    return dumps({})
+    return {}
     
 def ch_addowner():
     global Data
@@ -304,7 +256,7 @@ def ch_addowner():
     if owner is not None:
         uid['is_owner'] = True
     
-    return dumps({})
+    return {}
     
 def ch_removeowner():
     global Data
@@ -332,7 +284,7 @@ def ch_removeowner():
     owner = find_uid_in_channel(detail, channel_id, u_id)
     if owner is not None:
         uid['is_owner'] = False
-    return dumps({})
+    return {}
     
 def ch_lists():
     global Data
@@ -350,7 +302,7 @@ def ch_lists():
                                     'name': channel['name'],
                                     'channel_id': channel['channel_id']    
                                     })
-    return dumps(stack_channel)
+    return {stack_channel}
     
 def ch_listall():
     global Data
@@ -363,6 +315,6 @@ def ch_listall():
                                 'name': channel['name'],
                                 'channel_id': channel['channel_id']    
                                 })
-    return dumps(stack_channel)
+    return {stack_channel}
     
 
