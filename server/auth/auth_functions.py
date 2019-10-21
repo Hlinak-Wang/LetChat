@@ -15,19 +15,19 @@ class Member:
 
 data = {
     "messages": {}, 
-    "user_data": {},  
+    "users": [],
     "channel_id": {},
 }
 
 SECRET = 'IE4';
 
 #in user_data:
-#{u_id: {"email": email, "password": password, "name_first": name_first, "name_last": name_last, "handle": handle, "reset_code": reset_code, "token": token}, nextu_id, etc}
+#{'u_id': u_id, 'name_first': name_first, "name_last": name_last, 'token': token, "handle": handle, 'email': email, 'password': password, 'permission_id': permission_id, 'channel_involve': []}
 
-def get_user_data():
-    global data
-    global SECRET
-    return data.get("user_data")
+#def get_user_data():
+#    global data
+#    global SECRET
+#    return data.get("user_data")
     #return specific type of data?
 
 #HELPER FUNCTIONS BELOW
@@ -61,10 +61,10 @@ def check_valid_password(password):
     else:
         pass
     
-def check_email_already_exists(email):
-    u_data = get_user_data()
-    for u_id in u_data.keys:
-        if u_data[u_id[email]] == email:
+def check_already_user(email):
+    global data
+    for user in data['users']:
+        if user['email'] == email:
             raise ValueError
 
 
@@ -75,6 +75,29 @@ def check_name(name_first, name_last):
         raise ValueError
     else:
         pass
+        
+def generate_handle(first, last):
+    global data
+    handle = first + last
+    excess = len(handle) - 20
+    if excess > 0:
+        handle = handle[:21]
+    finish == 0    
+    
+    for finish == 0:
+        for user in data['users']:
+            if user['handle'] = handle:
+                handle[
+    
+    
+
+def findUserFromToken(token):
+    global data
+    for user in data['users']:
+        if user['token'] == token:
+            return user
+
+    return None
 
 
 #HELPER FUNCTIONS ABOVE
@@ -84,12 +107,14 @@ def auth_login():
     # fn_auth_login(request.args.get('email'), request.form.get('password'))
     #return dumps({})
     
-    u_data = get_user_data()
+    global data
     email = request.args.get('email')
     password = request.args.get('password')
     #get returns a dictionary ?
     check_valid_email(email)
     u_id = check_user_details(email, password)
+    
+    u_data[u_id][isLoggedIn] = True
     
     token = jwt.encode({'password': password}, SECRET, algorithm = 'HS256')
     
@@ -97,18 +122,24 @@ def auth_login():
     })
     
 
-@APP.route("auth/logout", methods = ['POST'])
+@APP.route("auth/logout", methods = ['POST']) #done
 def auth_logout():
-    u_data = get_user_data()
-    is_success = 1
+    global data
     
+    token = request.args.get('token')
     
+    user = findUserFromToken(token)
+    
+    if user is not None:
+        user['token'] = None
+        is_success = 1
+
     return dumps({is_sucess})
     
-@APP.route("auth/register", methods =['POST'])
+@APP.route("auth/register", methods = ['POST']) #done
 def auth_register():
-    u_data = get_user_data()
-    email = (request.args.get('email')
+    global data
+    email = request.args.get('email')
     password = request.args.get('password')
     name_first = request.args.get('name_first')
     name_last = request.args.get('name_last')
@@ -116,19 +147,34 @@ def auth_register():
     check_valid_email(email)
     check_valid_password(password)
     check_name(name_first, name_last)
-    check_email_already_exists(email)
+    check_already_user(email)
     
-    u_id = len(u_data) + 1;
-    handle = generate_handle(name_first, name_last) # implement this
+    u_id = len(data['users']) + 1
+    
+    handle = generate_handle(name_first, name_last) #finish implementing this
+    
+    data['users'].append({
+        'u_id': u_id,
+        'name_first': name_first,
+        'name_last': name_last
+        'token': token,
+        'handle': handle,
+        'email': email,
+        'password': password,
+        'permission_id': 1,
+        'channel_involve': [],
+    })
+    
     token = jwt.encode({'password': password}, SECRET, algorithm = 'HS256')
     
     
     return {u_id, token}
 
 
-@APP.route("auth/passwordreset/request")
+@APP.route("auth/passwordreset/request", methods = ['POST'])
 def auth_reset_request():
-    pass
+    global data
+    email = request.args.get('email')
 
 @APP.route("auth/passwordreset/reset")
 def auth_reset():
