@@ -102,7 +102,7 @@ def findUserFromToken(token):
 
 #HELPER FUNCTIONS ABOVE
 
-@APP.route("auth/login", methods=['POST'])
+@APP.route("/auth/login", methods=['POST'])
 def auth_login():
     # fn_auth_login(request.args.get('email'), request.form.get('password'))
     #return dumps({})
@@ -122,7 +122,7 @@ def auth_login():
     })
     
 
-@APP.route("auth/logout", methods = ['POST']) #done
+@APP.route("/auth/logout", methods = ['POST']) #done
 def auth_logout():
     global data
     
@@ -136,47 +136,46 @@ def auth_logout():
 
     return dumps({is_sucess})
     
-@APP.route("auth/register", methods = ['POST']) #done
+@APP.route("/auth/register", methods=['POST'])  # done
 def auth_register():
     global data
-    email = request.args.get('email')
-    password = request.args.get('password')
-    name_first = request.args.get('name_first')
-    name_last = request.args.get('name_last')
-    
-    check_valid_email(email)
-    check_valid_password(password)
-    check_name(name_first, name_last)
-    check_already_user(email)
-    
+    email = request.form.get('email')
+    password = request.form.get('password')
+    name_first = request.form.get('name_first')
+    name_last = request.form.get('name_last')
+
     u_id = len(data['users']) + 1
-    
-    handle = generate_handle(name_first, name_last) #finish implementing this
-    
+    payload = {
+        'name_first': name_first,
+        'name_last': name_last,
+        'time_create': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
+    }
+    token = str(jwt.encode(payload, SECRET, algorithm='HS256'))
+
     data['users'].append({
         'u_id': u_id,
         'name_first': name_first,
-        'name_last': name_last
+        'name_last': name_last,
         'token': token,
-        'handle': handle,
+        'handle': 'handle',
         'email': email,
         'password': password,
         'permission_id': 1,
         'channel_involve': [],
     })
-    
-    token = jwt.encode({'password': password}, SECRET, algorithm = 'HS256')
-    
-    
-    return {u_id, token}
+
+    return dumps({
+        'u_id': u_id,
+        'token': token
+    })
 
 
-@APP.route("auth/passwordreset/request", methods = ['POST'])
+@APP.route("/auth/passwordreset/request", methods = ['POST'])
 def auth_reset_request():
     global data
     email = request.args.get('email')
 
-@APP.route("auth/passwordreset/reset")
+@APP.route("/auth/passwordreset/reset")
 def auth_reset():
     pass
 
