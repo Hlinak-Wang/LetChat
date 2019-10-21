@@ -34,18 +34,17 @@ SECRET = 'IE4';
 
 def check_valid_email(email): 
     regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
-    if(re.search(regex,email)):  
+    if(regex.search(regex,email)):  
         pass
     else:
         raise ValueError
 
 def check_user_details(email, password):
-    #fix this for new data representation!!
-    u_data = get_user_data()
+    global data
     is_found = 0;
-    for u_id, u_info in u_data.items():
-        if u_info.get(email) == email:
-            if u_info.get(password) == password:
+    for user in data['users']:
+        if user['email'] == email:
+            if user['password'] == password:
                 is_found = 1
                 ID = u_id
                 break
@@ -54,13 +53,13 @@ def check_user_details(email, password):
     if is_found == 0:
         raise ValueError
     return ID
-        
+
 def check_valid_password(password):
     if len(password) < 6:
         raise ValueError
     else:
         pass
-    
+
 def check_already_user(email):
     global data
     for user in data['users']:
@@ -71,7 +70,7 @@ def check_already_user(email):
 def check_name(name_first, name_last):
     if ((len(name_first) < 1) | (len(name_last) < 1)):
         raise ValueError
-    else if ((len(name_first) > 50 | (len(name_last) > 50)):
+    elif ((len(name_first) > 50 | (len(name_last) > 50)):
         raise ValueError
     else:
         pass
@@ -139,10 +138,10 @@ def auth_logout():
 @APP.route("auth/register", methods = ['POST']) #done
 def auth_register():
     global data
-    email = request.args.get('email')
-    password = request.args.get('password')
-    name_first = request.args.get('name_first')
-    name_last = request.args.get('name_last')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    name_first = request.form.get('name_first')
+    name_last = request.form.get('name_last')
     
     check_valid_email(email)
     check_valid_password(password)
@@ -156,7 +155,7 @@ def auth_register():
     data['users'].append({
         'u_id': u_id,
         'name_first': name_first,
-        'name_last': name_last
+        'name_last': name_last,
         'token': token,
         'handle': handle,
         'email': email,
@@ -168,7 +167,8 @@ def auth_register():
     token = jwt.encode({'password': password}, SECRET, algorithm = 'HS256')
     
     
-    return {u_id, token}
+    return dumps({u_id: token
+    })
 
 
 @APP.route("auth/passwordreset/request", methods = ['POST'])
