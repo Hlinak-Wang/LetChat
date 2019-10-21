@@ -2,6 +2,7 @@ from json import dumps
 from flask import Flask
 import re
 import jwt
+from datetime import datetime
 
 #import functions from another file
 
@@ -74,21 +75,34 @@ def check_name(name_first, name_last):
         raise ValueError
     else:
         pass
-        
-def generate_handle(first, last):
+
+def generateToken(first, last):
+    payload = {
+        'name_first': name_first,
+        'name_last': name_last,
+        'time_create': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
+    }
+    return str(jwt.encode(payload, SECRET, algorithm='HS256'))
+
+     
+def generateHandle(first, last):
     global data
     handle = first + last
     excess = len(handle) - 20
     if excess > 0:
         handle = handle[:21]
-    finish == 0    
     
-    for finish == 0:
-        for user in data['users']:
-            if user['handle'] = handle:
-                handle[
-    
-    
+    if handleAlreadyExists(handle) || len(handle) < 3:
+        handle = datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
+
+    return handle
+                
+def handleAlreadyExists(handle):
+    global data
+    for user in data['users']:
+        if user['handle'] = handle:
+            return True
+    return False
 
 def findUserFromToken(token):
     global data
@@ -109,7 +123,6 @@ def auth_login():
     global data
     email = request.args.get('email')
     password = request.args.get('password')
-    #get returns a dictionary ?
     check_valid_email(email)
     u_id = check_user_details(email, password)
     
@@ -117,11 +130,11 @@ def auth_login():
     
     token = jwt.encode({'password': password}, SECRET, algorithm = 'HS256')
     
-    return dumps({u_id, token},
+    return dumps({'u_id': u_id, 'token': token,
     })
     
 
-@APP.route("/auth/logout", methods = ['POST']) #done
+@APP.route("/auth/logout", methods = ['POST']) #done?
 def auth_logout():
     global data
     
@@ -135,7 +148,7 @@ def auth_logout():
 
     return dumps({is_sucess})
     
-@APP.route("/auth/register", methods=['POST'])  # done
+@APP.route("/auth/register", methods=['POST'])  # check handle
 def auth_register():
     global data
     email = request.form.get('email')
@@ -149,19 +162,17 @@ def auth_register():
     check_already_user(email)
 
     u_id = len(data['users']) + 1
-    payload = {
-        'name_first': name_first,
-        'name_last': name_last,
-        'time_create': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
-    }
-    token = str(jwt.encode(payload, SECRET, algorithm='HS256'))
+    
+    token = generateToken(name_first, name_last)
+    
+    handle = generateHandle(name_first, name_last)
 
     data['users'].append({
         'u_id': u_id,
         'name_first': name_first,
         'name_last': name_last,
         'token': token,
-        'handle': 'handle',
+        'handle': handle,
         'email': email,
         'password': password,
         'permission_id': 1,
