@@ -1,6 +1,5 @@
 from flask import Flask, request
 from json import dumps
-from Error import AccessError
 
 '''
 class Channel:
@@ -20,47 +19,41 @@ class Channel:
 '''   
 
 
-
 def find_user(data, token):
     for user in data['users']:
         if user['token'] == token:
             return user
     return None
+
+
 def find_uid(data, u_id):
     for user in data['users']:
         if user['u_id'] == u_id:
             return user
     return None
-    
-def get_channels(data):
-    return data['channels']
 
-def find_uid_in_channel(detail, channel_id, auth_id):
-    for ch_id in detail:
-        if ch_id['channel_id'] == channel_id:
-            for uid in ch_id['user_list']:
-                if uid['u_id'] == auth_id:
-                    return uid
-    return None
-     
+
 def find_channel_name(data, channel_id):
     for name in data['channels']:
         if name['channel_id'] == channel_id:
             return name['name']
     return None
-    
+
+
 def find_ownership(user_list):
     owner_member = []
     for owner in user_list:
-        if owner[is_owner] == True:
+        if owner[is_owner]:
             owner_member.append(owner['u_id'])
     return owner_member
+
 
 def is_owner(user_list, member):
     for user in user_list:
         if user['u_id'] == member['u_id']:
             return user['is_owner']
     return None
+
 
 def find_channel(data, channel_id):
     for channel in data['channels']:
@@ -78,107 +71,101 @@ def find_member(channel, user):
     return None
 
 
-    
 # create a channel
-def ch_create():
-    stack_channel = []
-    global Data
-    # get the token
-    token = request.form.get('token')
-    # name the channel
-    channel_name = request.form.get('channel_name')
-    # set a channel to public or private
-    is_public = request.form.get('is_public')
-    
+def ch_create(data, token, channel_name, is_public):
+
+    user = find_user(data, token)
+
     # check is the channel name is valid
-    if (len(channel_name) > 20):
+    if len(channel_name) > 20:
         raise ValueError('The maximum characters of name is 20.')
         
-    channel_id = Data['counter'].get('channel') + 1
-    detail = get_channels(Data)
+    channel_id = len(data['channels'])
     # assume channel_data
     channel_data = {
         'name': channel_name,
         'channel_id': channel_id,
         'user_list': [
             {
-                'u_id': 456, 
-                'name_first': 'test2', 
-                'name_last': 'test2', 
+                'u_id': user['u_id'],
+                'name_first': user['name_first'],
+                'name_last': user['name_last'],
                 'is_owner': True
             }
         ],
         'is_public': is_public
     }
-    detail.append(channel_data)
+
+    data['channels'].append(channel_data)
     
     # return a channel id
     return {
         'channel_id': channel_id
     }
 
-def ch_invite():
-    '''
-    ValueError when:
-    channel_id does not refer to a valid channel that the authorised user is 
-    part of.
-    u_id does not refer to a valid user
-    '''
-    
-    
-    
+
+def ch_invite(data, token, u_id, channel_id):
+
+    channel = find_channel(data, channel_id)
     # check validation of channel id
-    if find_channel(Data, channel_id) == None:
-        raise ValueError('Invalid channel')
-    # check validation of uid
-    valid_user = find_uid(Data, u_id)
-    if valid_user == None:
+    if channel is None:
+        raise ValueError('Invalid channel id')
+
+    user_invite = find_user(data, token)
+    if find_member(channel, user_invite) is None:
+        raise ValueError('Invalid channel id')
+
+    user = find_uid(data, u_id)
+    if user is None:
         raise ValueError('Invalid u_id')
-    
-    # check is the auth user is a member or not of that channel
-    user = find_user(Data, token)
-    auth_uid = 0
-    if user != None:
-        auth_uid = user['u_id']
-        
-    detail = get_channels(Data)
-    if find_uid_in_channel(detail, channel_id, auth_uid) == None:
-        raise AccessError('Not a member')
+
+    if find_member(channel, user) is not None:
+        raise Exception('the authorised user is not already a member of the channel')
     
     # update the data, a new member added
     user_data = {
         'u_id': u_id,
-        'name_first': valid_user['name_first'],
-        'name_last': valid_user['name_last']
+        'name_first': user['name_first'],
+        'name_last': user['name_last'],
+        'is_owner': False
     }
-    detail['user_list'].append(user_data)
+    channel['user_list'].append(user_data)
     return {}
 
-def ch_details():
-    stack_channel = []
-    global Data
-    token = request.args.get('token')
-    channel_id = int(request.args.get('channel_id'))
-    detail = get_channels(Data)
+
+def ch_details(data, token, channel_id):
+
+    channel = find_channel(data, channel_id)
     # check validation of channel id
-    if find_channel(Data, channel_id) == None:
+    if channel is None:
         raise ValueError('Invalid channel')
     # check auth user is a member or not
-    user = find_user(Data, token)
-    if user != False:
-        auth_id = user['u_id']
-    if find_uid_in_channel(detail, channel_id, auth_id) == None:
-        raise AccessError('Not a member of that channel')
-    
-    name = find_channel_name(Data, channel_id)
-    channel = find_channel(Data, channel_id)
-    owner = find_ownership(channel['user_list'])
-    
-    
-    stack_channel.append(name)
-    stack_channel.append(owner)
-    stack_channel.append(channel['user_list'])
-    return {stack_channel}
+    user = find_user(data, token)
+
+    if find_member(data, user) is None:
+        raise Exception('Not a member of that channel')
+
+    channel = find_channel(data, channel_id)
+    owner_members = []
+    all_members = []
+    for member in channel['user_list']:
+        all_members.append({
+            'u_id': member['u_id'],
+            'name_first': member['name_first'],
+            'name_last': member['name_last']
+        })
+        if member['is_owner']:
+            owner_members.append({
+                'u_id': member['u_id'],
+                'name_first': member['name_first'],
+                'name_last': member['name_last']
+            })
+
+    return {
+        'name': channel['name'],
+        'owner_members': owner_members,
+        'all_members': all_members
+    }
 
 '''
 def ch_message():
@@ -186,7 +173,6 @@ def ch_message():
 '''
 
 def ch_leave():
-    global Data
     detail = get_channels(data)
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
@@ -205,7 +191,7 @@ def ch_leave():
     return {}
 
 def ch_join():
-    global Data
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     # check validation of ch_id
@@ -230,7 +216,7 @@ def ch_join():
     return {}
     
 def ch_addowner():
-    global Data
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
@@ -259,7 +245,7 @@ def ch_addowner():
     return {}
     
 def ch_removeowner():
-    global Data
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
@@ -287,7 +273,7 @@ def ch_removeowner():
     return {}
     
 def ch_lists():
-    global Data
+
     detail = get_channels(Data)
     token = request.args.get('token')
     user = find_user(Data, token)
@@ -305,7 +291,7 @@ def ch_lists():
     return {stack_channel}
     
 def ch_listall():
-    global Data
+
     detail = get_channels(Data)
     token = request.args.get('token')
     stack_channel = []
