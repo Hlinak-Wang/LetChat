@@ -4,7 +4,7 @@ from channel_function import ch_create, ch_invite,ch_details, ch_leave, ch_join,
 APP = Flask(__name__)
 
 
-Data = {
+data = {
     'users': [
             {'u_id': 123,
              'name_first': 'test',
@@ -54,55 +54,72 @@ Data = {
         }
 }
 
+
 @APP.route('/channels/create', methods=['POST'])
 def channel_create():
-    global Data
+    global data
     token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    u_id = int(request.form.get('u_id'))
-    channel_id = ch_create(token, channel_id, u_id, Data)
+    channel_name = int(request.form.get('channel_name'))
+    is_public = request.form.get('is_public')
+    channel_id = ch_create(data, token, channel_name, is_public)
     return dumps(channel_id)
+
 
 @APP.route('/channel/invite', methods=['POST'])
 def channel_invite():
-    global Data
-    return dumps(ch_invite())
+    global data
+    token = request.form.get('token')
+    u_id = request.form.get('u_id')
+    channel_id = request.form.get('channel_id')
+    return dumps(ch_invite(data, token, u_id, channel_id))
+
 
 @APP.route('/channel/details', methods=['GET'])
-def channel_details(token, channel_id):
-    global Data
-    detail = ch_details()
-    return dumps(detail)
+def channel_details():
+    global data
+    token = request.args.get('token')
+    channel_id = int(request.args.get('channel_id'))
+    channel_detail = ch_details(data, token, channel_id)
+    return dumps(channel_detail)
+
 
 @APP.route('/channel/message', methods=['GET'])
 def channel_message():
 
     return dumps({})
 
+
 @APP.route('/channel/leave', methods=['POST'])
 def channel_leave():
     return dumps(ch_leave())
-    
+
+
 @APP.route('/channel/join', methods=['POST'])
 def channel_join():
     return dumps(ch_join())
+
+
 @APP.route('/channel/addowner', methods=['POST'])
 def channel_addowner():
     return dumps(ch_addowner())
-    
+
+
 @APP.route('/channel/removeowner', methods=['POST'])
 def channel_removeowner():
     return dumps(ch_removeowner())
-    
+
+
 @APP.route('/channels/list', methods=['GET'])
 def channel_list():
     lists = ch_lists
     return dumps(lists)
-    
+
+
 @APP.route('/channels/listall', methods=['GET'])
 def channel_listall():
     listall = ch_listall()
     return dumps(listall)
-    
+
+
 if __name__ == '__main__':
     APP.run(port=11280,debug = True)
