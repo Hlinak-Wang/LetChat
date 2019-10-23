@@ -70,7 +70,7 @@ class Exception(HTTPException):
 
 
 @APP.route('/channels/create', methods=['POST'])
-def channel_create():
+def channels_create():
     global data
     token = request.form.get('token')
     channel_name = request.form.get('channel_name')
