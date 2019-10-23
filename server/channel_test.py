@@ -1,103 +1,133 @@
 from Error import AccessError
 import pytest
 
+
 def auth_register(email, password, name_first, name_last):
     pass
+
 
 def channel_invite(token, channel_id, u_id):
     pass
 
+
 def channel_details(token, channel_id):
     pass
+
+
 def channel_messages(token, channel_id, start):
     pass
+
 
 def channel_leave(token, channel_id):
     pass
 
+
 def channel_join(token, channel_id):
     pass
+
 
 def channel_addowner(token, channel_id, u_id):
     pass
 
+
 def channel_removeowner(token, channel_id, u_id):
     pass
+
 
 def channels_list(token):
     pass
 
+
 def channels_listall(token):
     pass
+
+
 def channels_create(token, name, is_public):
     pass
+
 
 def message_send(token, channel_id, message):
     pass
 
+
 # Testing valid input for channel_invite
 def test_channel_invite_ok():
-    
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
-    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", \
+                                   "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", \
+                             "asdfzcxv")
 
     channel = channels_create(auth_key_admin["token"], "12345", True)
 
     channel_invite(auth_key_admin["token"], channel["id"], auth_key["u_id"])
-    
+
     # Check the user is successfully added into channel
     channel_profile = channel_details(auth_key_admin["token"], channel["id"])
     member_list = channel_profile["all_members"]
     assert member_list[0]["u_id"] == auth_key_admin["u_id"]
     assert member_list[1]["u_id"] == auth_key["u_id"]
 
+
 # Testing invalid input for channel_invite
 def test_channel_invite_bad():
- 
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
-    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh",
+                                   "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf",
+                             "asdfzcxv")
 
     channel = channels_create(auth_key_admin["token"], "12345", True)
-    
-    with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
+
+    with pytest.raises(ValueError, match=r"*Channel (based on ID) does not \
+                                           exist*"):
         channel_invite(auth_key_admin["token"], "2222", auth_key["u_id"])
 
     with pytest.raises(ValueError, match=r"*User is not part of Channel*"):
-        channel_invite(auth_key["token"], channel["id"], auth_key_admin["u_id"])
+        channel_invite(auth_key["token"], channel["id"],
+                       auth_key_admin["u_id"])
 
-    with pytest.raises(ValueError, match=r"*u_id does not refer to a valid user*"):
+    with pytest.raises(ValueError, match=r"*u_id does not refer to a valid \
+                                           user*"):
         channel_invite(auth_key_admin["token"], channel["id"], "55555")
+
 
 # Testing valid input for channel_details
 def test_channel_details_ok():
 
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh",
+                                   "asdf")
 
     channel = channels_create("token", "12345", True)
-    
+
     channel_profile = channel_details(auth_key_admin["token"], channel["id"])
-    
+
     # Checking the output of channel detail
     assert channel_profile["name"] == "12345"
-    
+
     owner_list = channel_profile["owner_members"]
     assert owner_list[0]["u_id"] == auth_key_admin["u_id"]
-    
+
     member_list = channel_profile["all_members"]
     assert member_list[0]["u_id"] == auth_key_admin["u_id"]
+
 
 # Testing invalid input for channel detail
 def test_channel_details_bad():
 
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh",
+                                   "asdf")
 
     channel = channels_create("token", "12345", True)
 
-    with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exist*"):
+    with pytest.raises(ValueError, match=r"*Channel (based on ID) does not \
+                                           exist*"):
         channel_details(auth_key_admin["token"], "123456")
 
-    with pytest.raises(AccessError, match=r"*User is not a member of Channel*"):
+    with pytest.raises(AccessError, match=r"*User is not a member of \
+                                            Channel*"):
         channel_details("123456", channel["id"])
+
 
 # Testing valid input for channel_message
 def test_channel_messages_ok():
@@ -108,30 +138,36 @@ def test_channel_messages_ok():
     message_send(auth_key["token"], channel["id"], "testing")
 
     message_channel = channel_messages(auth_key["token"], channel["id"], 0)
-    
+
     # Checking the output
     assert message_channel["start"] == 0
     assert message_channel["end"] == 50
-    
+
     messages = message_channel["message"]
     assert messages[0]["message"] == "testing"
     assert messages[0]["u_id"] == auth_key["u_id"]
 
+
 # Testing invalid input for channel_message
 def test_channel_messages_bad():
 
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
-    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
+    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh",
+                                   "asdf")
+    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf",
+                             "asdfzcxv")
 
     channel = channels_create(auth_key["token"], "12345", True)
-    
-    with pytest.raises(ValueError, match=r"*Channel (based on ID) does not exis*"):
+
+    with pytest.raises(ValueError, match=r"*Channel (based on ID) does not \
+                                           exis*"):
         channel_messages(auth_key["token"], channel["id"] - 123, 0)
 
-    with pytest.raises(ValueError, match=r"*start is greater than the total number of messages in the channel*"):
+    with pytest.raises(ValueError, match=r"*start is greater than the total\
+                                          number of messages in the channel*"):
         channel_messages(auth_key["token"], channel["id"], 999999999)
 
-    with pytest.raises(AccessError, match=r"*User is not a member of Channel*"):
+    with pytest.raises(AccessError, match=r"*User is not a member of \
+                                             Channel*"):
         channel_messages(auth_key_admin["token"], channel["id"], 0)
 
 # Testing valid input for channel_leave
