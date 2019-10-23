@@ -14,7 +14,7 @@ data = {
              'email': 'test@test.com',
              'password': 'test',
              'permission_id': 1,
-             'channel_involve': [1]  # channel_id
+             'channel_involve': [0]  # channel_id
              },
             {'u_id': 1234,
              'name_first': 'test2',
@@ -24,12 +24,12 @@ data = {
              'email': 'test2@test2.com',
              'password': 'test2',
              'permission_id': 3,
-             'channel_involve': [1]  # channel_id
+             'channel_involve': [0]  # channel_id
              }
         ],
         'channels': [{
             'name': 'test',
-            'channel_id': 1,
+            'channel_id': 0,
             'user_list': [
                 {'u_id': 123, 'name_first': 'test', 'name_last': 'test', 'is_owner': True},
                 {'u_id': 1234, 'name_first': 'test2', 'name_last': 'test2', 'is_owner': False}
@@ -59,7 +59,7 @@ data = {
 def channel_create():
     global data
     token = request.form.get('token')
-    channel_name = int(request.form.get('channel_name'))
+    channel_name = request.form.get('channel_name')
     is_public = request.form.get('is_public')
     channel_id = ch_create(data, token, channel_name, is_public)
     return dumps(channel_id)
@@ -91,35 +91,55 @@ def channel_message():
 
 @APP.route('/channel/leave', methods=['POST'])
 def channel_leave():
-    return dumps(ch_leave())
+    global data
+    channel_id = int(request.form.get('channel_id'))
+    token = request.form.get('token')
+    output = ch_leave(data, token, channel_id)
+    #if 'ValueError' in output:
+     #   return 400
+    return dumps(output)
 
 
 @APP.route('/channel/join', methods=['POST'])
 def channel_join():
-    return dumps(ch_join())
+    global data
+    token = request.form.get('token')
+    channel_id = int(request.form.get('channel_id'))
+    return dumps(ch_join(data, token, channel_id))
 
 
 @APP.route('/channel/addowner', methods=['POST'])
 def channel_addowner():
-    return dumps(ch_addowner())
+    global data
+    token = request.form.get('token')
+    channel_id = int(request.form.get('channel_id'))
+    u_id = int(request.form.get('u_id'))
+    return dumps(ch_addowner(data, token, channel_id, u_id))
 
 
 @APP.route('/channel/removeowner', methods=['POST'])
 def channel_removeowner():
-    return dumps(ch_removeowner())
+    global data
+    token = request.form.get('token')
+    channel_id = int(request.form.get('channel_id'))
+    u_id = int(request.form.get('u_id'))
+    return dumps(ch_removeowner(data, token, channel_id, u_id))
 
 
 @APP.route('/channels/list', methods=['GET'])
 def channel_list():
-    lists = ch_lists
-    return dumps(lists)
+    global data
+    token = request.args.get('token')
+    return dumps(ch_lists(data, token))
 
 
 @APP.route('/channels/listall', methods=['GET'])
 def channel_listall():
-    listall = ch_listall()
+    global data
+    token = request.args.get('token')
+    listall = ch_listall(data, token)
     return dumps(listall)
 
 
 if __name__ == '__main__':
-    APP.run(port=11280,debug = True)
+    APP.run(port=11280, debug=True)
