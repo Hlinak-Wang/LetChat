@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def find_user(data, value, aspect):
@@ -114,3 +114,23 @@ def fun_standup_send(data, token, channel_id, message):
     })
     data['message_counter'] += 1
     return {}
+
+def pop_queue(data):
+    time_now = datetime.now()
+    time_now = time_now.replace(tzinfo=timezone.utc).timestamp()
+    for channel in data['channels']:
+        if 'standup' in channel:
+            standup = channel['standup']
+            if standup['time_finish'] == '1/1/1900, 1:00:00' or time_now > standup['time_finish']:
+                if channel['standup_message'] != "":
+
+                    channel['messages'].insert(0, {
+                        'u_id': standup['u_id'],
+                        'message_id': data['message_counter'],
+                        'message': channel['standup_message'],
+                        'time_created': time_now,
+                        'reacts': [{'react_id': 1, 'u_ids': []}],
+                        'is_pinned': False,
+                    })
+                    channel['standup_message'] = ""
+                    data['message_counter'] += 1

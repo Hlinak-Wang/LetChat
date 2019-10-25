@@ -4,7 +4,7 @@ Date start:11/10/2019
 Author: Shili Wang
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 
 
 def find_user(data, token):
@@ -19,14 +19,6 @@ def find_channel(data, channel_id):
     for channel in data['channels']:
         if channel['channel_id'] == channel_id:
             return channel
-
-    return None
-
-
-def find_member(channel, user):
-    for member in channel['user_list']:
-        if member['u_id'] == user['u_id']:
-            return member
 
     return None
 
@@ -66,21 +58,21 @@ def send_message_buffer(data):
 
 def fun_send_late(data, token, channel_id, message, time_create):
     """ Send message """
-    send_message_buffer(data)
     if len(message) > 1000:
         return {"ValueError": "Message is more than 1000 characters"}
 
     user = find_user(data, token)
     if user is None:
         return {'AccessError': 'User not exist'}
-    print(time_create)
+
     if channel_id not in user['channel_involve']:
         return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
 
-    time_send = datetime.strptime(time_create, "%H:%M")
+    time_send = datetime.strptime(time_create, "%H:%M").time()
+    time_send = datetime.combine(date.today(), time_send)
 
     if timedelta.total_seconds(time_send - datetime.now()) < 0:
-        raise {'ValueError': 'Time sent is a time in the past'}
+        return {'ValueError': 'Time sent is a time in the past'}
 
     message_late = {
         'u_id': user['u_id'],
@@ -88,7 +80,7 @@ def fun_send_late(data, token, channel_id, message, time_create):
         'message': message,
         'reacts': [{'react_id': 1, 'u_ids': []}],
         'is_pinned': False,
-        'time_created': time_create,
+        'time_created': time_send.replace(tzinfo=timezone.utc).timestamp(),
         'channel_id': channel_id
     }
     # assume m_id depend on the number of message been sent
@@ -100,14 +92,13 @@ def fun_send_late(data, token, channel_id, message, time_create):
 
 def fun_send(data, token, channel_id, message):
     """ Send message """
-    send_message_buffer(data)
     if len(message) > 1000:
         return {"ValueError": "Message is more than 1000 characters"}
 
     user = find_user(data, token)
 
     if channel_id not in user['channel_involve']:
-        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
+        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
 
     channel = find_channel(data, channel_id)
 
@@ -127,7 +118,6 @@ def fun_send(data, token, channel_id, message):
 
 def fun_remove(data, token, message_id):
     """ assume remove the last one """
-    send_message_buffer(data)
     user = find_user(data, token)
     message, channel = find_message_channel(data, message_id)
 
@@ -146,7 +136,6 @@ def fun_remove(data, token, message_id):
 
 
 def fun_edit(data, token, message_id, message_edit):
-    send_message_buffer(data)
     user = find_user(data, token)
     message, channel = find_message_channel(data, message_id)
     if message is None:
@@ -165,7 +154,6 @@ def fun_edit(data, token, message_id, message_edit):
 
 
 def fun_react(data, token, message_id, react_id):
-    send_message_buffer(data)
     user = find_user(data, token)
     message = find_message_channel(data, message_id)[0]
     if message is None:
@@ -184,7 +172,6 @@ def fun_react(data, token, message_id, react_id):
 
 
 def fun_unreact(data, token, message_id, react_id):
-    send_message_buffer(data)
     user = find_user(data, token)
     message = find_message_channel(data, message_id)[0]
     if message is None:
@@ -203,7 +190,6 @@ def fun_unreact(data, token, message_id, react_id):
 
 
 def fun_pin(data, token, message_id):
-    send_message_buffer(data)
     user = find_user(data, token)
     message, channel = find_message_channel(data, message_id)
 
@@ -225,7 +211,6 @@ def fun_pin(data, token, message_id):
 
 
 def fun_unpin(data, token, message_id):
-    send_message_buffer(data)
     user = find_user(data, token)
     message, channel = find_message_channel(data, message_id)
 

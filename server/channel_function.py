@@ -85,44 +85,18 @@ def fun_channel_message(data, token, channel_id, start):
             'is_pinned': message['is_pinned']
         })
         end += 1
-        if end > start + 50:
-            break
-
-    if end <= start + 50:
-        end = -1
+        if end > start + 3:
+            return {
+                'messages': output_list,
+                'start': start,
+                'end': end
+            }
 
     return {
         'messages': output_list,
         'start': start,
-        'end': end
+        'end': -1
     }
-
-
-
-def fun_send(data, token, channel_id, message):
-    """ Send message """
-    #send_message_buffer(data)
-    if len(message) > 1000:
-        return {"ValueError": "Message is more than 1000 characters"}
-
-    user = find_user(data, token)
-
-    if channel_id not in user['channel_involve']:
-        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
-
-    channel = find_channel(data, channel_id)
-
-    # assume m_id depend on the number of message been sent
-    channel['messages'].insert(0, {
-        'u_id': user['u_id'],
-        'message_id': data['message_counter'],
-        'message': message,
-        'time_created': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S"),
-        'reacts': [{'react_id': 1, 'u_ids': []}],
-        'is_pinned': False,
-    })
-    data['message_counter'] += 1
-    return {'message_id': data['message_counter'] - 1}
 
 
 # create a channel
@@ -147,7 +121,8 @@ def ch_create(data, token, channel_name, is_public):
         'is_public': is_public,
         'messages': [],
         'standup_queue': [],
-        'standup_finish': '1/1/1900, 1:00:00'
+        'standup': {'time_finish': '1/1/1900, 1:00:00', 'u_id': None},
+        'standup_message': ''
     }
     data['channels'].append(channel_data)
     user['channel_involve'].append(channel_id)
