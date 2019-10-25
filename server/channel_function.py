@@ -53,52 +53,6 @@ def find_member(channel, user):
     return None
 
 
-def fun_channel_message(data, token, channel_id, start):
-    output_list = []
-    user = find_user(data, token)
-    channel = find_channel(data, channel_id)
-    #send_message_buffer(data)
-    if channel is None:
-        return {'ValueError': 'Channel ID is not a valid channel'}
-
-    if channel_id not in user['channel_involve']:
-        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
-
-    if start > len(channel['messages']):
-        return {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
-
-    end = start
-    for message in channel['messages'][start:]:
-        react_list = message['reacts']
-        for react in react_list:
-            if user['u_id'] in react['u_ids']:
-                react['is_this_user_reacted'] = True
-            else:
-                react['is_this_user_reacted'] = False
-
-        output_list.append({
-            'message_id': message['message_id'],
-            'u_id': message['u_id'],
-            'message': message['message'],
-            'time_created': message['time_created'],
-            'reacts': react_list,
-            'is_pinned': message['is_pinned']
-        })
-        end += 1
-        if end > start + 3:
-            return {
-                'messages': output_list,
-                'start': start,
-                'end': end
-            }
-
-    return {
-        'messages': output_list,
-        'start': start,
-        'end': -1
-    }
-
-
 # create a channel
 def ch_create(data, token, channel_name, is_public):
     # check is the channel name is valid
@@ -201,7 +155,6 @@ def ch_details(data, token, channel_id):
 
 def ch_leave(data, token, channel_id):
 
-    channel = data['channels']
     user = find_user(data, token)
 
     # check validation of ch_id
@@ -280,8 +233,9 @@ def ch_removeowner(data, token, channel_id, u_id):
     user = find_user(data, token)
     owner = is_owner(channel['user_list'], user['u_id'])
     if user['permission_id'] == 3 or owner is False:
-        return {'AccessError': "User is not an owner of the slackr or this \
-                              channel"}
+        return {
+            'AccessError': "User is not an owner of the slackr or this channel"
+        }
 
     removeowner = find_member(channel, user)
     removeowner['is_owner'] = False
@@ -329,7 +283,6 @@ def fun_message(data, token, channel_id, start):
     output_list = []
     user = find_user(data, token)
     channel = find_channel(data, channel_id)
-    #send_message_buffer(data)
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 
@@ -357,13 +310,13 @@ def fun_message(data, token, channel_id, start):
             'is_pinned': message['is_pinned']
         })
         end += 1
-        if end > start + 50:
-            break
+        if end >= start + 50:
+            return {
+                'messages': output_list,
+                'start': start,
+                'end': end
+            }
 
-    if end <= start + 50:
-        end = -1
-
-    time_send = datetime.now()
     return {
         'messages': output_list,
         'start': start,
