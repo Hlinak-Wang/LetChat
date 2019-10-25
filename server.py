@@ -4,14 +4,11 @@ import os
 import pickle
 from json import dumps
 from flask import Flask, request
-import re
-import jwt
-from datetime import datetime
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 from server.message_function import fun_send_late, fun_send, fun_remove, fun_edit, fun_react, fun_unreact, \
-    fun_pin, fun_unpin, find_channel
-from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star
+    fun_pin, fun_unpin, send_message_buffer
+from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star, pop_queue
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile
 from server.channel_function import (
     ch_create,
@@ -61,8 +58,8 @@ data = {
     'message_buffer': []
 }
 
-#if os.path.getsize('/tmp_amd/glass/export/glass/4/z5261785/Desktop/COMP1531/test/save.dat') > 0:
- #   data = pickle.load(open('save.dat','rb'))
+#if os.path.getsize(os.getcwd() + '/save.dat') > 0:
+ #   data = pickle.load(open('save.dat', 'rb'))
 
 SECRET = 'IE4'
 
@@ -79,20 +76,20 @@ class AccessError(HTTPException):
 # FIX ABOVE
 
 
-def save():
+def save(data):
     with open('save.dat', 'wb') as FILE:
         pickle.dump(data, FILE, True)
 
 
 @APP.route("/auth/login", methods=['POST'])
 def auth_login():
-    # fn_auth_login(request.args.get('email'), request.form.get('password'))
-    # return dumps({})
+
     global data
+
     email = request.form.get('email')
     password = request.form.get('password')
     result = login(data,email, password)
-
+    save(data)
     return dumps(result)
 
 
@@ -102,12 +99,15 @@ def auth_logout():
 
     token = request.form.get('token')
     result = logout(data, token)
+    save(data)
+
     return dumps(result)
 
 
 @APP.route("/auth/register", methods=['POST'])  # done, not checked
 def auth_register():
     global data
+
     email = request.form.get('email')
 
     password = request.form.get('password')
@@ -115,14 +115,17 @@ def auth_register():
     name_last = request.form.get('name_last')
 
     result = register(data, email, password, name_first, name_last)
+    save(data)
     return dumps(result)
 
 
 @APP.route("/auth/passwordreset/request", methods=['POST'])
 def auth_reset_request():
     global data
+
     email = request.form.get('email')
     result = reset_request(data, email, APP)
+    save(data)
 
     return dumps(result)
 
@@ -134,6 +137,7 @@ def auth_reset():
     new_password = request.form.get('new_password')
 
     result = reset(data, reset_code, new_password)
+    save(data)
 
     return dumps(result)
 
@@ -141,6 +145,7 @@ def auth_reset():
 @APP.route('/channels/create', methods=['POST'])
 def channel_create():
     global data
+
     token = request.form.get('token')
     channel_name = request.form.get('name')
     is_public = request.form.get('is_public')
@@ -151,14 +156,16 @@ def channel_create():
     channel_id = ch_create(data, token, channel_name, is_public)
     if 'ValueError' in channel_id:
         raise ValueError(description=channel_id['ValueError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+
+    save(data)
+
     return dumps(channel_id)
 
 
 @APP.route('/channel/invite', methods=['POST'])
 def channel_invite():
     global data
+
     token = request.form.get('token')
     u_id = int(request.form.get('u_id'))
     channel_id = int(request.form.get('channel_id'))
@@ -167,14 +174,15 @@ def channel_invite():
         raise ValueError(description=result['ValueError'])
     elif 'AccessError' in result:
         raise AccessError(description=result['AccessError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(result)
 
 
 @APP.route('/channel/details', methods=['GET'])
 def channel_details():
     global data
+
     token = request.args.get('token')
     channel_id = int(request.args.get('channel_id'))
     channel_detail = ch_details(data, token, channel_id)
@@ -182,13 +190,15 @@ def channel_details():
         raise ValueError(description=channel_detail['ValueError'])
     elif 'AccessError' in channel_detail:
         raise AccessError(description=channel_detail['AccessError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(channel_detail)
 
 
 @APP.route('/channel/messages', methods=['GET'])
 def channel_message():
+    pop_queue(data)
+    send_message_buffer(data)
     channel_id = int(request.args.get('channel_id'))
     token = request.args.get('token')
     start = int(request.args.get('start'))
@@ -197,30 +207,30 @@ def channel_message():
         raise ValueError(description=messages['ValueError'])
     elif 'AccessError' in messages:
         raise AccessError(description=messages['AccessError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(messages)
 
 
 @APP.route('/message/send_later', methods=['POST'])
 def message_send_later():
     global data
-    #send_message_buffer()
+    pop_queue(data)
+    send_message_buffer(data)
     message = request.form.get('message')
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     time_create = request.form.get('time_create')
 
     output = fun_send_late(data, token, channel_id, message, time_create)
-    # save()
-    print(data['message_buffer'])
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/message/send', methods=['POST'])
 def message_send():
     global data
-    #send_message_buffer(data)
     message = request.form.get('message')
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
@@ -231,13 +241,14 @@ def message_send():
         raise AccessError(description=output['AccessError'])
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/message/remove', methods=['DELETE'])
 def message_remove():
     global data
-    #send_message_buffer()
     message_id = int(request.form.get('message_id'))
     token = request.form.get('token')
     output = fun_remove(data, token, message_id)
@@ -245,13 +256,14 @@ def message_remove():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/message/edit', methods=['POST','PUT'])
 def message_edit():
     global data
-    #send_message_buffer()
     message_id = int(request.form.get('message_id'))
     message = request.form.get('message')
     token = request.form.get('token')
@@ -260,13 +272,14 @@ def message_edit():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/message/react', methods=['POST'])
 def message_react():
     global data
-    #send_message_buffer()
     message_id = int(request.form.get('message_id'))
     react_id = int(request.form.get('react_id'))
     token = request.form.get('token')
@@ -274,6 +287,7 @@ def message_react():
     output = fun_react(data, token, message_id, react_id)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
+    save(data)
 
     return dumps(output)
 
@@ -281,13 +295,13 @@ def message_react():
 @APP.route('/message/unreact', methods=['POST'])
 def message_unreact():
     global data
-    #send_message_buffer()
     message_id = int(request.form.get('message_id'))
     react_id = int(request.form.get('react_id'))
     token = request.form.get('token')
     output = fun_unreact(data, token, message_id, react_id)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
+    save(data)
 
     return dumps(output)
 
@@ -295,7 +309,7 @@ def message_unreact():
 @APP.route('/message/pin', methods=['POST'])
 def message_pin():
     global data
-    #send_message_buffer()
+
     message_id = int(request.form.get('message_id'))
     token = request.form.get('token')
     output = fun_pin(data, token, message_id)
@@ -303,13 +317,15 @@ def message_pin():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/message/unpin', methods=['POST'])
 def message_unpin():
     global data
-    #send_message_buffer()
+
     message_id = int(request.form.get('message_id'))
     token = request.form.get('token')
     output = fun_unpin(data, token, message_id)
@@ -317,25 +333,29 @@ def message_unpin():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/channel/leave', methods=['POST'])
 def channel_leave():
     global data
+
     channel_id = int(request.form.get('channel_id'))
     token = request.form.get('token')
     output = ch_leave(data, token, channel_id)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/channel/join', methods=['POST'])
 def channel_join():
     global data
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     join = ch_join(data, token, channel_id)
@@ -343,14 +363,15 @@ def channel_join():
         raise ValueError(description=join['ValueError'])
     elif 'AccessError' in join:
         raise AccessError(description=join['AccessError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(join)
 
 
 @APP.route('/channel/addowner', methods=['POST'])
 def channel_addowner():
     global data
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
@@ -359,14 +380,15 @@ def channel_addowner():
         raise ValueError(description=addowner['ValueError'])
     elif 'AccessError' in addowner:
         raise AccessError(description=addowner['AccessError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+
+    save(data)
     return dumps(addowner)
 
 
 @APP.route('/channel/removeowner', methods=['POST'])
 def channel_removeowner():
     global data
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
@@ -375,34 +397,36 @@ def channel_removeowner():
         raise ValueError(description=removeowner['ValueError'])
     elif 'AccessError' in removeowner:
         raise AccessError(description=removeowner['AccessError'])
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(removeowner)
 
 
 @APP.route('/channels/list', methods=['GET'])
 def channel_list():
     global data
+
     token = request.args.get('token')
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(ch_lists(data, token))
 
 
 @APP.route('/channels/listall', methods=['GET'])
 def channel_listall():
     global data
-    #print(data)
+
     token = request.args.get('token')
     listall = ch_listall(data, token)
-    with open('save.dat', 'wb') as FILE:
-        pickle.dump(data, FILE, True)
+    save(data)
+
     return dumps(listall)
 
 
 @APP.route('/user/profile', methods=['GET'])
 def profile():
     global data
+
     token = request.args.get('token')
     u_id = request.args.get('u_id')
 
@@ -410,6 +434,7 @@ def profile():
 
     if value == None:
         raise ValueError(description=Errormessage)
+    save(data)
 
     return dumps(value)
 
@@ -417,6 +442,7 @@ def profile():
 @APP.route('/user/profile/setname', methods=['PUT'])
 def setname():
     global data
+
     token = request.form.get('token')
     name_first = request.form.get('name_first')
     name_last = request.form.get('name_last')
@@ -425,13 +451,14 @@ def setname():
 
     if value == None:
         raise ValueError(description=Errormessage)
-
+    save(data)
     return dumps({})
 
 
 @APP.route('/user/profile/setemail', methods=['PUT'])
 def setemail():
     global data
+
     token = request.form.get('token')
     email = request.form.get('email')
 
@@ -439,6 +466,7 @@ def setemail():
 
     if value == None:
         raise ValueError(description=Errormessage)
+    save(data)
 
     return dumps({})
 
@@ -446,6 +474,7 @@ def setemail():
 @APP.route('/user/profile/sethandle', methods=['PUT'])
 def sethandle():
     global data
+
     token = request.form.get('token')
     handle_str = request.form.get('handle_str')
 
@@ -453,6 +482,7 @@ def sethandle():
 
     if value == None:
         raise ValueError(description=Errormessage)
+    save(data)
 
     return dumps({})
 
@@ -467,7 +497,8 @@ def uploadphoto():
 @APP.route('/search', methods=['GET'])
 def search():
     global data
-    #send_message_buffer()
+    pop_queue(data)
+    send_message_buffer(data)
     query_str = request.args.get('query_str')
     token = request.args.get('token')
     output = message_search(data, token, query_str)
@@ -475,6 +506,8 @@ def search():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
+
     return dumps(output)
 
 
@@ -482,7 +515,7 @@ def search():
 def change_permission():
 
     global data
-    #send_message_buffer()
+
     token = request.form.get('token')
     u_id = request.form.get('u_id')
     permission_id = int(request.form.get('permission_id'))
@@ -491,13 +524,15 @@ def change_permission():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
+
     return dumps(output)
 
 
 @APP.route('/standup/start', methods=['POST'])
 def standup_start():
     global data
-    #send_message_buffer()
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
 
@@ -507,13 +542,14 @@ def standup_start():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
 
     return dumps(output)
 
 
 @APP.route('/standup/send', methods=['POST'])
 def standup_send():
-    #send_message_buffer()
+
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     message = request.form.get('message')
@@ -524,6 +560,8 @@ def standup_send():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
+    save(data)
+
     return dumps(output)
 
 
