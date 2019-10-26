@@ -351,7 +351,7 @@ def test_channel_removeowner_bad():
     assert res2 == {'ValueError': 'User is not an owner of the channel'}
 
     # AccessError
-    res3 = ch_removeowner(data, user2['u_id'], channel['channel_id'],
+    res3 = ch_removeowner(data, user2['token'], channel['channel_id'],
                        user1['u_id'])
     assert res3 == {'AccessError': 'User is not an owner of the slackr or this channel'}
 
