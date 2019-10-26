@@ -30,9 +30,9 @@ def find_ownership(user_list):
     return owner_member
 
 
-def is_owner(user_list, member):
+def is_owner(user_list, u_id):
     for user in user_list:
-        if user['u_id'] == member['u_id']:
+        if user['u_id'] == u_id:
             return user['is_owner']
     return None
 
