@@ -69,7 +69,7 @@ def getdata():
                         'is_pinned': False,
                         'time_created': '10/20/2019, 23:25:33',
                         'message_id': 1,
-                        'channel_id': 1
+                        'channel_id': 0
                     },
                     {
                         'message': 'test2',
@@ -78,7 +78,7 @@ def getdata():
                         'is_pinned': False,
                         'time_created': '10/20/2019, 23:24:33',
                         'message_id': 0,
-                        'channel_id': 1
+                        'channel_id': 0
                     }
                 ]
             }],
@@ -171,7 +171,7 @@ def test_channel_messages_ok():
                                   channel['channel_id'], 0)
     # Checking the output
     assert message_channel['start'] == 0
-    assert message_channel['end'] == -1 # <----- This line here
+    assert message_channel['end'] == -1
 
     messages = message_channel['messages']
     assert messages[0]['message'] == 'testing'
@@ -261,7 +261,7 @@ def test_channel_addowner_ok():
     data = getdata()
     user = data['users'][0]
     channel = ch_create(data, user['token'], '12345', True)
-    user2 = data['users'][1]
+    user2 = data['users'][2]
     ch_join(data, user2['token'], channel['channel_id'])
 
     ch_addowner(data, user['token'], channel['channel_id'], user2['u_id'])
@@ -351,7 +351,7 @@ def test_channel_removeowner_bad():
     assert res2 == {'ValueError': 'User is not an owner of the channel'}
 
     # AccessError
-    res3 = ch_addowner(data, user2['u_id'], channel['channel_id'],
+    res3 = ch_removeowner(data, user2['u_id'], channel['channel_id'],
                        user1['u_id'])
     assert res3 == {'AccessError': 'User is not an owner of the slackr or this channel'}
 
@@ -368,13 +368,14 @@ def test_channels_list():
     channel4 = ch_create(data, user1['token'], 'ch_4', True)
     
     channels = ch_lists(data, user1['token'])
-    assert channels[0]['channel_id'] == channel1['channel_id']
-    assert channels[0]['name'] == 'ch_1'
+
+    assert channels['channels'][1]['channel_id'] == channel3['channel_id']
+    assert channels['channels'][1]['name'] == 'ch_3'
     
-    assert channels[1]['channel_id'] == channel2['channel_id']
-    assert channels[0]['name'] == 'ch_2'
-    
-    assert len(channels) == 2
+    assert channels['channels'][2]['channel_id'] == channel4['channel_id']
+    assert channels['channels'][2]['name'] == 'ch_4'
+
+    assert len(channels['channels']) == 3
 
 # Testing valid input for channels_listall
 def test_channels_listall():
@@ -389,19 +390,19 @@ def test_channels_listall():
     
     channels = ch_listall(data, user_admin['token'])
 
-    assert channels[0]['channel_id'] == channel1['channel_id']
-    assert channels[0]['name'] == '12345'
+    assert channels['channels'][1]['channel_id'] == channel1['channel_id']
+    assert channels['channels'][1]['name'] == '12345'
     
-    assert channels[1]['channel_id'] == channel2['channel_id']
-    assert channels[1]['name'] == '123asdf45'
+    assert channels['channels'][2]['channel_id'] == channel2['channel_id']
+    assert channels['channels'][2]['name'] == '123asdf45'
     
-    assert channels[2]['channel_id'] == channel3['channel_id']
-    assert channels[2]['name'] == '12345'
+    assert channels['channels'][3]['channel_id'] == channel3['channel_id']
+    assert channels['channels'][3]['name'] == '12345'
     
-    assert channels[3]['channel_id'] == channel4['channel_id']
-    assert channels[3]['name'] == '123aszxcdf45'
+    assert channels['channels'][4]['channel_id'] == channel4['channel_id']
+    assert channels['channels'][4]['name'] == '123aszxcdf45'
     
-    assert len(channels) == 4
+    assert len(channels['channels']) == 5
 
 # Testing valid input for channels_create
 def test_channels_create_bad():

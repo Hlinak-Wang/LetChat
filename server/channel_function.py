@@ -206,11 +206,12 @@ def ch_addowner(data, token, channel_id, u_id):
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = find_user(data, token)
-    owner = is_owner(channel['user_list'], user['u_id'])
-    if user['permission_id'] == 3 or owner is False:
+    user_add = find_uid(data, u_id)
+    member_add = find_member(channel, user_add)
+    if user['permission_id'] == 3:
         return {'AccessError': 'User is not an owner of the slackr or this channel'}
 
-    makeowner = find_member(channel, user)
+    makeowner = find_member(channel, member_add)
     makeowner['is_owner'] = True
 
     return {}
@@ -233,8 +234,8 @@ def ch_removeowner(data, token, channel_id, u_id):
         return {
             'AccessError': "User is not an owner of the slackr or this channel"
         }
-
-    removeowner = find_member(channel, user)
+    user_move = find_uid(data, u_id)
+    removeowner = find_member(channel, user_move)
     removeowner['is_owner'] = False
     return {}
 
