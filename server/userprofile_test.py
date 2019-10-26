@@ -1,5 +1,5 @@
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile
-from server.auth_function import register, generateToken
+from server.auth_function import register
 
 
 def getData():
