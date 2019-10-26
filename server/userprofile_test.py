@@ -1,144 +1,126 @@
-import pytest
+from server.user_function import usersetemail, usersetname, usersethandle, getprofile
+from server.auth_function import register, generateToken
 
-def auth_register(email, password, first_nanme, last_name):
-	
-    pass
 
-def channels_create(token, name, is_public):
-	pass
+def getData():
+    data = {
+        'users': []
+    }
+    return data
 
-def user_profile_setname(token, first_long, last_short):
-    pass
 
-def user_profile_setemail(token, email):
-    pass
+def test_profile():
+    data = getData()
+    # Create one user for testing
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
 
-def user_profile_sethandle(token, handle_str):
-    pass
+    # Invalid input
+    value, Errormessage = getprofile(data, None, None)
+    assert Errormessage == "Invalid token or u_id"
 
-def user_profile_uploadphoto(token, img_url, x_start, y_start, x_end, y_end):
-    pass
+    value, Errormessage = getprofile(data, 'not_valid_token', 'not_valid_u_id')
+    assert Errormessage == "User with u_id is not a valid user"
 
-def user_profile(token, u_id):
-    
-    #return email, name_first, name_last, handle_str
-    pass
+    # Valid input
+    value, Errormessage = getprofile(data, auth_key["token"], auth_key["u_id"])
+    assert value["email"] == 'email@gmail.com'
+    assert value["name_first"] == 'name_first'
+    assert value["name_last"] == 'name_last'
+    # Assume the default handle is the first_namelast_name
+    assert value["handle_str"] == 'name_firstname_last'
+
 
 def test_setname():
-
+    data = getData()
     # create one user
-    auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
 
-    #name_first more than 50 characters but not name_last
+    # name_first more than 50 characters but not name_last
     first_long = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     first_short = 'asdfzxcv'
 
     last_short = 'abcd'
     last_long = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
-    # Invalid input 
-    with pytest.rasises(ValueError, match=r".*name_first is more than 50 characters.*"):
+    # Invalid input
+    value, Errormessage = usersetname(data, None, first_long, last_short)
+    assert Errormessage == "token doesn't exit"
 
-        user_profile_setname(auth_key["token"],first_long,last_short)
+    value, Errormessage = usersetname(data, auth_key["token"], first_long, last_short)
+    assert Errormessage == 'name_first is not between 1 and 50 characters in length'
 
-    with pytest.rasises(ValueError, match=r".*name_last is more than 50 characters.*"):
+    value, Errormessage = usersetname(data, auth_key["token"], first_short, last_long)
+    assert Errormessage == 'name_last is not between 1 and 50 characters in length'
 
-        user_profile_setname(auth_key["token"], first_short, last_long)
+    value, Errormessage = usersetname(data, 'token_not_registed', first_short, last_short)
+    assert Errormessage == 'User with token is not a valid user'
 
     # Valid input
-    user_profile_setname(auth_key["token"], first_short, last_short)
-    profile = user_profile(auth_key["token"], auth_key["u_id"])
+    usersetname(data, auth_key["token"], first_short, last_short)
+    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
     assert profile["name_first"] == first_short
     assert profile["name_last"] == last_short
-    
+
+
 def test_setemail():
-    
+    data = getData()
     # Register two user for testing
-    auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
-    auth_key2 = auth_register('adfzcv@gmail.com', '12341212', 'HHH', 'LLLL')
-    
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
+    auth_key1 = register(data, 'email@gmail.com1', 'password1', 'name_first1', 'name_last1')
+
     invalid_email = 'dffgfddfsa.com'
-    email_used_already = 'adfzcv@gmail.com'
-    
+    email_used_already = 'email@gmail.com'
+
     # Invalid input
-    with pytest.rasises(ValueError, match=r".*Email entered is not a valid email.*"):
+    value, Errormessage = usersetemail(data, None, invalid_email)
+    assert Errormessage == "token doesn't exit"
 
-        user_profile_setemail(auth_key["token"],invalid_email)
+    value, Errormessage = usersetemail(data, auth_key["token"], invalid_email)
+    assert Errormessage == 'Email entered is not a valid email'
 
-    with pytest.rasises(ValueError, match=r".*Email address is already being used by another user.*"):
+    value, Errormessage = usersetemail(data, auth_key["token"], email_used_already)
+    assert Errormessage == 'Email address is already being used by another user'
 
-        user_profile_setemail(auth_key["token"],email_used_already)
-    
+    value, Errormessage = usersetemail(data, 'token_not_registed', '123@gmail.com')
+    assert Errormessage == 'User with token is not a valid user'
+
     # Valid input
-    user_profile_setemail(auth_key["token"], 'newemail@gmail.com')
-    profile = user_profile(auth_key["token"], auth_key["u_id"])
+    value, Errormessage = usersetemail(data, auth_key["token"], 'newemail@gmail.com')
+    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
     assert profile["email"] == 'newemail@gmail.com'
 
+
 def test_sethandle():
+    data = getData()
+    user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
+    other_user = register(data, 'other@gmail.com', 'password', 'first', 'last')
 
-    auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
-    
-    handle_long = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' 
-    
+    handle_long = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww'
+    handle_normal = 'normal'
+
+    handle_used = 'handle_str'
+    usersethandle(data, other_user['token'], handle_used)
+
     # Invalid input
-    with pytest.rasises(ValueError, match=r".*handle_str is no more than 20 characters.*"):
+    # handle_str is no more than 20 charaters
+    value, Errormessage = usersethandle(data, None, handle_normal)
+    assert Errormessage == "token doesn't exit"
 
-        # handle_str is no more than 20 charaters
-        user_profile_sethandle(auth_key["token"], handle_long)
-    
+    value, Errormessage = usersethandle(data, user["token"], handle_long)
+    assert Errormessage == "handle_str must be between 3 and 20"
+
+    value, Errormessage = usersethandle(data, user["token"], handle_used)
+    assert Errormessage == "handle is already used by another user"
+
+    value, Errormessage = usersethandle(data, 'token_not_registed', handle_normal)
+    assert Errormessage == "User with token is not a valid user"
+
     # Valid input
-    user_profile_sethandle(auth_key["token"], 'testing')
-    profile = user_profile(auth_key["token"], auth_key["u_id"])
+    value, Errormessage = usersethandle(data, user["token"], 'testing')
+    profile, error = getprofile(data, user["token"], user["u_id"])
     assert profile["handle_str"] == 'testing'
-    
+
+
 def test_uploadphoto():
-
     # Create one user for testing
-    auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
-    img_notURL = 'asdfzxvzdsaewrasdf'
-    
-    x_start_in = 0
-    y_start_in = 0
-    x_end_in = 100
-    y_end_in = 100
-    
-    with pytest.rasises(ValueError, match=r".*img_url is returns an HTTP status other than 200.*"):
-
-        user_profile_uploadphoto(auth_key["token"], img_notURL, x_start_in, y_start_in, x_end_in, y_end_in)
-    
-    img_URL = 'https://unsplash.com/photos/8IY27TsGaVE'
-    x_start_out = -19
-    y_start_out = -10
-    x_end_out = 1111111111111111111111111111111111111111111111111
-    y_end_out = 1111111111111111111111111111111111111111111111111
-    
-    with pytest.rasises(ValueError, match=r".*x_start, y_start, x_end, y_end are all within the dimensions of the image at the URL.*"):
-        
-        user_profile_uploadphoto(auth_key["token"], img_URL, x_start_out, y_start_in, x_end_in, y_end_in)
-        
-        user_profile_uploadphoto(auth_key["token"], img_URL, x_start_in, y_start_out, x_end_in, y_end_in)
-        
-        user_profile_uploadphoto(auth_key["token"], img_URL, x_start_in, y_start_in, x_end_out, y_end_in)
-        
-        user_profile_uploadphoto(auth_key["token"], img_URL, x_start_in, y_start_in, x_end_in, y_end_out)
-        
-        user_profile_uploadphoto(auth_key["token"], img_URL, x_start_out, y_start_out, x_end_out, y_end_out)
-        
-    
-def test_profile():
-    
-    # Create one user for testing
-    auth_key = auth_register('123@gmail.com', '123412', 'HHH', 'LLLL')
-    invalid_u_id = auth_key["token"] + 1234562345462134546
-    
-    # Invalid input
-    with pytest.rasises(ValueError, match=r".*User with u_id is not a valid user.*"):
-        user_profile(auth_key["token"], invalid_u_id)
-        
-    # Valid input
-    return_key = user_profile(auth_key["token"], auth_key["u_id"])
-    assert return_key["email"] == '123@gmail.com'
-    assert return_key["name_first"] == 'HHH'
-    assert return_key["name_last"] == 'LLLL'
-    # Assume the default handle is the first_namelast_name
-    assert return_key["handle_str"] == 'HHHLLLL'
+    pass
