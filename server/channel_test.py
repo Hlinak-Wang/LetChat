@@ -9,7 +9,9 @@ from channel_function import (
         ch_addowner,
         ch_removeowner,
         ch_lists,
-        ch_listall
+        ch_listall,
+        fun_message,
+        fun_send
 )
 
 
@@ -25,7 +27,7 @@ def getdata():
                  'email': 'test@test.com',
                  'password': 'test',
                  'permission_id': 1,
-                 'channel_involve': [1]  # channel_id
+                 'channel_involve': [0]  # channel_id
                  },
                 {'u_id': 1234,
                  'name_first': 'test2',
@@ -35,7 +37,7 @@ def getdata():
                  'email': 'test2@test2.com',
                  'password': 'test2',
                  'permission_id': 3,
-                 'channel_involve': [1]  # channel_id
+                 'channel_involve': [0]  # channel_id
                  },
                 {'u_id': 12345,
                  'name_first': 'not in channel',
@@ -50,7 +52,7 @@ def getdata():
             ],
             'channels': [{
                 'name': 'test',
-                'channel_id': 1,
+                'channel_id': 0,
                 'user_list': [
                     {'u_id': 123, 'name_first': 'test', 'name_last': 'test',
                      'is_owner': True},
@@ -89,17 +91,18 @@ def getdata():
 def test_channel_invite_ok():
     data = getdata()
     user = data['users'][0]
+    user1 = data['users'][1]
     # it takes in data, token, channel_name and is_public
     channel = ch_create(data, user['token'], '12345', True)
     # it takes in data, token, u_id and channel_id
-    ch_invite(data, user['token'], '1234', channel['channel_id'])
+    ch_invite(data, user['token'], user1['u_id'], channel['channel_id'])
 
     # Check the user is successfully added into channel
     # it takes in data, token and channel_id
     channel_profile = ch_details(data, user['token'], channel['channel_id'])
     member_list = channel_profile['all_members']
     assert member_list[0]['u_id'] == user['u_id']
-    assert member_list[1]['u_id'] == 1234
+    assert member_list[1]['u_id'] == user1['u_id']
 
 
 # Testing invalid input for channel_invite
@@ -116,25 +119,22 @@ def test_channel_invite_bad():
     res2 = ch_invite(data, user['token'], '55555', channel['channel_id'])
     assert res2 == {'ValueError': 'Invalid u_id'}
 
-    res3 = ch_invite(data, '46653', user2['u_id'], channel['channel_id'])
-    assert res3 == {'AccessError': 'the authorised user is not already a \
-                    member of the channel'}
+    res3 = ch_invite(data, user2['token'], user2['u_id'], channel['channel_id'])
+    assert res3 == {'AccessError': 'The authorised user is not already a member of the channel'}
     ch_invite(data, user['token'], user1['u_id'], channel['channel_id'])
     res4 = ch_invite(data, user['token'], user1['u_id'], channel['channel_id'])
-    assert res4 == {'AccessError': 'The invite user is already a member of \
-                    the channel'}
-
+    assert res4 == {'AccessError': 'The invite user is already a member of the channel'}
 
 
 # Testing valid input for channel_details
 def test_channel_details_ok():
     data = getdata()
     user = data['users'][0]
+    print(user)
     # it takes in data, token, channel_name and is_public
     channel = ch_create(data, user['token'], '12345', True)
 
     channel_profile = ch_details(data, user['token'], channel['channel_id'])
-    print(channel['channel_id'])
     # Checking the output of channel detail
     assert channel_profile['name'] == "12345"
 
@@ -149,73 +149,68 @@ def test_channel_details_ok():
 def test_channel_details_bad():
     data = getdata()
     user = data['users'][0]
+    user1 = data['users'][2]
     # it takes in data, token, channel_name and is_public
     channel = ch_create(data, user['token'], '12345', True)
 
-    with pytest.raises(ValueError, match=r"*Invalid channel id*"):
-        ch_details(data, user['token'], '123456')
+    res1 = ch_details(data, user['token'], '123456')
+    assert res1 == {'ValueError': 'Invalid channel id'}
 
-    with pytest.raises(AccessError, match=r"*User is not a member of \
-                                            Channel*"):
-        ch_details(data, '123456', channel['channel_id'])
+    res2 = ch_details(data, user1['token'], channel['channel_id'])
+    assert res2 == {'AccessError': 'User is not a member of Channel'}
 
 
-'''
 # Testing valid input for channel_message
 def test_channel_messages_ok():
     data = getdata()
     user = data['users'][0]
-    channel = ch_create(user['token'], '12345', True)
-    message_send(auth_key["token"], channel["id"], "testing")
+    channel = ch_create(data, user['token'], '12345', True)
+    fun_send(data, user['token'], channel['channel_id'], 'testing')
 
-    message_channel = channel_messages(auth_key["token"], channel["id"], 0)
-
+    message_channel = fun_message(data, user['token'],
+                                  channel['channel_id'], 0)
     # Checking the output
-    assert message_channel["start"] == 0
-    assert message_channel["end"] == 50
+    assert message_channel['start'] == 0
+    assert message_channel['end'] == -1 # <----- This line here
 
-    messages = message_channel["message"]
-    assert messages[0]["message"] == "testing"
-    assert messages[0]["u_id"] == auth_key["u_id"]
+    messages = message_channel['messages']
+    assert messages[0]['message'] == 'testing'
+    assert messages[0]['u_id'] == user['u_id']
 
 
 # Testing invalid input for channel_message
 def test_channel_messages_bad():
+    data = getdata()
+    user_admin = data['users'][0]
+    user1 = data['users'][1]
+    channel = ch_create(data, user_admin['token'], '12345', True)
+    
+    # ValueError
+    res1 = fun_message(data, user_admin['token'], channel['channel_id'] - 123, 0)
+    assert res1 == {'ValueError': 'Channel ID is not a valid channel'}
+        
+    res2 = fun_message(data, user_admin['token'], channel['channel_id'], 999999999)
+    assert res2 == {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
 
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh",
-                                   "asdf")
-    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf",
-                             "asdfzcxv")
-
-    channel = channels_create(auth_key["token"], "12345", True)
-
-    with pytest.raises(ValueError, match=r"*Channel (based on ID) does not \
-                                           exis*"):
-        channel_messages(auth_key["token"], channel["id"] - 123, 0)
-
-    with pytest.raises(ValueError, match=r"*start is greater than the total\
-                                          number of messages in the channel*"):
-        channel_messages(auth_key["token"], channel["id"], 999999999)
-
-    with pytest.raises(AccessError, match=r"*User is not a member of \
-                                             Channel*"):
-        channel_messages(auth_key_admin["token"], channel["id"], 0)
-'''
+    # AccessError
+    res3 = fun_message(data, user1['token'], channel['channel_id'], 0)
+    assert res3 == {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}        
 
 
 # Testing valid input for channel_leave
 def test_channel_leave_ok():
     data = getdata()
     user = data['users'][0]
+    user1 = data['users'][1]
     # it takes in data, token, channel_name and is_public and return channel_id
     channel = ch_create(data, user['token'], '12345', True)
 
-    ch_join(data, user['token'], channel['channel_id'])
-    ch_leave(data, user['token'], channel['channel_id'])
+    ch_join(data, user1['token'], channel['channel_id'])
+    ch_leave(data, user1['token'], channel['channel_id'])
 
     # Check the member in channel
     channel_profile = ch_details(data, user['token'], channel['channel_id'])
-    member_list = channel_profile["all_members"]
+    member_list = channel_profile['all_members']
     assert member_list[0]["u_id"] == user['u_id']
 
 
@@ -226,8 +221,8 @@ def test_channel_leave_bad():
     # it takes in data, token, channel_name and is_public and return channel_id
     channel = ch_create(data, user['token'], '12345', True)
 
-    with pytest.raises(ValueError, match=r"*Channel ID is invalid*"):
-        ch_leave(data, user['token'], channel['channel_id'])
+    res = ch_leave(data, user['token'], 10)
+    assert res == {'ValueError': 'Channel ID is invalid'}
 
 
 # Testing valid input for channel_join
@@ -252,13 +247,13 @@ def test_channel_join_bad():
     channel = ch_create(data, user['token'], '12345', True)
     user2 = data['users'][1]
     # ValueError
-    with pytest.raises(ValueError, match=r"*Channel ID is invalid*"):
-        ch_join(data, user2['token'], channel['channel_id'] - 123)
+    res1 = ch_join(data, user2['token'], channel['channel_id'] - 123)
+    assert res1 == {'ValueError': 'Channel ID is invalid'}
 
     # AccessError
-    channel2 = ch_create(data, user['token'], '12345', True)
-    with pytest.raises(AccessError, match=r"*The channel is private*"):
-        ch_join(data, user2['token'], channel2['channel_id'])
+    channel2 = ch_create(data, user['token'], '12345', False)
+    res2 = ch_join(data, user2['token'], channel2['channel_id'])
+    assert res2 == {'AccessError': 'The channel is private'}
 
 
 # Testing valid input for channel_addowner
@@ -269,13 +264,13 @@ def test_channel_addowner_ok():
     user2 = data['users'][1]
     ch_join(data, user2['token'], channel['channel_id'])
 
-    ch_addowner(data, user['token'], channel["id"], user2['u_id'])
+    ch_addowner(data, user['token'], channel['channel_id'], user2['u_id'])
     channel_profile = ch_details(data, user['token'], channel['channel_id'])
-    owner_list = channel_profile["owner_members"]
+    owner_list = channel_profile['owner_members']
 
     # Checking there is two owner in this channel
-    assert owner_list[0]["u_id"] == user['u_id']
-    assert owner_list[1]["u_id"] == user2['u_id']
+    assert owner_list[0]['u_id'] == user['u_id']
+    assert owner_list[1]['u_id'] == user2['u_id']
 
 
 # Testing invalid input for channel_addowner
@@ -289,20 +284,19 @@ def test_channel_addowner_bad():
     ch_join(data, user1['token'], channel['channel_id'])
     ch_join(data, user2['token'], channel['channel_id'])
     # AccessError
-    with pytest.raises(AccessError, match=r"*User is not an owner of the \
-                                       slackr, or an owner of this channel*"):
-        ch_addowner(data, user2['token'],
-                    channel['channel_id'], user1['u_id'])
+    res1 = ch_addowner(data, user2['token'], channel['channel_id'],
+                       user1['u_id'])
+    assert res1 == {'AccessError': 'User is not an owner of the slackr or this channel'}
 
     # ValueError
-    with pytest.raises(ValueError, match=r"*Invalid Channel ID*"):
-        ch_addowner(ch_addowner(data, user_admin['token'],
-                                channel['channel_id'] - 123, user1['u_id']))
-
-    with pytest.raises(ValueError, match=r"*User already an owner of \
-                                            the channel*"):
-        ch_addowner(ch_addowner(data, user_admin['token'],
-                                channel['channel_id'], user1['u_id']))
+    res2 = ch_addowner(data, user_admin['token'], channel['channel_id'] - 123,
+                       user1['u_id'])
+    assert res2 == {'ValueError': 'Invalid Channel ID'}
+    ch_addowner(data, user_admin['token'], channel['channel_id'],
+                user1['u_id'])
+    res3 = ch_addowner(data, user_admin['token'], channel['channel_id'],
+                       user1['u_id'])
+    assert res3 == {'ValueError': 'User is already an owner of the channel'}
 
 
 # Testing valid input for channel_removeowner
@@ -348,73 +342,64 @@ def test_channel_removeowner_bad():
     ch_addowner(data, user_admin['token'], channel['channel_id'],
                 user1['u_id'])
     # ValueError
-    with pytest.raises(ValueError, match=r"*Invalid Channel ID*"):
-        ch_removeowner(data, user_admin['token'], channel['channel_id'] - 123,
-                       user1['u_id'])
+    res1 = ch_removeowner(data, user_admin['token'],
+                          channel['channel_id'] - 123, user1['u_id'])
+    assert res1 == {'ValueError': 'Invalid Channel ID'}
 
-    with pytest.raises(ValueError, match=r"*User is not an owner of \
-                                           the channel*"):
-        ch_removeowner(data, user_admin['token'], channel['channel_id'],
-                       user2['u_id'])
+    res2 = ch_removeowner(data, user_admin['token'], channel['channel_id'],
+                          user2['u_id'])
+    assert res2 == {'ValueError': 'User is not an owner of the channel'}
 
     # AccessError
-    with pytest.raises(AccessError, match=r"*User is not an owner of the \
-                       slackr, or an owner of this channel*"):
-        ch_addowner(data, user2['u_id'], channel['channel_id'], user1['u_id'])
+    res3 = ch_addowner(data, user2['u_id'], channel['channel_id'],
+                       user1['u_id'])
+    assert res3 == {'AccessError': 'User is not an owner of the slackr or this channel'}
 
 
 # Testing valid input for channels_list
 def test_channels_list():
-
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
-    channel1 = channels_create(auth_key_admin["token"], "12345", True)
-    channel2 = channels_create(auth_key_admin["token"], "123asdf45", True)
-    
-    auth_key = auth_register("1234asd56@gmail.com", "123456fs789", "hh123h", "asasddf")
-    channel3 = channels_create(auth_key["token"], "12345", True)
-    channel4 = channels_create(auth_key["token"], "123asasxzdf45", True)
-    
     data = getdata()
     user_admin = data['users'][0]
-    channel1 = ch_create(data, user_admin['token'], '12345', True)
-    channel2 = ch_create(data, user_admin['token'])
+    channel1 = ch_create(data, user_admin['token'], 'ch_1', True)
+    channel2 = ch_create(data, user_admin['token'], 'ch_2', True)
     
-    channels = channels_list(auth_key["token"])
-    assert channels[0]["id"] == channel1["id"]
-    assert channels[0]["name"] == "12345"
+    user1 = data['users'][1]
+    channel3 = ch_create(data, user1['token'], 'ch_3', True)
+    channel4 = ch_create(data, user1['token'], 'ch_4', True)
     
-    assert channels[1]["id"] == channel2["id"]
-    assert channels[0]["name"] == "123asdf45"
+    channels = ch_lists(data, user1['token'])
+    assert channels[0]['channel_id'] == channel1['channel_id']
+    assert channels[0]['name'] == 'ch_1'
+    
+    assert channels[1]['channel_id'] == channel2['channel_id']
+    assert channels[0]['name'] == 'ch_2'
     
     assert len(channels) == 2
 
 # Testing valid input for channels_listall
 def test_channels_listall():
+    data = getdata()
+    user_admin = data['users'][0]
+    user1 = data['users'][1]
+    channel1 = ch_create(data, user_admin['token'], '12345', True)
+    channel2 = ch_create(data, user_admin['token'], '123asdf45', True)
+    channel3 = ch_create(data, user1['token'], '12345', True)
+    channel4 = ch_create(data, user1['token'], '123aszxcdf45', True)
+    channel5 = ch_create(data, user1['token'], '123asd12f45', False)
+    
+    channels = ch_listall(data, user_admin['token'])
 
-    auth_key_admin = auth_register("123456@gmail.com", "123456789", "hhh", "asdf")
-    auth_key = auth_register("123456789@gmail.com", "123456789", "asdf", "asdfzcxv")
-
-    channel1 = channels_create(auth_key_admin["token"], "12345", True)
-    channel2 = channels_create(auth_key_admin["token"], "123asdf45", True)
+    assert channels[0]['channel_id'] == channel1['channel_id']
+    assert channels[0]['name'] == '12345'
     
-    auth_key = auth_register("1234asd56@gmail.com", "123456fs789", "hh123h", "asasddf")
-    channel3 = channels_create(auth_key["token"], "12345", True)
-    channel4 = channels_create(auth_key["token"], "123aszxcdf45", True)
-    channel5 = channels_create(auth_key["token"], "123asd12f45", False)
+    assert channels[1]['channel_id'] == channel2['channel_id']
+    assert channels[1]['name'] == '123asdf45'
     
-    channels = channels_listall(auth_key_admin["token"])
-
-    assert channels[0]["id"] == channel1["id"]
-    assert channels[0]["name"] == "12345"
+    assert channels[2]['channel_id'] == channel3['channel_id']
+    assert channels[2]['name'] == '12345'
     
-    assert channels[1]["id"] == channel2["id"]
-    assert channels[1]["name"] == "123asdf45"
-    
-    assert channels[2]["id"] == channel3["id"]
-    assert channels[2]["name"] == "12345"
-    
-    assert channels[3]["id"] == channel4["id"]
-    assert channels[3]["name"] == "123aszxcdf45"
+    assert channels[3]['channel_id'] == channel4['channel_id']
+    assert channels[3]['name'] == '123aszxcdf45'
     
     assert len(channels) == 4
 
@@ -422,7 +407,6 @@ def test_channels_listall():
 def test_channels_create_bad():
     data = getdata()
     user = data['users'][0]
-
-    with pytest.raises(ValueError, match=r"The maximum characters of name is \
-                                           20."):
-        ch_create(data, user['token'], "012345678901234567890123456789", True)
+    res = ch_create(data, user['token'], "012345678901234567890123456789", True)
+    assert res == {'ValueError': 'The maximum characters of name is 20.'}
+        

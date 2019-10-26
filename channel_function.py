@@ -1,5 +1,5 @@
-from Error import AccessError
-from datetime import datetime
+from datetime import datetime, timezone
+
 
 def find_user(data, token):
     for user in data['users']:
@@ -53,86 +53,11 @@ def find_member(channel, user):
     return None
 
 
-def fun_channel_message(data, token, channel_id, start):
-    output_list = []
-    user = find_user(data, token)
-    channel = find_channel(data, channel_id)
-    #send_message_buffer(data)
-    if channel is None:
-        return {'ValueError': 'Channel ID is not a valid channel'}
-
-    if channel_id not in user['channel_involve']:
-        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
-
-    if start > len(channel['messages']):
-        return {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
-
-    end = start
-    for message in channel['messages'][start:]:
-        react_list = message['reacts']
-        for react in react_list:
-            if user['u_id'] in react['u_ids']:
-                react['is_this_user_reacted'] = True
-            else:
-                react['is_this_user_reacted'] = False
-
-        output_list.append({
-            'message_id': message['message_id'],
-            'u_id': message['u_id'],
-            'message': message['message'],
-            'time_created': message['time_created'],
-            'reacts': react_list,
-            'is_pinned': message['is_pinned']
-        })
-        end += 1
-        if end > start + 50:
-            break
-
-    if end <= start + 50:
-        end = -1
-
-    print(output_list)
-    print(data)
-    return {
-        'messages': output_list,
-        'start': start,
-        'end': end
-    }
-
-
-
-def fun_send(data, token, channel_id, message):
-    """ Send message """
-    #send_message_buffer(data)
-    if len(message) > 1000:
-        return {"ValueError": "Message is more than 1000 characters"}
-
-    user = find_user(data, token)
-
-    if channel_id not in user['channel_involve']:
-        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
-
-    channel = find_channel(data, channel_id)
-
-    # assume m_id depend on the number of message been sent
-    channel['messages'].insert(0, {
-        'u_id': user['u_id'],
-        'message_id': data['message_counter'],
-        'message': message,
-        'time_created': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S"),
-        'reacts': [{'react_id': 1, 'u_ids': []}],
-        'is_pinned': False,
-    })
-    data['message_counter'] += 1
-    return {'message_id': data['message_counter'] - 1}
-
-
 # create a channel
 def ch_create(data, token, channel_name, is_public):
     # check is the channel name is valid
     if len(channel_name) > 20:
-        return {ValueError:'The maximum characters of name is 20.'}
-    print(is_public)
+        return {'ValueError': 'The maximum characters of name is 20.'}
     user = find_user(data, token)
     channel_id = len(data['channels'])
     # assume channel_data
@@ -148,7 +73,10 @@ def ch_create(data, token, channel_name, is_public):
             }
         ],
         'is_public': is_public,
-        'messages':[]
+        'messages': [],
+        'standup_queue': [],
+        'standup': {'time_finish': '1/1/1900, 1:00:00', 'u_id': None},
+        'standup_message': ''
     }
     data['channels'].append(channel_data)
     user['channel_involve'].append(channel_id)
@@ -163,20 +91,20 @@ def ch_invite(data, token, u_id, channel_id):
     # check validation of channel id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Invalid channel id'}
+        return {'ValueError': 'Invalid channel id'}
 
     user = find_uid(data, u_id)
     if user is None:
-        return {ValueError: 'Invalid u_id'}
+        return {'ValueError': 'Invalid u_id'}
 
     if find_member(channel, user) is not None:
-        return {Exception: 'The invite user is already a member of the \
+        return {'AccessError': 'The invite user is already a member of the \
                             channel'}
 
     user_invite = find_user(data, token)
     if find_member(channel, user_invite) is None:
-        return {Exception: 'The authorised user is not already a member of the\
-                            channel'}
+        return {'AccessError': 'The authorised user is not already a member of\
+                the channel'}
 
     # update the data, a new member added
     user_data = {
@@ -186,6 +114,7 @@ def ch_invite(data, token, u_id, channel_id):
         'is_owner': False
     }
     channel['user_list'].append(user_data)
+    user['channel_involve'].append(channel_id)
     return {}
 
 
@@ -199,7 +128,7 @@ def ch_details(data, token, channel_id):
     user = find_user(data, token)
 
     if find_member(channel, user) is None:
-        return {'Exception': 'Not a member of that channel'}
+        return {'AccessError': 'Not a member of that channel'}
 
     owner_members = []
     all_members = []
@@ -226,14 +155,12 @@ def ch_details(data, token, channel_id):
 
 def ch_leave(data, token, channel_id):
 
-    channel = data['channels']
     user = find_user(data, token)
 
     # check validation of ch_id
     channel = find_channel(data, channel_id)
     if channel is None:
         return {'ValueError': 'Channel ID is invalid'}
-        # raise ValueError('Channel ID is invalid')
 
     # remove a list of that user's data
     member = find_member(channel, user)
@@ -273,17 +200,17 @@ def ch_addowner(data, token, channel_id, u_id):
     # check validation of the channel id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Invalid Channel ID'}
+        return {'ValueError': 'Invalid Channel ID'}
 
     # check the user is already the owner or not
     if is_owner(channel['user_list'], u_id) is True:
-        return {ValueError: 'Already an owner of that channel'}
+        return {'ValueError': 'Already an owner of that channel'}
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = find_user(data, token)
     owner = is_owner(channel['user_list'], user['u_id'])
     if user['permission_id'] == 3 or owner is False:
-        return {AccessError: "User is not an owner of the slackr or \
+        return {'AccessError': "User is not an owner of the slackr or \
                               this channel"}
 
     makeowner = find_member(channel, user)
@@ -296,18 +223,19 @@ def ch_removeowner(data, token, channel_id, u_id):
     # check validation of the channel id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Invalid Channel ID'}
+        return {'ValueError': 'Invalid Channel ID'}
 
     # check the user is owner or not
     if is_owner(channel['user_list'], u_id) is False:
-        return {ValueError: 'Not an owner'}
+        return {'ValueError': 'Not an owner'}
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = find_user(data, token)
     owner = is_owner(channel['user_list'], user['u_id'])
     if user['permission_id'] == 3 or owner is False:
-        return {AccessError: "User is not an owner of the slackr or this \
-                              channel"}
+        return {
+            'AccessError': "User is not an owner of the slackr or this channel"
+        }
 
     removeowner = find_member(channel, user)
     removeowner['is_owner'] = False
@@ -348,4 +276,49 @@ def ch_listall(data, token):
                                 })
     return {
             'channels': stack_channel
+    }
+
+
+def fun_message(data, token, channel_id, start):
+    output_list = []
+    user = find_user(data, token)
+    channel = find_channel(data, channel_id)
+    if channel is None:
+        return {'ValueError': 'Channel ID is not a valid channel'}
+
+    if channel_id not in user['channel_involve']:
+        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
+
+    if start > len(channel['messages']):
+        return {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
+
+    end = start
+    for message in channel['messages'][start:]:
+        react_list = message['reacts']
+        for react in react_list:
+            if user['u_id'] in react['u_ids']:
+                react['is_this_user_reacted'] = True
+            else:
+                react['is_this_user_reacted'] = False
+
+        output_list.append({
+            'message_id': message['message_id'],
+            'u_id': message['u_id'],
+            'message': message['message'],
+            'time_created': message['time_created'],
+            'reacts': react_list,
+            'is_pinned': message['is_pinned']
+        })
+        end += 1
+        if end >= start + 50:
+            return {
+                'messages': output_list,
+                'start': start,
+                'end': end
+            }
+
+    return {
+        'messages': output_list,
+        'start': start,
+        'end': -1
     }
