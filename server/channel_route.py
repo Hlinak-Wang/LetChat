@@ -1,7 +1,18 @@
 from flask import Flask, request
 from json import dumps
 from werkzeug.exceptions import HTTPException
-from channel_function import ch_create, ch_invite,ch_details, ch_leave, ch_join, ch_addowner, ch_removeowner, ch_lists, ch_listall
+from Error import AccessError
+from channel_function import (
+        ch_create,
+        ch_invite,
+        ch_details,
+        ch_leave,
+        ch_join,
+        ch_addowner,
+        ch_removeowner,
+        ch_lists,
+        ch_listall
+)
 APP = Flask(__name__)
 APP.config['TRAP_HTTP_EXCEPTIONS'] = True
 
@@ -75,7 +86,7 @@ def channels_create():
     token = request.form.get('token')
     channel_name = request.form.get('channel_name')
     is_public = request.form.get('is_public')
-    if is_public == "True":
+    if is_public == "true":
         is_public = True
     else:
         is_public = False
@@ -94,8 +105,8 @@ def channel_invite():
     result = ch_invite(data, token, u_id, channel_id)
     if 'ValueError' in result:
         raise ValueError(description=result['ValueError'])
-    elif 'Exception' in result:
-        raise Exception(description=result['Exception'])
+    elif 'AccessError' in result:
+        raise AccessError(description=result['AccessError'])
     return dumps()
 
 
@@ -107,8 +118,8 @@ def channel_details():
     channel_detail = ch_details(data, token, channel_id)
     if 'ValueError' in channel_detail:
         raise ValueError(description=channel_detail['ValueError'])
-    elif 'Exception' in channel_detail:
-        raise Exception(description=channel_detail['Exception'])
+    elif 'AccessError' in channel_detail:
+        raise AccessError(description=channel_detail['AccessError'])
     return dumps(channel_detail)
 
 
@@ -137,9 +148,9 @@ def channel_join():
     join = ch_join(data, token, channel_id)
     if 'ValueError' in join:
         raise ValueError(description=join['ValueError'])
-    elif 'Exception' in join:
-        raise Exception(description=join['Exception'])
-    
+    elif 'AccessError' in join:
+        raise AccessError(description=join['AccessError'])
+
     return dumps(join)
 
 
@@ -152,8 +163,8 @@ def channel_addowner():
     addowner = ch_addowner(data, token, channel_id, u_id)
     if 'ValueError' in addowner:
         raise ValueError(description=addowner['ValueError'])
-    elif 'Accesserror' in addowner:
-        raise Exception(description=addowner['AccessError'])
+    elif 'AccessError' in addowner:
+        raise AccessError(description=addowner['AccessError'])
     return dumps(addowner)
 
 
@@ -167,7 +178,7 @@ def channel_removeowner():
     if 'ValueError' in removeowner:
         raise ValueError(description=removeowner['ValueError'])
     elif 'AccessError' in removeowner:
-        raise Exception(description=removeowner['AccessError'])
+        raise AccessError(description=removeowner['AccessError'])
     return dumps(removeowner)
 
 

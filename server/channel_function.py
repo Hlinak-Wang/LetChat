@@ -1,4 +1,3 @@
-from Error import AccessError
 
 
 def find_user(data, token):
@@ -89,20 +88,20 @@ def ch_invite(data, token, u_id, channel_id):
     # check validation of channel id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Invalid channel id'}
+        return {'ValueError': 'Invalid channel id'}
 
     user = find_uid(data, u_id)
     if user is None:
-        return {ValueError: 'Invalid u_id'}
+        return {'ValueError': 'Invalid u_id'}
 
     if find_member(channel, user) is not None:
-        return {Exception: 'The invite user is already a member of the \
+        return {'AccessError': 'The invite user is already a member of the \
                             channel'}
 
     user_invite = find_user(data, token)
     if find_member(channel, user_invite) is None:
-        return {Exception: 'The authorised user is not already a member of the\
-                            channel'}
+        return {'AccessError': 'The authorised user is not already a member of\
+                the channel'}
 
     # update the data, a new member added
     user_data = {
@@ -119,11 +118,11 @@ def ch_details(data, token, channel_id):
     # check validation of channel id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Invalid channel'}
+        return {ValueError: 'Invalid channel id'}
     # check auth user is a member or not
     user = find_user(data, token)
     if find_member(channel, user) is None:
-        return {Exception: 'Not a member of that channel'}
+        return {'AccessError': 'User is not a member of Channel'}
 
     owner_members = []
     all_members = []
@@ -168,15 +167,15 @@ def ch_join(data, token, channel_id):
     # check validation of ch_id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Channel ID is invalid'}
+        return {'ValueError': 'Channel ID is invalid'}
     # check the channel is public or private
     # when the authorised user is not an admin
     user = find_user(data, token)
     if not channel['is_public'] and user['permission_id'] != 1:
-        return {Exception: 'The channel is private'}
+        return {'AccessError': 'The channel is private'}
     # if the user is already a member of that channel
     if find_member(channel, user) is not None:
-        return {Exception: 'Already a member of that channel'}
+        return {'AccessError': 'Already a member of that channel'}
     # add a list of that user's data
     user = find_user(data, token)
     user_data = {
@@ -194,18 +193,18 @@ def ch_addowner(data, token, channel_id, u_id):
     # check validation of the channel id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Invalid Channel ID'}
+        return {'ValueError': 'Channel ID is invalid'}
 
     # check the user is already the owner or not
     if is_owner(channel['user_list'], u_id):
-        return {ValueError: 'Already an owner of that channel'}
+        return {'ValueError': 'Already an owner of that channel'}
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = find_user(data, token)
     owner = is_owner(channel['user_list'], user['u_id'])
     if user['permission_id'] == 3 or owner is False:
-        return {AccessError: "User is not an owner of the slackr or \
-                              this channel"}
+        return {'AccessError': "User is not an owner of the slackr or \
+                                an owner of this channel"}
 
     makeowner = find_member(channel, user)
     makeowner['is_owner'] = True
@@ -217,17 +216,17 @@ def ch_removeowner(data, token, channel_id, u_id):
     # check validation of the channel id
     channel = find_channel(data, channel_id)
     if channel is None:
-        return {ValueError: 'Invalid Channel ID'}
+        return {'ValueError': 'Invalid Channel ID'}
 
     # check the user is owner or not
     if is_owner(channel['user_list'], u_id) is False:
-        return {ValueError: 'Not an owner'}
+        return {'ValueError': 'Not an owner'}
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = find_user(data, token)
     owner = is_owner(channel['user_list'], user['u_id'])
     if user['permission_id'] == 3 or owner is False:
-        return {AccessError: "User is not an owner of the slackr or this \
+        return {'AccessError': "User is not an owner of the slackr or this \
                               channel"}
 
     removeowner = find_member(channel, user)
