@@ -59,10 +59,11 @@ def permission_change(data, token, u_id, permission_id):
     if target is None:
         return {'ValueError': 'u_id does not refer to a valid user'}
 
-    if permission_id is not range(1, 4):
+    if permission_id not in range(1, 4):
         return {'ValueError': 'permission_id does not refer to a value permission'}
 
-    user['permission_id'] = permission_id
+    target['permission_id'] = permission_id
+    print(target)
     return {}
 
 
@@ -76,14 +77,14 @@ def fun_standup_star(data, token, channel_id):
     if channel_id not in user['channel_involve']:
         return {'AccessError': 'The authorised user is not a member of the channel that the message is within'}
 
-    if channel['standup_finish'] is not None and datetime.now() < datetime.strptime(channel['standup_finish'],
-                                                                                    "%m/%d/%Y, %H:%M:%S"):
+    if datetime.now() < datetime.strptime(channel['standup']['time_finish'], "%m/%d/%Y, %H:%M:%S"):
         return {'ValueError': 'An active standup is currently running in this channel'}
 
-    channel['standup_finish'] = datetime.strftime(datetime.now() + timedelta(seconds=900), "%m/%d/%Y, %H:%M:%S")
+    channel['standup']['time_finish'] = datetime.strftime(datetime.now() + timedelta(seconds=900), "%m/%d/%Y, %H:%M:%S")
+    channel['standup']['u_id'] = user['u_id']
 
     return {
-        'time_finish': channel['standup_finish']
+        'time_finish': channel['standup']['time_finish']
     }
 
 
@@ -95,14 +96,14 @@ def fun_standup_send(data, token, channel_id, message):
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 
-    if channel['standup_finish'] is None or datetime.now() > datetime.strptime(channel['standup_finish'], "%m/%d/%Y, %H:%M:%S"):
+    if datetime.now() > datetime.strptime(channel['standup']['time_finish'], "%m/%d/%Y, %H:%M:%S"):
         return {'ValueError': 'An active standup is not currently running in this channel'}
 
     if len(message) > 1000:
         return {'ValueError': 'Message is more than 1000 characters'}
 
     if channel_id not in user['channel_involve']:
-        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
+        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
 
     channel['standup_queue'].append({
         'u_id': user['u_id'],
@@ -112,7 +113,7 @@ def fun_standup_send(data, token, channel_id, message):
         'reacts': [{'react_id': 1, 'u_ids': []}],
         'is_pinned': False,
     })
-    data['message_counter'] += 1
+
     return {}
 
 def pop_queue(data):

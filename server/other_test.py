@@ -1,171 +1,127 @@
-import pytest
-import datetime
-from Error import AccessError
+from server.extra_function import message_search, fun_standup_send, fun_standup_star, permission_change
+from server.auth_function import register
+from server.channel_function import ch_create, ch_join
+from server.message_function import fun_send
+from datetime import datetime, timedelta
 
-def auth_register(email, password, first_nanme, last_name):
-	
-	pass
+def getData():
+    data = {
+        'users': [],
+        'channels': [],
+        'message_counter': 0,
+        'message_buffer': []
+    }
+    user_chowner = register(data, 'test1@test.com', 'password', 'name_first1', 'name_last')
+    user_inch = register(data, 'test2@test.com', 'password', 'name_first2', 'name_last')
+    user_notch = register(data, 'test3@test.com', 'password', 'name_first3', 'name_last')
+    channel = ch_create(data, user_chowner['token'], 'test_channel', True)
+    ch_join(data, user_inch['token'], channel['channel_id'])
+    fun_send(data, user_inch['token'], channel['channel_id'], 'test2')
+    fun_send(data, user_chowner['token'], channel['channel_id'], 'test')
+    ch_create(data, user_chowner['token'], 'test_channel2', True)
+    return data
 
-def channels_create(token, name, is_public):
-	pass
-
-def standup_start(token, channel_id):
-    pass
-
-def standup_send(token, channel_id, message):
-    pass
-
-def search(toekn, query_str):
-    message = [{}]
-    return message
-
-def admin_userpermission_change(token, u_id, permission_id):
-    pass
-
-def channel_join(token, channel_id):
-    pass
-
-def channel_leave(token, channel_id):
-    pass
-
-def channel_messages(token, channel_id, start):
-    
-    pass
-
-def message_send(token, channel_id, message):
-    pass
-
-def message_pin(token, message_id):
-    pass
-
-def message_unpin(token, message_id):
-    pass
-
-
-def create_join_send():
-    
-    # Create valid token and channel for testing
-    auth_key = auth_register('123@gmail.com', '12345', 'Hello', 'bye')
-    channel = channels_create(auth_key["token"], 'hello', True)
-    
-    # Assume the user join the channel before send the message
-    message_send(auth_key["token"], channel["id"], 'presend message')
-    
-    message_channel = channel_messages(auth_key["token"],channel["id"], 0)
-    message_list = message_channel["messages"]
-    
-    return (auth_key, channel, message_list)
-# This function is to create a valid account
-# and a public channel 
-# which would be used in other test_function
 
 def test_standup_start():
     
-    # Create an user and channel, and obtain the message list
-    (auth_key, channel, message_list) = create_join_send()
-    
-    channel_not_exist = channel["id"] - 199
+    data = getData()
+    user = data['users'][0]
+    user_notch = data['users'][2]
+    channel = data['channels'][0]
+
+    channel_not_exist = 199
     
     # Invalid input
-    with pytest.raises(ValueError, match=r".*Channeldoes not exist.*"):
+    assert fun_standup_star(data, user['token'], channel_not_exist) == {
+        'ValueError': 'Channel ID is not a valid channel'
+    }
 
-        standup_start(auth_key["token"], channel_not_exist)
-    
-    # Usesr leave the channel for testing
-    channel_leave(auth_key["token"], channel["id"])
-    
-    with pytest.raises(AccessError, match=r".*The authorised user is not a member .*"):
-        
-        standup_start(auth_key["token"], channel["id"])
+    assert  fun_standup_star(data, user_notch['token'], channel['channel_id']) == {
+        'AccessError': 'The authorised user is not a member of the channel that the message is within'
+    }
+
+    output = fun_standup_star(data, user['token'], channel['channel_id'])
+
+    assert output['time_finish'] == datetime.strftime(datetime.now() + timedelta(seconds=900), "%m/%d/%Y, %H:%M:%S")
+
+    # Start standup again
+    assert fun_standup_star(data, user['token'], channel['channel_id']) == {
+        'ValueError': 'An active standup is currently running in this channel'
+    }
+
 
 def test_standup_send():
 
-    # Create an user and channel, and obtain the message list
-    (auth_key, channel, message_list) = create_join_send()
+    data = getData()
+    user = data['users'][0]
+    user_notch = data['users'][2]
+    channel = data['channels'][0]
+    channel2 = data['channels'][1]
     
-    channel_not_valid = channel["id"] - 100
-    
-    message_short = 'testing'
+    channel_not_valid = 100
     message_long = ''
-    for i in range(0,1010):
+    for i in range(0, 1010):
         message_long += '1'
     
     # Test in the environment of standup has started
-    time_finish = standup_start(auth_key["token"], channel["id"])
+    fun_standup_star(data, user['token'], channel['channel_id'])
     
     # Testing invalid input
-    with pytest.raises(ValueError, match=r".*Channel does not exist.*"):
+    assert fun_standup_send(data, user['token'], channel_not_valid, 'message_short') == {
+        'ValueError': 'Channel ID is not a valid channel'
+    }
 
-        standup_send(auth_key["token"], channel_not_valid, message_short)
+    assert fun_standup_send(data, user['token'], channel['channel_id'], message_long) == {
+        'ValueError': 'Message is more than 1000 characters'
+    }
 
-    with pytest.raises(ValueError, match=r".*Message is more than 1000 characters.*"):
+    assert fun_standup_send(data, user_notch['token'], channel['channel_id'], 'message_short') == {
+        'AccessError': 'the authorised user has not joined the channel they are trying to post to'
+    }
 
-        standup_send(auth_key["token"], channel["id"], message_long)
+    assert fun_standup_send(data, user_notch['token'], channel2['channel_id'], 'message_short') == {
+        'ValueError': 'An active standup is not currently running in this channel'
+    }
 
-    # Create another user join channel 2, but there is no standup
-    auth_key_2, channel_2, message_list = create_join_send()
-    
-    # Use the situation of no standup start yet to simulate the standup is stoped
-    with pytest.raises(AccessError, match=r".*If the standup time has stopped.*"):
-        standup_send(auth_key_2["token"], channel_2["id"], message_short)
+    fun_standup_send(data, user['token'], channel['channel_id'], 'message_short')
+    assert channel['standup_queue'][0]['message'] == 'message_short'
 
-    # Create a user but no in the channel
-    auth_key_3 = auth_register('112342546@gmail.com', 123412, 'TTT', 'LQQQ')
-    with pytest.raises(AccessError, match=r".*The authorised user is not a member of the channel .*"):
-        standup_send(auth_key_3["token"], channel["id"], message_short)
-    
 def test_search():
 
-    # Create an user and channel, and obtain the message list
-    (auth_key, channel, message_list) = create_join_send()
+    data = getData()
+    user = data['users'][0]
     
     # No message match
-    assert search(auth_key['token'], "No message match") == [{}]
+    output = message_search(data, user['token'], "No message match")
+    assert output['messages'] == []
     
     # One message match
-    message_1 = "First message"
-    time_now = datetime.datetime.now()
-    message_send(auth_key['token'], channel["id"], message_1)
-    return_value = channel_messages(auth_key["token"],channel["id"], 0)
-    message_list = return_value["messages"]
+    output = message_search(data, user['token'], "test")
+    assert len(output['messages']) == 1
+    assert output['messages'][0]['message_id'] == 1
 
-    assert search(auth_key['token'], "First_message") == [{"message_id" : message_list[0]["message_id"], "u_id" : auth_key["u_id"], "message" : message_1, "time_create" : time_now, "is_unread" : True}]
-    
-    # Two message
-    message_2 = "First message"
-    time_now2 = datetime.datetime.now()
-    message_send(auth_key['token'], channel["id"], message_2)
-    return_value = channel_messages(auth_key["token"],channel["id"], 0)
-    message_list = return_value["messages"]
-    
-    assert search(auth_key['token'], "First_message") == [{"message_id" : message_list[0]["message_id"], "u_id" : auth_key["u_id"], "message" : message_1, "time_create" : time_now, "is_unread" : True},
-                                                          {"message_id" : message_list[1]["message_id"], "u_id" : auth_key["u_id"], "message" : message_2, "time_create" : time_now2, "is_unread" : True}]
 
 def test_userpermission_change():
 
-    # Create an user and channel, and obtain the message list
-    (auth_key_admin, channel, message_list) = create_join_send()
+    data = getData()
+    user = data['users'][0]
+    user_norm1 = data['users'][2]
+    user_norm2 = data['users'][1]
+    channel = data['channels'][0]
     
-    # Create normal user and join the channel
-    auth_key = auth_register('asdfghfds@gmail.com','23w4te5rgrfedw', 'asfd','asdf')
-    channel_join(auth_key["token"], channel["id"])
-    
-    u_id_not_valid = auth_key_admin["u_id"] - 100000
-    
-    # Testing for invalid input
-    with pytest.raises(ValueError, match=r".*u_id does not refer to a valid user.*"):
+    u_id_not_valid = -100000
+    out = permission_change(data, user['token'], user_norm1['u_id'], 2)
+    assert user_norm1['permission_id'] == 2
 
-        admin_userpermission_change(auth_key_admin['token'], u_id_not_valid, 2)
+    # invalid input
+    assert permission_change(data, user['token'], u_id_not_valid, 2) == {
+        'ValueError': 'u_id does not refer to a valid user'
+    }
 
-    with pytest.raises(ValueError, match=r".*permission_id does not refer to a value permission.*"):
+    assert permission_change(data, user['token'], user_norm1['u_id'], 4) == {
+        'ValueError': 'permission_id does not refer to a value permission'
+    }
 
-        admin_userpermission_change(auth_key_admin['token'], auth_key['u_id'], 123342545)
-
-    with pytest.raises(AccessError, match=r".*The authorised user is not an admin or owner.*"):
-
-        admin_userpermission_change(auth_key['token'], auth_key_admin['u_id'], 2)
-        
-    # Testing for valid input
-    # change the user_2's permission to admin 
-    admin_userpermission_change(auth_key_admin['token'], auth_key['u_id'], 2)
-    message_pin(auth_key["token"], message_list[0]["message_id"])
+    assert permission_change(data, user_norm2['token'], user_norm1['u_id'], 2) == {
+        'AcessError': 'The authorised user is not an admin or owner'
+    }
