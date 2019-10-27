@@ -24,7 +24,7 @@ from server.channel_function import (
     ch_listall,
     fun_message,
 )
-from server.auth_function import login, logout, register, reset_request, reset
+from server.auth_functions import login, logout, register, reset_request, reset
 
 
 # import functions from another file
