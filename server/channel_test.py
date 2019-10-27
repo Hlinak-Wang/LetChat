@@ -6,7 +6,6 @@ Created on 2019/10/15
 @author: Meilin
 """
 
-import pytest
 from server.channel_function import (
     ch_create,
     ch_invite,
@@ -126,7 +125,8 @@ def test_channel_invite_bad():
     res2 = ch_invite(data, user['token'], '55555', channel['channel_id'])
     assert res2 == {'ValueError': 'Invalid u_id'}
 
-    res3 = ch_invite(data, user2['token'], user2['u_id'], channel['channel_id'])
+    res3 = ch_invite(data, user2['token'], user2['u_id'],
+                     channel['channel_id'])
     assert res3 == {'AccessError': 'The authorised user is not already a member of the channel'}
     ch_invite(data, user['token'], user1['u_id'], channel['channel_id'])
     res4 = ch_invite(data, user['token'], user1['u_id'], channel['channel_id'])
@@ -251,7 +251,7 @@ def test_channel_leave_bad():
     data = getdata()
     user = data['users'][0]
     # it takes in data, token, channel_name and is_public and return channel_id
-    channel = ch_create(data, user['token'], '12345', True)
+    ch_create(data, user['token'], '12345', True)
 
     res = ch_leave(data, user['token'], 10)
     assert res == {'ValueError': 'Channel ID is invalid'}
@@ -396,8 +396,8 @@ def test_channel_removeowner_bad():
 def test_channels_list():
     data = getdata()
     user_admin = data['users'][0]
-    channel1 = ch_create(data, user_admin['token'], 'ch_1', True)
-    channel2 = ch_create(data, user_admin['token'], 'ch_2', True)
+    ch_create(data, user_admin['token'], 'ch_1', True)
+    ch_create(data, user_admin['token'], 'ch_2', True)
 
     user1 = data['users'][1]
     channel3 = ch_create(data, user1['token'], 'ch_3', True)
