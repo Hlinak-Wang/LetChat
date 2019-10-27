@@ -52,7 +52,7 @@ def getprofile(data, token, u_id):
 
     user = getuser(data, token)
 
-    if user == None:
+    if user is None:
         wrongmessage = "User with u_id is not a valid user"
         return (value, wrongmessage)
 
