@@ -290,29 +290,3 @@ def fun_message(data, token, channel_id, start):
         'start': start,
         'end': -1
     }
-
-
-def fun_send(data, token, channel_id, message):
-    """ Send message """
-    if len(message) > 1000:
-        return {"ValueError": "Message is more than 1000 characters"}
-
-    user = find_user(data, token)
-
-    if channel_id not in user['channel_involve']:
-        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
-
-    channel = find_channel(data, channel_id)
-
-    # assume m_id depend on the number of message been sent
-    time_send = datetime.now()
-    channel['messages'].insert(0, {
-        'u_id': user['u_id'],
-        'message_id': data['message_counter'],
-        'message': message,
-        'time_created': time_send.replace(tzinfo=timezone.utc).timestamp(),
-        'reacts': [{'react_id': 1, 'u_ids': []}],
-        'is_pinned': False,
-    })
-    data['message_counter'] += 1
-    return {'message_id': data['message_counter'] - 1}

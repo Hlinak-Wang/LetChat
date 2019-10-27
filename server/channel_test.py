@@ -16,10 +16,9 @@ from server.channel_function import (
     ch_removeowner,
     ch_lists,
     ch_listall,
-    fun_message,
-    fun_send
+    fun_message
 )
-
+from server.message_function import fun_send
 
 # initial state of testing
 def getdata():
@@ -357,6 +356,7 @@ def test_channel_removeowner_ok():
 
     # if user1["u_id"] is in the owner list
     # Means channel_removeowner is not working
+    exist = 0
     if user1['u_id'] not in owner_list:
         exist = 1
     assert exist == 1
