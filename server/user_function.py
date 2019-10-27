@@ -22,34 +22,35 @@ def check(email):
         return 1
     return 0
 
-#find user by token, return user if found, return None if not found
-def getuser(data, token):
 
+# find user by token, return user if found, return None if not found
+def getuser(data, token):
     for user in data['users']:
         if user['token'] == token:
             return user
 
     return None
 
-#check email status if used return 0 else return 1
-def checkemailnotused(data, email):
 
+# check email status if used return 0 else return 1
+def checkemailnotused(data, email):
     for user in data['users']:
         if user['email'] == email:
             return 0
 
     return 1
 
-#check handle status if used return 0 else return 1
-def checkhandlenotused(data, handle):
 
+# check handle status if used return 0 else return 1
+def checkhandlenotused(data, handle):
     for user in data['users']:
         if user['handle_str'] == handle:
             return 0
 
     return 1
 
-#get user profile by token
+
+# get user profile by token
 def getprofile(data, token, u_id):
     value = None
     wrongmessage = None
@@ -71,7 +72,8 @@ def getprofile(data, token, u_id):
 
     return (value, wrongmessage)
 
-#set username by token
+
+# set username by token
 def usersetname(data, token, name_first, name_last):
     value = None
     wrongmessage = None
@@ -107,7 +109,8 @@ def usersetname(data, token, name_first, name_last):
 
     return (value, wrongmessage)
 
-#set user email by token
+
+# set user email by token
 def usersetemail(data, token, email):
     value = None
     wrongmessage = None
@@ -136,7 +139,8 @@ def usersetemail(data, token, email):
 
     return (value, wrongmessage)
 
-#set user handle by token
+
+# set user handle by token
 def usersethandle(data, token, handle_str):
     value = None
     wrongmessage = None

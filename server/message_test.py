@@ -6,8 +6,16 @@ Created on 2019/10/15
 @author: Eric
 """
 
-from server.message_function import fun_send_late, fun_send, fun_remove, fun_edit, fun_react, fun_unreact, fun_pin, \
+from server.message_function import (
+    fun_send_late,
+    fun_send,
+    fun_remove,
+    fun_edit,
+    fun_react,
+    fun_unreact,
+    fun_pin,
     fun_unpin
+)
 from server.auth_functions import register
 from server.channel_function import ch_create, ch_join
 
@@ -82,7 +90,7 @@ def test_remove():
     data = testdata()
     user_admin = data['users'][0]
     user_norm = data['users'][1]
-    channel = data['channels'][0]
+    data['channels'][0]
 
     # Invalid input
     assert fun_remove(data, user_norm["token"], 1) == {'AccessError': 'permission denied'}
@@ -96,7 +104,7 @@ def test_edit():
     data = testdata()
     user_admin = data['users'][0]
     user_norm = data['users'][1]
-    channel = data['channels'][0]
+    data['channels'][0]
 
     # Invalid input
     assert fun_edit(data, user_norm["token"], 1, "new_message") == {'AccessError': 'permission denied'}
@@ -111,7 +119,7 @@ def test_edit():
 def test_react():
     data = testdata()
     user = data['users'][0]
-    channel = data['channels'][0]
+    data['channels'][0]
 
     # Invalid input
     assert fun_react(data, user["token"], 100, 1) == {'ValueError': 'Message (based on ID) no longer exists'}
@@ -130,7 +138,7 @@ def test_react():
 def test_unreact():
     data = testdata()
     user = data['users'][0]
-    channel = data['channels'][0]
+    data['channels'][0]
 
     # Invalid input
     assert fun_unreact(data, user["token"], 100, 1) == {'ValueError': 'Message (based on ID) no longer exists'}
@@ -153,7 +161,7 @@ def test_pin():
     user_admin = data['users'][0]
     user_norm = data['users'][1]
     user_not_in_channel = data['users'][2]
-    channel = data['channels'][0]
+    data['channels'][0]
 
     # Invalid input
     assert fun_pin(data, user_admin['token'], 100) == {'ValueError': 'message_id is not a valid message'}
@@ -176,7 +184,7 @@ def test_unpin():
     user_admin = data['users'][0]
     user_norm = data['users'][1]
     user_not_in_channel = data['users'][2]
-    channel = data['channels'][0]
+    data['channels'][0]
 
     # Invalid input
     assert fun_unpin(data, user_admin['token'], 100) == {'ValueError': 'message_id is not a valid message'}
@@ -190,6 +198,6 @@ def test_unpin():
 
     # Pin the message in advance, if the next test raise exception
     # means the message is successfully pinned
-    output = fun_pin(data, user_admin['token'], 1)
+    fun_pin(data, user_admin['token'], 1)
     output = fun_unpin(data, user_admin['token'], 1)
     assert output == {}

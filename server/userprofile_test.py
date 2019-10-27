@@ -81,24 +81,25 @@ def test_setemail():
     email_used_already = 'email@gmail.com'
 
     # Invalid input
-    value, wrongmessage = usersetemail(data, None, invalid_email)
+    wrongmessage = usersetemail(data, None, invalid_email)[1]
     assert wrongmessage == "token doesn't exit"
 
-    value, wrongmessage = usersetemail(data, auth_key["token"], invalid_email)
+    wrongmessage = usersetemail(data, auth_key["token"], invalid_email)[1]
     assert wrongmessage == 'Email entered is not a valid email'
 
-    value, wrongmessage = usersetemail(data, auth_key["token"], email_used_already)
+    wrongmessage = usersetemail(data, auth_key["token"], email_used_already)[1]
     assert wrongmessage == 'Email address is already being used by another user'
 
-    value, wrongmessage = usersetemail(data, 'token_not_registed', '123@gmail.com')
+    wrongmessage = usersetemail(data, 'token_not_registed', '123@gmail.com')[1]
     assert wrongmessage == 'User with token is not a valid user'
 
     # Valid input
     usersetemail(data, auth_key["token"], 'newemail@gmail.com')
-    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
+    profile = getprofile(data, auth_key["token"], auth_key["u_id"])[0]
     assert profile["email"] == 'newemail@gmail.com'
 
-#test sethanle
+
+# test sethanle
 def test_sethandle():
     data = getData()
     user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
@@ -125,7 +126,7 @@ def test_sethandle():
     assert wrongmessage == "User with token is not a valid user"
 
     # Valid input
-    value, wrongmessage = usersethandle(data, user["token"], 'testing')
+    usersethandle(data, user["token"], 'testing')
     profile, error = getprofile(data, user["token"], user["u_id"])
     assert profile["handle_str"] == 'testing'
 

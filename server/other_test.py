@@ -21,7 +21,7 @@ def getData():
     }
     user_chowner = register(data, 'test1@test.com', 'password', 'name_first1', 'name_last')
     user_inch = register(data, 'test2@test.com', 'password', 'name_first2', 'name_last')
-    user_notch = register(data, 'test3@test.com', 'password', 'name_first3', 'name_last')
+    register(data, 'test3@test.com', 'password', 'name_first3', 'name_last')
     channel = ch_create(data, user_chowner['token'], 'test_channel', True)
     ch_join(data, user_inch['token'], channel['channel_id'])
     fun_send(data, user_inch['token'], channel['channel_id'], 'test2')

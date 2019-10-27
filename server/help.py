@@ -67,3 +67,4 @@ def print_message(user, message, output_list):
         'reacts': react_list,
         'is_pinned': message['is_pinned']
     })
+
