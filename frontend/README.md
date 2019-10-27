@@ -1,3 +1,12 @@
+# PLEASE NOTE
+
+**The following items are still incomplete**
+* Pagination for channel/messages
+* Message Edit
+* Standups (To be done in iteration 3)
+* Uploading a photo (To be done in iteration 3)
+
+# README
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

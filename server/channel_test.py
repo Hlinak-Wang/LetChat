@@ -1,88 +1,88 @@
 import pytest
 from channel_function import (
-        ch_create,
-        ch_invite,
-        ch_details,
-        ch_leave,
-        ch_join,
-        ch_addowner,
-        ch_removeowner,
-        ch_lists,
-        ch_listall,
-        fun_message,
-        fun_send
+    ch_create,
+    ch_invite,
+    ch_details,
+    ch_leave,
+    ch_join,
+    ch_addowner,
+    ch_removeowner,
+    ch_lists,
+    ch_listall,
+    fun_message,
+    fun_send
 )
 
 
 # initial state of testing
 def getdata():
     data = {
-            'users': [
-                {'u_id': 123,
-                 'name_first': 'test',
-                 'name_last': 'test',
-                 'token': '12345',
-                 'handle_str': 'testtest',
-                 'email': 'test@test.com',
-                 'password': 'test',
-                 'permission_id': 1,
-                 'channel_involve': [0]  # channel_id
-                 },
-                {'u_id': 1234,
-                 'name_first': 'test2',
-                 'name_last': 'test2',
-                 'token': '123456',
-                 'handle_str': 'testtest2',
-                 'email': 'test2@test2.com',
-                 'password': 'test2',
-                 'permission_id': 3,
-                 'channel_involve': [0]  # channel_id
-                 },
-                {'u_id': 12345,
-                 'name_first': 'not in channel',
-                 'name_last': 'test',
-                 'token': '1234567',
-                 'handle_str': 'not in channel',
-                 'email': 'tests2@tests2.com',
-                 'password': 'tesst2',
-                 'permission_id': 3,
-                 'channel_involve': []  # channel_id
-                 }
+        'users': [
+            {'u_id': 123,
+             'name_first': 'test',
+             'name_last': 'test',
+             'token': '12345',
+             'handle_str': 'testtest',
+             'email': 'test@test.com',
+             'password': 'test',
+             'permission_id': 1,
+             'channel_involve': [0]  # channel_id
+             },
+            {'u_id': 1234,
+             'name_first': 'test2',
+             'name_last': 'test2',
+             'token': '123456',
+             'handle_str': 'testtest2',
+             'email': 'test2@test2.com',
+             'password': 'test2',
+             'permission_id': 3,
+             'channel_involve': [0]  # channel_id
+             },
+            {'u_id': 12345,
+             'name_first': 'not in channel',
+             'name_last': 'test',
+             'token': '1234567',
+             'handle_str': 'not in channel',
+             'email': 'tests2@tests2.com',
+             'password': 'tesst2',
+             'permission_id': 3,
+             'channel_involve': []  # channel_id
+             }
+        ],
+        'channels': [{
+            'name': 'test',
+            'channel_id': 0,
+            'user_list': [
+                {'u_id': 123, 'name_first': 'test', 'name_last': 'test',
+                 'is_owner': True},
+                {'u_id': 1234, 'name_first': 'test2', 'name_last': 'test2',
+                 'is_owner': False}
             ],
-            'channels': [{
-                'name': 'test',
-                'channel_id': 0,
-                'user_list': [
-                    {'u_id': 123, 'name_first': 'test', 'name_last': 'test',
-                     'is_owner': True},
-                    {'u_id': 1234, 'name_first': 'test2', 'name_last': 'test2',
-                     'is_owner': False}
-                ],
-                'is_public': True,
-                'standup_finish': None,         # time_finish
-                'messages': [
-                    {
-                        'message': 'test',
-                        'u_id': 123,
-                        'reacts': [{'react_id': 1, 'u_ids': [123, 1234]}],
-                        'is_pinned': False,
-                        'time_created': '10/20/2019, 23:25:33',
-                        'message_id': 1,
-                        'channel_id': 0
-                    },
-                    {
-                        'message': 'test2',
-                        'u_id': 1234,
-                        'reacts': [{'react_id': 1, 'u_ids': []}],
-                        'is_pinned': False,
-                        'time_created': '10/20/2019, 23:24:33',
-                        'message_id': 0,
-                        'channel_id': 0
-                    }
-                ]
-            }],
-            'message_counter': 0
-        }
+            'is_public': True,
+            'standup_finish': None,  # time_finish
+            'messages': [
+                {
+                    'message': 'test',
+                    'u_id': 123,
+                    'reacts': [{'react_id': 1, 'u_ids': [123, 1234]}],
+                    'is_pinned': False,
+                    'time_created': '10/20/2019, 23:25:33',
+                    'message_id': 1,
+                    'channel_id': 0
+                },
+                {
+                    'message': 'test2',
+                    'u_id': 1234,
+                    'reacts': [{'react_id': 1, 'u_ids': []}],
+                    'is_pinned': False,
+                    'time_created': '10/20/2019, 23:24:33',
+                    'message_id': 0,
+                    'channel_id': 0
+                }
+            ]
+        }],
+        'message_counter': 0
+    }
     return data
 
 
@@ -176,18 +176,18 @@ def test_channel_messages_ok():
     messages = message_channel['messages']
     assert messages[0]['message'] == 'testing'
     assert messages[0]['u_id'] == user['u_id']
-    
+
     assert message_channel1['start'] == 0
     assert message_channel1['end'] == -1
     messages1 = message_channel1['messages']
     assert messages1[0]['message'] == 'test'
     assert messages1[0]['u_id'] == user['u_id']
-    
+
     for i in range(0, 25):
-        fun_send(data,user['token'], channel['channel_id'], 'another test')
+        fun_send(data, user['token'], channel['channel_id'], 'another test')
         fun_send(data, user['token'], channel['channel_id'], 'again')
     message_channel2 = fun_message(data, user['token'],
-                                  channel['channel_id'], 0)
+                                   channel['channel_id'], 0)
     assert message_channel2['start'] == 0
     assert message_channel2['end'] == 50
 
@@ -198,15 +198,15 @@ def test_channel_messages_bad():
     user = data['users'][0]
     user1 = data['users'][1]
     channel = ch_create(data, user['token'], '12345', True)
-    
+
     # ValueError
     long_message = ""
     for i in range(0, 1010):
         long_message += "a"
-        
+
     res1 = fun_send(data, user['token'], channel['channel_id'], long_message)
     assert res1 == {"ValueError": "Message is more than 1000 characters"}
-    
+
     res2 = fun_message(data, user['token'], channel['channel_id'] - 123, 0)
     assert res2 == {'ValueError': 'Channel ID is not a valid channel'}
 
@@ -216,10 +216,10 @@ def test_channel_messages_bad():
     # AccessError
     res4 = fun_send(data, user['token'], 10, 'testing')
     assert res4 == {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
-    
+
     res5 = fun_message(data, user1['token'], channel['channel_id'], 0)
-    assert res5 == {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}        
-    
+    assert res5 == {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
+
 
 # Testing valid input for channel_leave
 def test_channel_leave_ok():
@@ -282,6 +282,7 @@ def test_channel_join_bad():
     res3 = ch_join(data, user['token'], channel['channel_id'])
     assert res3 == {'AccessError': 'Already a member of that channel'}
 
+
 # Testing valid input for channel_addowner
 def test_channel_addowner_ok():
     data = getdata()
@@ -313,10 +314,10 @@ def test_channel_addowner_bad():
     res1 = ch_addowner(data, user2['token'], channel['channel_id'],
                        user1['u_id'])
     assert res1 == {'AccessError': 'User is not an owner of the slackr or this channel'}
-    
+
     res2 = ch_addowner(data, user_admin['token'], channel['channel_id'], 99876)
     assert res2 == {'AccessError': 'Not a member of this channel'}
-    
+
     # ValueError
     res3 = ch_addowner(data, user_admin['token'], channel['channel_id'] - 123,
                        user1['u_id'])
@@ -326,9 +327,8 @@ def test_channel_addowner_bad():
     res4 = ch_addowner(data, user_admin['token'], channel['channel_id'],
                        user1['u_id'])
     assert res4 == {'ValueError': 'User is already an owner of the channel'}
-    
-    
-    
+
+
 # Testing valid input for channel_removeowner
 def test_channel_removeowner_ok():
     data = getdata()
@@ -380,7 +380,7 @@ def test_channel_removeowner_bad():
 
     # AccessError
     res3 = ch_removeowner(data, user2['token'], channel['channel_id'],
-                       user1['u_id'])
+                          user1['u_id'])
     assert res3 == {'AccessError': 'User is not an owner of the slackr or this channel'}
 
 
@@ -390,20 +390,21 @@ def test_channels_list():
     user_admin = data['users'][0]
     channel1 = ch_create(data, user_admin['token'], 'ch_1', True)
     channel2 = ch_create(data, user_admin['token'], 'ch_2', True)
-    
+
     user1 = data['users'][1]
     channel3 = ch_create(data, user1['token'], 'ch_3', True)
     channel4 = ch_create(data, user1['token'], 'ch_4', True)
-    
+
     channels = ch_lists(data, user1['token'])
 
     assert channels['channels'][1]['channel_id'] == channel3['channel_id']
     assert channels['channels'][1]['name'] == 'ch_3'
-    
+
     assert channels['channels'][2]['channel_id'] == channel4['channel_id']
     assert channels['channels'][2]['name'] == 'ch_4'
 
     assert len(channels['channels']) == 3
+
 
 # Testing valid input for channels_listall
 def test_channels_listall():
@@ -415,31 +416,32 @@ def test_channels_listall():
     channel3 = ch_create(data, user1['token'], '12345', True)
     channel4 = ch_create(data, user1['token'], '123aszxcdf45', True)
     channel5 = ch_create(data, user1['token'], '123asd12f45', False)
-    
+
     channels = ch_listall(data, user1['token'])
 
     assert channels['channels'][1]['channel_id'] == channel1['channel_id']
     assert channels['channels'][1]['name'] == '12345'
-    
+
     assert channels['channels'][2]['channel_id'] == channel2['channel_id']
     assert channels['channels'][2]['name'] == '123asdf45'
-    
+
     assert channels['channels'][3]['channel_id'] == channel3['channel_id']
     assert channels['channels'][3]['name'] == '12345'
-    
+
     assert channels['channels'][4]['channel_id'] == channel4['channel_id']
     assert channels['channels'][4]['name'] == '123aszxcdf45'
-    
+
     assert channels['channels'][5]['channel_id'] == channel5['channel_id']
     assert channels['channels'][5]['name'] == '123asd12f45'
     assert len(channels['channels']) == 6
+
 
 # Testing valid input for channels_create
 def test_channels_create_bad():
     data = getdata()
     user = data['users'][0]
     res1 = ch_create(data, user['token'], "012345678901234567890123456789",
-                    True)
+                     True)
     assert res1 == {'ValueError': 'The maximum characters of name is 20.'}
 
     res2 = ch_create(data, 'jwerjhlw', '1128', True)

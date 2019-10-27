@@ -2,7 +2,6 @@ import React from 'react';
 import axios from 'axios';
 
 import { List, ListSubheader } from '@material-ui/core';
-import { url } from '../../utils/constants';
 import { pollingInterval, getIsPolling, subscribeToStep, unsubscribeToStep } from '../../utils/update';
 import Message from '../Message';
 import AuthContext from '../../AuthContext';
@@ -17,7 +16,7 @@ function ChannelMessages({ channel_id = '' }) {
   const token = React.useContext(AuthContext);
 
   const fetchChannelMessages = () => axios
-  .get(`${url}/channel/messages`, {
+  .get('/channel/messages', {
     params: {
       token,
       channel_id,
@@ -35,33 +34,14 @@ function ChannelMessages({ channel_id = '' }) {
   });
 
   React.useEffect(() => {
+    fetchChannelMessages();
     subscribeToStep(fetchChannelMessages);
     return () => unsubscribeToStep(fetchChannelMessages);
-  }, [])
+  }, [channel_id])
 
   useInterval(() => {
     if (getIsPolling()) fetchChannelMessages();
   }, pollingInterval);
-
-  React.useEffect(() => {
-    axios
-      .get(`${url}/channel/messages`, {
-        params: {
-          token,
-          channel_id,
-          start: currentStart,
-        },
-      })
-      .then(({ data }) => {
-        const { messages, start, end } = data;
-        setCurrentStart(end); // TODO: add/remove problems
-        setMessages(messages);
-      })
-      .catch((err) => {
-        console.error(err);
-        toast.error(CHANNEL_ERROR_TEXT);
-      });
-  }, [token, channel_id, currentStart]);
 
   return (
     <>
@@ -69,7 +49,7 @@ function ChannelMessages({ channel_id = '' }) {
         subheader={<ListSubheader>Messages</ListSubheader>}
         style={{ width: '100%' }}
       >
-        {messages.map((message) => (
+        {messages.slice().reverse().map((message) => (
           <Message {...message} />
         ))}
       </List>
