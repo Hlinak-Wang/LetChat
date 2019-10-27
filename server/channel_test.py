@@ -1,5 +1,5 @@
 import pytest
-from channel_function import (
+from server.channel_function import (
     ch_create,
     ch_invite,
     ch_details,
