@@ -6,9 +6,11 @@ from json import dumps
 from flask import Flask, request
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
+from datetime import datetime, timezone
+from flask_mail import Mail, Message
 from server.message_function import fun_send_late, fun_send, fun_remove, fun_edit, fun_react, fun_unreact, \
-    fun_pin, fun_unpin, send_message_buffer
-from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star, pop_queue
+    fun_pin, fun_unpin, find_channel
+from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile
 from server.channel_function import (
     ch_create,
@@ -23,6 +25,7 @@ from server.channel_function import (
     fun_message,
 )
 from server.auth_function import login, logout, register, reset_request, reset
+
 
 # import functions from another file
 def defaultHandler(err):
@@ -76,9 +79,43 @@ class AccessError(HTTPException):
 # FIX ABOVE
 
 
-def save(data):
+def save():
+    global data
     with open('save.dat', 'wb') as FILE:
         pickle.dump(data, FILE, True)
+
+
+def send_message_buffer():
+    global data
+    time_now = datetime.now()
+    for message in data['message_buffer'][:]:
+        time_send = datetime.strptime(message['time_created'],  "%H:%M")
+        channel = find_channel(data, message['channel_id'])
+        if time_send < time_now:
+            channel['messages'].append(message)
+            data['message_buffer'].remove(message)
+
+
+def pop_queue():
+    global data
+    time_now = datetime.now()
+    time_now = time_now.replace(tzinfo=timezone.utc).timestamp()
+    for channel in data['channels']:
+        if 'standup' in channel:
+            standup = channel['standup']
+            if standup['time_finish'] == '1/1/1900, 1:00:00' or time_now > standup['time_finish']:
+                if channel['standup_message'] != "":
+
+                    channel['messages'].insert(0, {
+                        'u_id': standup['u_id'],
+                        'message_id': data['message_counter'],
+                        'message': channel['standup_message'],
+                        'time_created': time_now,
+                        'reacts': [{'react_id': 1, 'u_ids': []}],
+                        'is_pinned': False,
+                    })
+                    channel['standup_message'] = ""
+                    data['message_counter'] += 1
 
 
 @APP.route("/auth/login", methods=['POST'])
@@ -89,7 +126,7 @@ def auth_login():
     email = request.form.get('email')
     password = request.form.get('password')
     result = login(data,email, password)
-    save(data)
+    save()
     return dumps(result)
 
 
@@ -99,7 +136,7 @@ def auth_logout():
 
     token = request.form.get('token')
     result = logout(data, token)
-    save(data)
+    save()
 
     return dumps(result)
 
@@ -115,7 +152,7 @@ def auth_register():
     name_last = request.form.get('name_last')
 
     result = register(data, email, password, name_first, name_last)
-    save(data)
+    save()
     return dumps(result)
 
 
@@ -124,10 +161,22 @@ def auth_reset_request():
     global data
 
     email = request.form.get('email')
-    result = reset_request(data, email, APP)
-    save(data)
+    code = reset_request(data, email)
 
-    return dumps(result)
+    mail = Mail(APP)
+
+    try:
+        msg = Message("Password reset",
+                      sender="ourteamie4@gmail.com",
+                      recipients=[email])
+        msg.body = code
+        mail.send(msg)
+    except Exception as e:
+        return {'exception': str(e)}
+
+    save()
+
+    return dumps({})
 
 
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
@@ -137,7 +186,7 @@ def auth_reset():
     new_password = request.form.get('new_password')
 
     result = reset(data, reset_code, new_password)
-    save(data)
+    save()
 
     return dumps(result)
 
@@ -157,7 +206,7 @@ def channel_create():
     if 'ValueError' in channel_id:
         raise ValueError(description=channel_id['ValueError'])
 
-    save(data)
+    save()
 
     return dumps(channel_id)
 
@@ -174,7 +223,7 @@ def channel_invite():
         raise ValueError(description=result['ValueError'])
     elif 'AccessError' in result:
         raise AccessError(description=result['AccessError'])
-    save(data)
+    save()
 
     return dumps(result)
 
@@ -190,15 +239,15 @@ def channel_details():
         raise ValueError(description=channel_detail['ValueError'])
     elif 'AccessError' in channel_detail:
         raise AccessError(description=channel_detail['AccessError'])
-    save(data)
+    save()
 
     return dumps(channel_detail)
 
 
 @APP.route('/channel/messages', methods=['GET'])
 def channel_message():
-    pop_queue(data)
-    send_message_buffer(data)
+    pop_queue()
+    send_message_buffer()
     channel_id = int(request.args.get('channel_id'))
     token = request.args.get('token')
     start = int(request.args.get('start'))
@@ -207,7 +256,7 @@ def channel_message():
         raise ValueError(description=messages['ValueError'])
     elif 'AccessError' in messages:
         raise AccessError(description=messages['AccessError'])
-    save(data)
+    save()
 
     return dumps(messages)
 
@@ -215,15 +264,15 @@ def channel_message():
 @APP.route('/message/send_later', methods=['POST'])
 def message_send_later():
     global data
-    pop_queue(data)
-    send_message_buffer(data)
+    pop_queue()
+    send_message_buffer()
     message = request.form.get('message')
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     time_create = request.form.get('time_create')
 
     output = fun_send_late(data, token, channel_id, message, time_create)
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -241,7 +290,7 @@ def message_send():
         raise AccessError(description=output['AccessError'])
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -256,7 +305,7 @@ def message_remove():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -272,7 +321,7 @@ def message_edit():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -287,7 +336,7 @@ def message_react():
     output = fun_react(data, token, message_id, react_id)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -301,7 +350,7 @@ def message_unreact():
     output = fun_unreact(data, token, message_id, react_id)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -317,7 +366,7 @@ def message_pin():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -333,7 +382,7 @@ def message_unpin():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -347,7 +396,7 @@ def channel_leave():
     output = ch_leave(data, token, channel_id)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -363,7 +412,7 @@ def channel_join():
         raise ValueError(description=join['ValueError'])
     elif 'AccessError' in join:
         raise AccessError(description=join['AccessError'])
-    save(data)
+    save()
 
     return dumps(join)
 
@@ -381,7 +430,7 @@ def channel_addowner():
     elif 'AccessError' in addowner:
         raise AccessError(description=addowner['AccessError'])
 
-    save(data)
+    save()
     return dumps(addowner)
 
 
@@ -397,7 +446,7 @@ def channel_removeowner():
         raise ValueError(description=removeowner['ValueError'])
     elif 'AccessError' in removeowner:
         raise AccessError(description=removeowner['AccessError'])
-    save(data)
+    save()
 
     return dumps(removeowner)
 
@@ -407,7 +456,7 @@ def channel_list():
     global data
 
     token = request.args.get('token')
-    save(data)
+    save()
 
     return dumps(ch_lists(data, token))
 
@@ -418,7 +467,7 @@ def channel_listall():
 
     token = request.args.get('token')
     listall = ch_listall(data, token)
-    save(data)
+    save()
 
     return dumps(listall)
 
@@ -434,7 +483,7 @@ def profile():
 
     if value == None:
         raise ValueError(description=Errormessage)
-    save(data)
+    save()
 
     return dumps(value)
 
@@ -451,7 +500,7 @@ def setname():
 
     if value == None:
         raise ValueError(description=Errormessage)
-    save(data)
+    save()
     return dumps({})
 
 
@@ -466,7 +515,7 @@ def setemail():
 
     if value == None:
         raise ValueError(description=Errormessage)
-    save(data)
+    save()
 
     return dumps({})
 
@@ -482,7 +531,7 @@ def sethandle():
 
     if value == None:
         raise ValueError(description=Errormessage)
-    save(data)
+    save()
 
     return dumps({})
 
@@ -497,8 +546,8 @@ def uploadphoto():
 @APP.route('/search', methods=['GET'])
 def search():
     global data
-    pop_queue(data)
-    send_message_buffer(data)
+    pop_queue()
+    send_message_buffer()
     query_str = request.args.get('query_str')
     token = request.args.get('token')
     output = message_search(data, token, query_str)
@@ -506,7 +555,7 @@ def search():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -524,7 +573,7 @@ def change_permission():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -542,7 +591,7 @@ def standup_start():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
@@ -560,7 +609,7 @@ def standup_send():
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
-    save(data)
+    save()
 
     return dumps(output)
 
