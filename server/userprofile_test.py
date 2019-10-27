@@ -66,7 +66,7 @@ def test_setname():
 
     # Valid input
     usersetname(data, auth_key["token"], first_short, last_short)
-    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
+    profile = getprofile(data, auth_key["token"], auth_key["u_id"])[0]
     assert profile["name_first"] == first_short
     assert profile["name_last"] == last_short
 
@@ -75,7 +75,7 @@ def test_setemail():
     data = getData()
     # Register two user for testing
     auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
-    auth_key1 = register(data, 'email@gmail.com1', 'password1', 'name_first1', 'name_last1')
+    register(data, 'email@gmail.com1', 'password1', 'name_first1', 'name_last1')
 
     invalid_email = 'dffgfddfsa.com'
     email_used_already = 'email@gmail.com'
@@ -94,7 +94,7 @@ def test_setemail():
     assert wrongmessage == 'User with token is not a valid user'
 
     # Valid input
-    value, wrongmessage = usersetemail(data, auth_key["token"], 'newemail@gmail.com')
+    usersetemail(data, auth_key["token"], 'newemail@gmail.com')
     profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
     assert profile["email"] == 'newemail@gmail.com'
 
@@ -129,7 +129,3 @@ def test_sethandle():
     profile, error = getprofile(data, user["token"], user["u_id"])
     assert profile["handle_str"] == 'testing'
 
-#test uploadphoto
-def test_uploadphoto():
-    # Create one user for testing
-    pass
