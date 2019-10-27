@@ -1,7 +1,8 @@
 import re
+import hashlib
 import jwt
 from datetime import datetime
-import hashlib
+
 # HELPER FUNCTIONS BELOW
 
 SECRET = 'IE4'
