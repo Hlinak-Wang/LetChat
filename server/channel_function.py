@@ -246,12 +246,12 @@ def ch_lists(data, token):
         for i in ch_id:
             if channel['channel_id'] == i:
                 stack_channel.append({
-                                    'name': channel['name'],
-                                    'channel_id': channel['channel_id']
-                                    })
+                    'name': channel['name'],
+                    'channel_id': channel['channel_id']
+                })
 
     return {
-            'channels': stack_channel
+        'channels': stack_channel
     }
 
 
@@ -267,11 +267,11 @@ def ch_listall(data, token):
         elif not channel['is_public']:
             if find_member(channel, user) is not None:
                 stack_channel.append({
-                                'name': channel['name'],
-                                'channel_id': channel['channel_id']
+                    'name': channel['name'],
+                    'channel_id': channel['channel_id']
                                 })
     return {
-            'channels': stack_channel
+        'channels': stack_channel
     }
 
 
