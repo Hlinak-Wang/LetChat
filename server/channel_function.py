@@ -7,7 +7,7 @@ Created on 2019/10/15
 """
 
 from datetime import datetime, timezone
-from server.help import find_channel, find_user
+from server.help import find_channel, find_user, print_message
 
 
 def find_uid(data, u_id):
@@ -276,21 +276,7 @@ def fun_message(data, token, channel_id, start):
 
     end = start
     for message in channel['messages'][start:]:
-        react_list = message['reacts']
-        for react in react_list:
-            if user['u_id'] in react['u_ids']:
-                react['is_this_user_reacted'] = True
-            else:
-                react['is_this_user_reacted'] = False
-
-        output_list.append({
-            'message_id': message['message_id'],
-            'u_id': message['u_id'],
-            'message': message['message'],
-            'time_created': message['time_created'],
-            'reacts': react_list,
-            'is_pinned': message['is_pinned']
-        })
+        print_message(user, message, output_list)
         end += 1
         if end >= start + 50:
             return {

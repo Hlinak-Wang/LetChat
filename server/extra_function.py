@@ -7,7 +7,7 @@ Created on 2019/10/15
 """
 
 from datetime import datetime, timedelta
-from server.help import find_channel
+from server.help import find_channel, print_message
 
 
 def find_user(data, value, aspect):
@@ -29,21 +29,7 @@ def message_search(data, token, query_str):
     for channel in channel_join_list:
         for message in channel['messages']:
             if message['message'] == query_str:
-                react_list = message['reacts']
-                for react in react_list:
-                    if user['u_id'] in react['u_ids']:
-                        react['is_this_user_reacted'] = True
-                    else:
-                        react['is_this_user_reacted'] = False
-
-                output_list.append({
-                    'message_id': message['message_id'],
-                    'u_id': message['u_id'],
-                    'message': message['message'],
-                    'time_created': message['time_created'],
-                    'reacts': react_list,
-                    'is_pinned': message['is_pinned']
-                })
+                print_message(user, message, output_list)
 
     return {
         'messages': output_list,
