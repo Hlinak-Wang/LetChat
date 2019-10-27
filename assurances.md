@@ -1,7 +1,8 @@
 ##software verification and validation
-User acceptance criteria is developed from user stories and requirements to ensure the system meets specifications and that it fulfills its intended purpose.
+To verify that our backend implementation is fit for purpose, we used testing to ensure the program is free of unexpected bugs. We have used many testing methods at different stages. For instance, each group member has implemented different functions according to the relevance of each function, e.g. channel functions, so initially, everyone used the integration testing to check the interaction between each related functions. Later on, some particular functions testing need to refer to other functions, for example the channel_message function needs to test with the message_send function. Before checking the validity of our system, we used coverage to ensure that our tests have covered every possible errors or condition. Then we used acceptance testing to check the validation of our backend implementation has interacted well with frontend. By running both backend and frontend, we got a website link address to enter the slackr. Each group member has taken a turn to pretend that they don?t have an idea about the slackr and try to figure out from their perspectives and also take notice on whether the slackr has met the required acceptance criteria or not.
 
 ##acceptance criteria
+User acceptance criteria is developed from user stories and requirements to ensure the system meets specifications and that it fulfills its intended purpose.
 #####As a slackr user, I want to send a message, so that I can share my thoughts with the other members of the channel.
 - There will be a text field at the bottom once the user enters a channel.
 - There will be a send button at the right of the text field once the user enters a channel.
