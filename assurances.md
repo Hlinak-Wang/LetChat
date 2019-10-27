@@ -6,52 +6,52 @@ User acceptance criteria is developed from user stories and requirements to ensu
 - There will be a text field at the bottom once the user enters a channel.
 - There will be a send button at the right of the text field once the user enters a channel.
 - The text field contains a placeholder with a grey-colored text: “Send a message”.
-- The placeholder move to top left corner of the text field once the user starts typing.
-- The message sent to the current channel once the user clicks the send button.
-- The user can’t send a message more than 1000 characters.
+- The placeholder moves to the top left corner of the text field once the user starts typing.
+- The message is sent to the current channel once the user clicks the send button.
+- The user can’t send a message with length over 1000 characters.
 
 #####As a slackr user, I want to edit a message, so that I can keep my message up to date.
-- There will be a button has a figure of grey-colored pen placed at the right of every message.
-- Once user click the black-colored pen, a pop-ups has a text field and two button will appear.
-- The text field contains a placeholder with a grey-colored text: “Enter to replace message”.
-- The placeholder disappear once the user starts typing.
+- There will be a button that has an image of a black-colored pen placed at the right of every message.
+- Once the user clicks the black-colored pen, a pop-up which has a text field and two buttons will appear.
+- The text field contains a placeholder with grey-colored text: “Enter to replace message”.
+- The placeholder disappears once the user starts typing.
 - One of the buttons contains a placeholder with a blue-colored text:”Confirm”. 
 - The other button contains a placeholder with grey-colored text:”Cancel”.
-- Once the user clicks the text “Confirm”, the pop-ups will disappear and the text entered will replace the original text on the message which associate with that edit button.
-- Once the user clicks the button has a text “Cancel”, the pop-ups will disappear, and there will be no change in the text of message.
-- The text used to replace to replace the original text can’t be none or more than 1000 characters.
+- Once the user clicks the text “Confirm”, the pop-up will disappear and the text entered will replace the original text on the message which is associated with that edit button.
+- Once the user clicks the button has a text “Cancel”, the pop-ups will disappear, and there will be no change in the text of the original message.
+- The text used to replace the original text can’t be empty or more than 1000 characters.
 - Only the user who sent the message or admin of slackr can edit the message.
 
 As a slackr user, I want to delete a message, so that I can remove my message if it is no longer relevant.
-- There will be a button has a figure of grey-colored garbage bin placed at the right of every message.
-- Once the user clicks on that, the message associated with that button will disappear.
-- Only the user who sent the message or admin of slackr can edit the message.
+- There will be a button with an image of a grey-colored garbage bin placed at the right of every message.
+- Once the user clicks on that button, the message associated with that button will disappear.
+- Only the user who sent the message or admin of slackr can delete the message.
 
 #####As a channel owner, I want to Pin and unpin messages, so that the other members of the channel can be easily informed about important information and announcements.
-- There will be a button has a figure of grey-colored thumbtack on the right of the message.
-- Once the button is clicked, the figure on  button change to black-colored thumbtack.
+- There will be a button has an image of a grey-colored thumbtack on the right of the message.
+- Once the button is clicked, the image on the button will change to a black-coloured thumbtack.
 - Once the button is clicked, the message will be moved to the top on the channel page.
-- Once the message is pinned, user can click on the button has a  black-colored thumbtack to unpin the message.
-- The unpinned message will be removed from the top of channel page, but user can still find it in channel message field
+- Once the message is pinned, the user can click on the button that has a black-colored thumbtack to unpin the message.
+- The unpinned message will be removed from the top of channel page, but a user can still find it in the message field of the channel.
 
 #####As a slackr user, I want to react and unreact to messages, so that others may know how I feel about certain messages.
-- There will be a button has a figure of black-colored thumbs up on the right of the message, and there is a number on the bottom right corner of the figure.
+- There will be a button that has an image of a black-colored thumbs up on the right of the message, and there will be a number on the bottom right corner of the figure.
 - The number on the bottom right corner of the figure represent the number of user been react on this message.
 - Once the button is clicked, the number on the bottom right corner of the figure increase by 1.
 - One user can only react once for a message.
-- If the user is already clicks on the thumbs up, the number on the bottom right corner will decrease by 1 if  the user clicks again.
+- If the user has already clicked on the thumbs up, the number on the bottom right corner will decrease by 1 if the user clicks again.
 
-#####As a slackr user, I want to send a Delaying messages, so that I can prepare my messages in advance of when they need to be sent.
-- A button has a figure of grey-colored clock placed on the bottom right corner.
-- A pop-ups with a text field and two button will open.
-- The text field at the centre of pop-ups contains a placeholder with a grey-colored text: “Enter a time to send”.
-- The placeholder disappear once the user starts typing.
-- One of the buttons at the bottom contain a placeholder with a blue-colored text: “Cancel”.
-- The other button at the bottom contains a placeholder with a blue-colored text: “Set time”.
-- Once the user clicks the bottom contains “Cancel”, the pop-ups will disappear, and have no effect on the next message.
-- Once the user clicks the bottom contains “Set time”, the pop-ups will disappear, and the next message will be sent at the time user settled.
+#####As a slackr user, I want to send a delayed message, so that I can prepare my messages in advance of when they need to be sent.
+- A button has an image of a grey-colored clock placed on the bottom right corner.
+- A pop-up with a text field and two buttons will appear.
+- The text field at the centre of the pop-up contains a placeholder with a grey-colored text: “Enter a time to send”.
+- The placeholder disappears once the user starts typing.
+- One of the buttons at the bottom contains a placeholder with blue-colored text: “Cancel”.
+- The other button at the bottom contains a placeholder with blue-colored text: “Set time”.
+- Once the user clicks “Cancel”, the pop-up will disappear, and have no effect on the next message.
+- Once the user clicks “Set time”, the pop-up will disappear, and the next message will be sent at the time the user entered.
 - The message can’t send to the next day and to the past.
-- The message will be sent at the time which is settled by user.
+- The message will be sent at the time which was entered by user.
 
 #####As a slackr user, I want to search for messages, so that I may find a particular message that I am looking for.
 - The search field is placed on the top bar.
@@ -61,36 +61,35 @@ As a slackr user, I want to delete a message, so that I can remove my message if
 
 #####As a slackr admin, I want to Add other admins, so that others may also have administrative powers over my workspace. 
 - A button at the top right corner of the home page contains a placeholder with a text “Admin”
-- Once user click on that button, a pop-ups contains a text field and three buttons will appear.
+- Once a user click on that button, a pop-up containing a text field and three buttons will appear.
 - The text field contains a placehold with a text “Enter u_id”
 - The placeholder will disappear once the user start typing.
-- Three buttons each has a placehold contains a text with “Member”, “Adim”, and “Owner” repectively.
-- Once the user clicks on one of these buttons, the pop-ups will close, and the permission of the user (base on u_id) will be changed.
-- Only the admin and owner can change the user’s permission.
+- Three buttons contain  placeholders “Member”, “Adim”, and “Owner” repectively.
+- Once the user clicks on one of these buttons, the pop-up will close, and the permission of the user (based on u_id) will be changed.
+- Only the admin and owner can change a user’s permission.
 
-#####As a slack user, I want to be able to use standup to summarise a particular discussion, so that me and the other members of the channel can easily view the results and key points of the discussion.
-- A button at the top right corner of channel page contains a placeholder with a text “Standup”.
+#####As a slackr user, I want to be able to use standup to summarise a particular discussion, so that me and the other members of the channel can easily view the results and key points of the discussion.
+- A button at the top right corner of channel page contains a placeholder with text “Standup”.
 - Standup starts once the user clicks on that button.
 - Once the standup starts, every message sent will go in to message-queue instead of directly send to the channel.
-- Once the standup end, user who start standup will send all  the message in message-queue.
-- Message sent can’t longer than 1000 characters
+- Once the standup end, user who start standup will send all the messages in message-queue.
+- Messages sent can’t be longer than 1000 characters
 
 #####As a slackr user, I want my account to come with a profile page and a handle, so that other slack users can learn about me.
-- There will be a Profile bottun at the left once the user login correctly.
-- There will be Profile details shows up in the main page once user click the Profile button.
-- There are four text box cotains user’s First name, Last name Email, and Handle with a edit button in thier right
-
+- There will be a Profile button at the left once the user login correctly.
+- Profile details will show up in the main page once the user clicks the Profile button.
+- There are four text boxes cotaining user’s 'first name', 'last name', 'email', and 'handle' with an edit button on the right.
 
 #####As a slack user, I want to edit my profile, such as updating my email address, first name and last name, so that I can keep my profile up-to-date.
-- There will be an edit button at the right of  text box in the main page once the user click the Profile button.
-- There will be a save button and a cancel button at the right of text box  in the main page once user click the edit button and user can rewrite the first name last name or email address.
+- There will be an edit button at the right of text box in the main page once the user clicks the Profile button.
+- There will be a save button and a cancel button at the right of a text box on the main page once user clicks the edit button and user can rewrite the first name last name or email address.
 - The user can’t set the First name or last name more than 50 character or 0.
 - The user can’t set the email address to be a invalid email or email which it is already used by another user.
 
 #####As a slack user, I want to view my handle name, so I can customising my slack handle and make it what I like.
-- There will be a edit button at the right of  text box in the main page once the user click the Profile button.
-- There will be a edit button at the right of  handle box in the main page once the user click the Profile button.
-- There will be a save button and a cancel button at the right of text box  in the main page once user click the edit button and user can modify the handle as they like.
+- There will be an edit button at the right of the text box in the main page once the user clicks the Profile button.
+- There will be a edit button at the right of the handle box in the main page once the user clicks the Profile button.
+- There will be a save button and a cancel button at the right of text box in the main page once user click the edit button and user can modify the handle as they like.
 - The user can’t set the handle more than 20 character or less than 3 character.
 - The user can’t set the handle to be handle which it is already used by user.
 
