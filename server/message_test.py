@@ -1,7 +1,7 @@
 import datetime
 from server.message_function import fun_send_late, fun_send, fun_remove, fun_edit, fun_react, fun_unreact, fun_pin, \
     fun_unpin
-from server.auth_function import register
+from server.auth_functions import register
 from server.channel_function import ch_create, ch_join
 
 # initial state of testing
