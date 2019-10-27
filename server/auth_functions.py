@@ -1,7 +1,7 @@
 import re
 import jwt
 from datetime import datetime
-
+import hashlib
 # HELPER FUNCTIONS BELOW
 
 SECRET = 'IE4'
@@ -17,7 +17,7 @@ def check_valid_email(email):
 def check_user_details(data, email, password):
     for user in data['users']:
         if user['email'] == email:
-            if user['password'] == password:
+            if user['password'] == hashlib.sha256(password.encode("utf-8")).hexdigest():
                 return user
             else:
                 return {'ValueError': "Incorrect password entered"}
@@ -167,7 +167,7 @@ def register(data, email, password, name_first, name_last):
         'token': token,
         'handle_str': handle,
         'email': email,
-        'password': password,
+        'password': hashlib.sha256(password.encode("utf-8")).hexdigest(),
         'permission_id': permission,
         'channel_involve': [],
         'reset_code': None
