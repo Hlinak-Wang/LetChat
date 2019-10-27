@@ -4,7 +4,8 @@ from server.auth_functions import register
 #fet global data
 def getData():
     data = {
-        'users': []
+        'users': [],
+        'channels': []
     }
     return data
 
