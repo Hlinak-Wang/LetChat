@@ -89,7 +89,12 @@ def usersetname(data, token, name_first, name_last):
     user['name_first'] = name_first
     user['name_last'] = name_last
 
-    print(user)
+    for channel in data['channels']:
+        if channel['channel_id'] in user['channel_involve']:
+            for member in channel['user_list']:
+                if member['u_id'] == user['u_id']:
+                    member['name_first'] = name_first
+                    member['name_last'] = name_last
     value = 1
 
     return (value, wrongmessage)
