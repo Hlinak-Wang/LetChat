@@ -1,7 +1,6 @@
 from flask import Flask, request
 from json import dumps
 from werkzeug.exceptions import HTTPException
-from Error import AccessError
 from channel_function import (
         ch_create,
         ch_invite,
