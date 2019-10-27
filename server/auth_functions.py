@@ -199,7 +199,7 @@ def reset(data, reset_code, new_password):
         return check_valid_password(new_password)
 
     check_valid_password(new_password)
-    user['password'] = new_password
+    user['password'] = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
     user['reset_code'] = None
 
     return {}

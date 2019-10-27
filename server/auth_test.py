@@ -1,5 +1,5 @@
 from server.auth_functions import login, logout, register, reset_request, reset, generateToken, generateHandle
-
+import hashlib
 SECRET = 'IE4'
 
 
@@ -23,7 +23,7 @@ def testData():
                 'token': "dummytoken",
                 'handle_str': "hellogoodbye",
                 'email': "hi@gmail.com",
-                'password': "123456",
+                'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
                 'permission_id': 1,
                 'channel_involve': [],
                 'reset_code': None
@@ -56,7 +56,7 @@ def test_auth_register_valid():
         'token': check_token_1,
         'handle_str': "hellogoodbye",
         'email': "hi@gmail.com",
-        'password': "123456",
+        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
         'permission_id': 1,
         'channel_involve': [],
         'reset_code': None
@@ -79,7 +79,7 @@ def test_auth_register_valid():
         'token': check_token_1,
         'handle_str': "hellogoodbye",
         'email': "hi@gmail.com",
-        'password': "123456",
+        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
         'permission_id': 1,
         'channel_involve': [],
         'reset_code': None
@@ -90,7 +90,7 @@ def test_auth_register_valid():
         'token': check_token_2,
         'handle_str': "hellohowareyouimfine",
         'email': "good@gmail.com",
-        'password': "9876543",
+        'password': hashlib.sha256("9876543".encode("utf-8")).hexdigest(),
         'permission_id': 3,
         'channel_involve': [],
         'reset_code': None
@@ -117,7 +117,7 @@ def test_auth_register_handle():
         'token': "dummytoken",
         'handle_str': "hellogoodbye",
         'email': "hi@gmail.com",
-        'password': "123456",
+        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
         'permission_id': 1,
         'channel_involve': [],
         'reset_code': None
@@ -128,7 +128,7 @@ def test_auth_register_handle():
         'token': check_token,
         'handle_str': check_handle,
         'email': "bye@gmail.com",
-        'password': "123456",
+        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
         'permission_id': 3,
         'channel_involve': [],
         'reset_code': None
@@ -257,7 +257,7 @@ def test_auth_logout_valid():
             'token': None,
             'handle_str': "hellogoodbye",
             'email': "hi@gmail.com",
-            'password': "123456",
+            'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
             'permission_id': 1,
             'channel_involve': [],
             'reset_code': None
