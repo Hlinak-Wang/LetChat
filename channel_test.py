@@ -1,4 +1,3 @@
-from Error import AccessError
 import pytest
 from channel_function import (
         ch_create,
