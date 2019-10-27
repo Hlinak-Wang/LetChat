@@ -1,4 +1,3 @@
-from Error import AccessError
 import pytest
 from channel_function import (
         ch_create,
@@ -65,7 +64,7 @@ def getdata():
                     {
                         'message': 'test',
                         'u_id': 123,
-                        'reacts': [{'react_id': 1, 'u_ids': []}],
+                        'reacts': [{'react_id': 1, 'u_ids': [123, 1234]}],
                         'is_pinned': False,
                         'time_created': '10/20/2019, 23:25:33',
                         'message_id': 1,
@@ -166,36 +165,61 @@ def test_channel_messages_ok():
     user = data['users'][0]
     channel = ch_create(data, user['token'], '12345', True)
     fun_send(data, user['token'], channel['channel_id'], 'testing')
-
     message_channel = fun_message(data, user['token'],
                                   channel['channel_id'], 0)
+    channel1 = data['channels'][0]
+    message_channel1 = fun_message(data, user['token'],
+                                   channel1['channel_id'], 0)
     # Checking the output
     assert message_channel['start'] == 0
     assert message_channel['end'] == -1
-
     messages = message_channel['messages']
     assert messages[0]['message'] == 'testing'
     assert messages[0]['u_id'] == user['u_id']
+    
+    assert message_channel1['start'] == 0
+    assert message_channel1['end'] == -1
+    messages1 = message_channel1['messages']
+    assert messages1[0]['message'] == 'test'
+    assert messages1[0]['u_id'] == user['u_id']
+    
+    for i in range(0, 25):
+        fun_send(data,user['token'], channel['channel_id'], 'another test')
+        fun_send(data, user['token'], channel['channel_id'], 'again')
+    message_channel2 = fun_message(data, user['token'],
+                                  channel['channel_id'], 0)
+    assert message_channel2['start'] == 0
+    assert message_channel2['end'] == 50
 
 
 # Testing invalid input for channel_message
 def test_channel_messages_bad():
     data = getdata()
-    user_admin = data['users'][0]
+    user = data['users'][0]
     user1 = data['users'][1]
-    channel = ch_create(data, user_admin['token'], '12345', True)
+    channel = ch_create(data, user['token'], '12345', True)
     
     # ValueError
-    res1 = fun_message(data, user_admin['token'], channel['channel_id'] - 123, 0)
-    assert res1 == {'ValueError': 'Channel ID is not a valid channel'}
+    long_message = ""
+    for i in range(0, 1010):
+        long_message += "a"
         
-    res2 = fun_message(data, user_admin['token'], channel['channel_id'], 999999999)
-    assert res2 == {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
+    res1 = fun_send(data, user['token'], channel['channel_id'], long_message)
+    assert res1 == {"ValueError": "Message is more than 1000 characters"}
+    
+    res2 = fun_message(data, user['token'], channel['channel_id'] - 123, 0)
+    assert res2 == {'ValueError': 'Channel ID is not a valid channel'}
+
+    res3 = fun_message(data, user['token'], channel['channel_id'], 999999999)
+    assert res3 == {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
 
     # AccessError
-    res3 = fun_message(data, user1['token'], channel['channel_id'], 0)
-    assert res3 == {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}        
-
+    res4 = fun_send(data, user['token'], 10, 'testing')
+    assert res4 == {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
+    
+    res5 = fun_message(data, user1['token'], channel['channel_id'], 0)
+    assert res5 == {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}        
+    
 
 # Testing valid input for channel_leave
 def test_channel_leave_ok():
@@ -255,6 +279,8 @@ def test_channel_join_bad():
     res2 = ch_join(data, user2['token'], channel2['channel_id'])
     assert res2 == {'AccessError': 'The channel is private'}
 
+    res3 = ch_join(data, user['token'], channel['channel_id'])
+    assert res3 == {'AccessError': 'Already a member of that channel'}
 
 # Testing valid input for channel_addowner
 def test_channel_addowner_ok():
@@ -287,18 +313,22 @@ def test_channel_addowner_bad():
     res1 = ch_addowner(data, user2['token'], channel['channel_id'],
                        user1['u_id'])
     assert res1 == {'AccessError': 'User is not an owner of the slackr or this channel'}
-
+    
+    res2 = ch_addowner(data, user_admin['token'], channel['channel_id'], 99876)
+    assert res2 == {'AccessError': 'Not a member of this channel'}
+    
     # ValueError
-    res2 = ch_addowner(data, user_admin['token'], channel['channel_id'] - 123,
+    res3 = ch_addowner(data, user_admin['token'], channel['channel_id'] - 123,
                        user1['u_id'])
-    assert res2 == {'ValueError': 'Invalid Channel ID'}
+    assert res3 == {'ValueError': 'Invalid Channel ID'}
     ch_addowner(data, user_admin['token'], channel['channel_id'],
                 user1['u_id'])
-    res3 = ch_addowner(data, user_admin['token'], channel['channel_id'],
+    res4 = ch_addowner(data, user_admin['token'], channel['channel_id'],
                        user1['u_id'])
-    assert res3 == {'ValueError': 'User is already an owner of the channel'}
-
-
+    assert res4 == {'ValueError': 'User is already an owner of the channel'}
+    
+    
+    
 # Testing valid input for channel_removeowner
 def test_channel_removeowner_ok():
     data = getdata()
@@ -319,9 +349,7 @@ def test_channel_removeowner_ok():
 
     # if user1["u_id"] is in the owner list
     # Means channel_removeowner is not working
-    if user1['u_id'] in owner_list:
-        exist = 0
-    else:
+    if user1['u_id'] not in owner_list:
         exist = 1
     assert exist == 1
 
@@ -388,7 +416,7 @@ def test_channels_listall():
     channel4 = ch_create(data, user1['token'], '123aszxcdf45', True)
     channel5 = ch_create(data, user1['token'], '123asd12f45', False)
     
-    channels = ch_listall(data, user_admin['token'])
+    channels = ch_listall(data, user1['token'])
 
     assert channels['channels'][1]['channel_id'] == channel1['channel_id']
     assert channels['channels'][1]['name'] == '12345'
@@ -402,12 +430,17 @@ def test_channels_listall():
     assert channels['channels'][4]['channel_id'] == channel4['channel_id']
     assert channels['channels'][4]['name'] == '123aszxcdf45'
     
-    assert len(channels['channels']) == 5
+    assert channels['channels'][5]['channel_id'] == channel5['channel_id']
+    assert channels['channels'][5]['name'] == '123asd12f45'
+    assert len(channels['channels']) == 6
 
 # Testing valid input for channels_create
 def test_channels_create_bad():
     data = getdata()
     user = data['users'][0]
-    res = ch_create(data, user['token'], "012345678901234567890123456789", True)
-    assert res == {'ValueError': 'The maximum characters of name is 20.'}
-        
+    res1 = ch_create(data, user['token'], "012345678901234567890123456789",
+                    True)
+    assert res1 == {'ValueError': 'The maximum characters of name is 20.'}
+
+    res2 = ch_create(data, 'jwerjhlw', '1128', True)
+    assert res2 == {'ValueError': 'The user is not exist'}
