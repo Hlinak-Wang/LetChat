@@ -13,20 +13,20 @@ from server.channel_function import ch_create, ch_join
 
 # initial state of testing
 def getdata():
-    data = {
+    test_data = {
         'users': [],
         'channels': [],
         'message_counter': 0,
         'message_buffer': []
     }
-    user_chowner = register(data, 'test1@test.com', 'password', 'name_first1', 'name_last')
-    user_inch = register(data, 'test2@test.com', 'password', 'name_first2', 'name_last')
-    user_notch = register(data, 'test3@test.com', 'password', 'name_first3', 'name_last')
-    channel = ch_create(data, user_chowner['token'], 'test_channel', True)
-    ch_join(data, user_inch['token'], channel['channel_id'])
-    fun_send(data, user_inch['token'], channel['channel_id'], 'test2')
-    fun_send(data, user_chowner['token'], channel['channel_id'], 'test')
-    return data
+    user_chowner = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last')
+    user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last')
+    register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last')
+    channel = ch_create(test_data, user_chowner['token'], 'test_channel', True)
+    ch_join(test_data, user_inch['token'], channel['channel_id'])
+    fun_send(test_data, user_inch['token'], channel['channel_id'], 'test2')
+    fun_send(test_data, user_chowner['token'], channel['channel_id'], 'test')
+    return test_data
 
 
 def test_send_late():
