@@ -7,13 +7,7 @@ Created on 2019/10/15
 """
 
 from datetime import datetime, timezone
-
-
-def find_user(data, token):
-    for user in data['users']:
-        if user['token'] == token:
-            return user
-    return None
+from server.help import find_channel, find_user
 
 
 def find_uid(data, u_id):
@@ -27,14 +21,6 @@ def is_owner(user_list, u_id):
     for user in user_list:
         if user['u_id'] == u_id:
             return user['is_owner']
-    return None
-
-
-def find_channel(data, channel_id):
-    for channel in data['channels']:
-        if channel['channel_id'] == channel_id:
-            return channel
-
     return None
 
 

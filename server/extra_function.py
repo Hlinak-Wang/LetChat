@@ -7,7 +7,15 @@ Created on 2019/10/15
 """
 
 from datetime import datetime, timedelta
-from server.help import find_channel, find_user
+from server.help import find_channel
+
+
+def find_user(data, value, aspect):
+    for user in data['users']:
+        if user[aspect] == value:
+            return user
+
+    return None
 
 
 def message_search(data, token, query_str):
