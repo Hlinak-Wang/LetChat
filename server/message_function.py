@@ -36,7 +36,6 @@ def find_ownership(user_list, member):
     for user in user_list:
         if user['u_id'] == member['u_id']:
             return user['is_owner']
-    return None
 
 
 def find_react(react_list, react_id):
@@ -97,10 +96,10 @@ def fun_send(data, token, channel_id, message):
 
     user = find_user(data, token)
 
-    if channel_id not in user['channel_involve']:
-        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
-
     channel = find_channel(data, channel_id)
+
+    if channel is None or channel_id not in user['channel_involve']:
+        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
 
     # assume m_id depend on the number of message been sent
     time_send = datetime.now()
