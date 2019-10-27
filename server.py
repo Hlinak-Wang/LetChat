@@ -24,7 +24,7 @@ from server.channel_function import (
     ch_listall,
     fun_message,
 )
-from server.auth_function import login, logout, register, reset_request, reset
+from server.auth_functions import login, logout, register, reset_request, reset
 
 
 # import functions from another file
@@ -61,8 +61,8 @@ data = {
     'message_buffer': []
 }
 
-#if os.path.getsize(os.getcwd() + '/save.dat') > 0:
- #   data = pickle.load(open('save.dat', 'rb'))
+if os.path.getsize(os.getcwd() + '/save.dat') > 0:
+    data = pickle.load(open('save.dat', 'rb'))
 
 SECRET = 'IE4'
 
