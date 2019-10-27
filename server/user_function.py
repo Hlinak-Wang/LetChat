@@ -2,7 +2,7 @@ import re
 
 # Make a regular expression
 # for validating an Email
-regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
+Regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
 
 
 # Define a function for
@@ -10,12 +10,11 @@ regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
 def check(email):
     # pass the regualar expression
     # and the string in search() method
-    if (re.search(regex, email)):
+    if (re.search(Regex, email)):
         return 1
+    return 0
 
-    else:
-        return 0
-
+#find user by token, return user if found, return None if not found
 def getuser(data, token):
 
     for user in data['users']:
@@ -24,7 +23,7 @@ def getuser(data, token):
 
     return None
 
-
+#check email status if used return 0 else return 1
 def checkemailnotused(data, email):
 
     for user in data['users']:
@@ -33,7 +32,7 @@ def checkemailnotused(data, email):
 
     return 1
 
-
+#check handle status if used return 0 else return 1
 def checkhandlenotused(data, handle):
 
     for user in data['users']:
@@ -42,12 +41,12 @@ def checkhandlenotused(data, handle):
 
     return 1
 
-
+#get user profile by token
 def getprofile(data, token, u_id):
     value = None
     wrongmessage = None
 
-    if token == None or u_id == None:
+    if token is None or u_id is None:
         wrongmessage = "Invalid token or u_id"
         return (value, wrongmessage)
 
@@ -64,12 +63,12 @@ def getprofile(data, token, u_id):
 
     return (value, wrongmessage)
 
-
+#set username by token
 def usersetname(data, token, name_first, name_last):
     value = None
     wrongmessage = None
 
-    if token == None:
+    if token is None:
         wrongmessage = "token doesn't exit"
         return (value, wrongmessage)
 
@@ -83,7 +82,7 @@ def usersetname(data, token, name_first, name_last):
 
     user = getuser(data, token)
 
-    if user == None:
+    if user is None:
         wrongmessage = "User with token is not a valid user"
         return (value, wrongmessage)
 
@@ -95,12 +94,12 @@ def usersetname(data, token, name_first, name_last):
 
     return (value, wrongmessage)
 
-
+#set user email by token
 def usersetemail(data, token, email):
     value = None
     wrongmessage = None
 
-    if token == None:
+    if token is None:
         wrongmessage = "token doesn't exit"
         return (value, wrongmessage)
 
@@ -114,7 +113,7 @@ def usersetemail(data, token, email):
 
     user = getuser(data, token)
 
-    if user == None:
+    if user is None:
         wrongmessage = "User with token is not a valid user"
         return (value, wrongmessage)
 
@@ -124,12 +123,12 @@ def usersetemail(data, token, email):
 
     return (value, wrongmessage)
 
-
+#set user handle by token
 def usersethandle(data, token, handle_str):
     value = None
     wrongmessage = None
 
-    if token == None:
+    if token is None:
         wrongmessage = "token doesn't exit"
         return (value, wrongmessage)
 
@@ -143,7 +142,7 @@ def usersethandle(data, token, handle_str):
 
     user = getuser(data, token)
 
-    if user == None:
+    if user is None:
         wrongmessage = "User with token is not a valid user"
         return (value, wrongmessage)
 
