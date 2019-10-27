@@ -129,7 +129,4 @@ def test_sethandle():
     profile, error = getprofile(data, user["token"], user["u_id"])
     assert profile["handle_str"] == 'testing'
 
-#test uploadphoto
-def test_uploadphoto():
-    # Create one user for testing
-    pass
+
