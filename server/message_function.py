@@ -6,7 +6,7 @@ Author: Shili Wang
 
 from datetime import datetime, timedelta, timezone, date
 
-
+#find user by token, return user if found, return None if not found
 def find_user(data, token):
     for user in data['users']:
         if user['token'] == token:
@@ -14,7 +14,7 @@ def find_user(data, token):
 
     return None
 
-
+#find user by channel_id, return user if found, return None if not found
 def find_channel(data, channel_id):
     for channel in data['channels']:
         if channel['channel_id'] == channel_id:
@@ -22,7 +22,7 @@ def find_channel(data, channel_id):
 
     return None
 
-
+#find user by channel_id, return user if found, return None if not found
 def find_message_channel(data, message_id):
     for channel in data['channels']:
         for message in channel['messages']:

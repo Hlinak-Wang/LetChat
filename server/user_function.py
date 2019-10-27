@@ -1,9 +1,3 @@
-from werkzeug.exceptions import HTTPException
-from flask_cors import CORS
-from flask import Flask, request, jsonify
-from json import dumps
-import jwt
-import sys
 import re
 
 # Make a regular expression
@@ -51,47 +45,47 @@ def checkhandlenotused(data, handle):
 
 def getprofile(data, token, u_id):
     value = None
-    Errormessage = None
+    wrongmessage = None
 
     if token == None or u_id == None:
-        Errormessage = "Invalid token or u_id"
-        return (value, Errormessage)
+        wrongmessage = "Invalid token or u_id"
+        return (value, wrongmessage)
 
     user = getuser(data, token)
 
     if user == None:
-        Errormessage = "User with u_id is not a valid user"
-        return (value, Errormessage)
+        wrongmessage = "User with u_id is not a valid user"
+        return (value, wrongmessage)
 
     value = {'email': user['email'],
              'name_first': user['name_first'],
              'name_last': user['name_last'],
              'handle_str': user['handle_str'], }
 
-    return (value, Errormessage)
+    return (value, wrongmessage)
 
 
 def usersetname(data, token, name_first, name_last):
     value = None
-    Errormessage = None
+    wrongmessage = None
 
     if token == None:
-        Errormessage = "token doesn't exit"
-        return (value, Errormessage)
+        wrongmessage = "token doesn't exit"
+        return (value, wrongmessage)
 
     if len(name_first) > 50 or len(name_first) < 0:
-        Errormessage = "name_first is not between 1 and 50 characters in length"
-        return (value, Errormessage)
+        wrongmessage = "name_first is not between 1 and 50 characters in length"
+        return (value, wrongmessage)
 
     if len(name_last) > 50 or len(name_last) < 0:
-        Errormessage = "name_last is not between 1 and 50 characters in length"
-        return (value, Errormessage)
+        wrongmessage = "name_last is not between 1 and 50 characters in length"
+        return (value, wrongmessage)
 
     user = getuser(data, token)
 
     if user == None:
-        Errormessage = "User with token is not a valid user"
-        return (value, Errormessage)
+        wrongmessage = "User with token is not a valid user"
+        return (value, wrongmessage)
 
     user['name_first'] = name_first
     user['name_last'] = name_last
@@ -99,62 +93,62 @@ def usersetname(data, token, name_first, name_last):
     print(user)
     value = 1
 
-    return (value, Errormessage)
+    return (value, wrongmessage)
 
 
 def usersetemail(data, token, email):
     value = None
-    Errormessage = None
+    wrongmessage = None
 
     if token == None:
-        Errormessage = "token doesn't exit"
-        return (value, Errormessage)
+        wrongmessage = "token doesn't exit"
+        return (value, wrongmessage)
 
     if check(email) == 0:
-        Errormessage = "Email entered is not a valid email"
-        return (value, Errormessage)
+        wrongmessage = "Email entered is not a valid email"
+        return (value, wrongmessage)
 
     if checkemailnotused(data, email) == 0:
-        Errormessage = "Email address is already being used by another user"
-        return (value, Errormessage)
+        wrongmessage = "Email address is already being used by another user"
+        return (value, wrongmessage)
 
     user = getuser(data, token)
 
     if user == None:
-        Errormessage = "User with token is not a valid user"
-        return (value, Errormessage)
+        wrongmessage = "User with token is not a valid user"
+        return (value, wrongmessage)
 
     user['email'] = email
 
     value = 1
 
-    return (value, Errormessage)
+    return (value, wrongmessage)
 
 
 def usersethandle(data, token, handle_str):
     value = None
-    Errormessage = None
+    wrongmessage = None
 
     if token == None:
-        Errormessage = "token doesn't exit"
-        return (value, Errormessage)
+        wrongmessage = "token doesn't exit"
+        return (value, wrongmessage)
 
     if len(handle_str) > 20 or len(handle_str) < 3:
-        Errormessage = "handle_str must be between 3 and 20"
-        return (value, Errormessage)
+        wrongmessage = "handle_str must be between 3 and 20"
+        return (value, wrongmessage)
 
     if checkhandlenotused(data, handle_str) == 0:
-        Errormessage = "handle is already used by another user"
-        return (value, Errormessage)
+        wrongmessage = "handle is already used by another user"
+        return (value, wrongmessage)
 
     user = getuser(data, token)
 
     if user == None:
-        Errormessage = "User with token is not a valid user"
-        return (value, Errormessage)
+        wrongmessage = "User with token is not a valid user"
+        return (value, wrongmessage)
 
     user['handle_str'] = handle_str
 
     value = 1
 
-    return (value, Errormessage)
+    return (value, wrongmessage)

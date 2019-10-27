@@ -15,14 +15,14 @@ def test_profile():
     auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
 
     # Invalid input
-    value, Errormessage = getprofile(data, None, None)
-    assert Errormessage == "Invalid token or u_id"
+    value, wrongmessage = getprofile(data, None, None)
+    assert wrongmessage == "Invalid token or u_id"
 
-    value, Errormessage = getprofile(data, 'not_valid_token', 'not_valid_u_id')
-    assert Errormessage == "User with u_id is not a valid user"
+    value, wrongmessage = getprofile(data, 'not_valid_token', 'not_valid_u_id')
+    assert wrongmessage == "User with u_id is not a valid user"
 
     # Valid input
-    value, Errormessage = getprofile(data, auth_key["token"], auth_key["u_id"])
+    value, wrongmessage = getprofile(data, auth_key["token"], auth_key["u_id"])
     assert value["email"] == 'email@gmail.com'
     assert value["name_first"] == 'name_first'
     assert value["name_last"] == 'name_last'
@@ -43,17 +43,17 @@ def test_setname():
     last_long = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
     # Invalid input
-    value, Errormessage = usersetname(data, None, first_long, last_short)
-    assert Errormessage == "token doesn't exit"
+    value, wrongmessage = usersetname(data, None, first_long, last_short)
+    assert wrongmessage == "token doesn't exit"
 
-    value, Errormessage = usersetname(data, auth_key["token"], first_long, last_short)
-    assert Errormessage == 'name_first is not between 1 and 50 characters in length'
+    value, wrongmessage = usersetname(data, auth_key["token"], first_long, last_short)
+    assert wrongmessage == 'name_first is not between 1 and 50 characters in length'
 
-    value, Errormessage = usersetname(data, auth_key["token"], first_short, last_long)
-    assert Errormessage == 'name_last is not between 1 and 50 characters in length'
+    value, wrongmessage = usersetname(data, auth_key["token"], first_short, last_long)
+    assert wrongmessage == 'name_last is not between 1 and 50 characters in length'
 
-    value, Errormessage = usersetname(data, 'token_not_registed', first_short, last_short)
-    assert Errormessage == 'User with token is not a valid user'
+    value, wrongmessage = usersetname(data, 'token_not_registed', first_short, last_short)
+    assert wrongmessage == 'User with token is not a valid user'
 
     # Valid input
     usersetname(data, auth_key["token"], first_short, last_short)
@@ -72,20 +72,20 @@ def test_setemail():
     email_used_already = 'email@gmail.com'
 
     # Invalid input
-    value, Errormessage = usersetemail(data, None, invalid_email)
-    assert Errormessage == "token doesn't exit"
+    value, wrongmessage = usersetemail(data, None, invalid_email)
+    assert wrongmessage == "token doesn't exit"
 
-    value, Errormessage = usersetemail(data, auth_key["token"], invalid_email)
-    assert Errormessage == 'Email entered is not a valid email'
+    value, wrongmessage = usersetemail(data, auth_key["token"], invalid_email)
+    assert wrongmessage == 'Email entered is not a valid email'
 
-    value, Errormessage = usersetemail(data, auth_key["token"], email_used_already)
-    assert Errormessage == 'Email address is already being used by another user'
+    value, wrongmessage = usersetemail(data, auth_key["token"], email_used_already)
+    assert wrongmessage == 'Email address is already being used by another user'
 
-    value, Errormessage = usersetemail(data, 'token_not_registed', '123@gmail.com')
-    assert Errormessage == 'User with token is not a valid user'
+    value, wrongmessage = usersetemail(data, 'token_not_registed', '123@gmail.com')
+    assert wrongmessage == 'User with token is not a valid user'
 
     # Valid input
-    value, Errormessage = usersetemail(data, auth_key["token"], 'newemail@gmail.com')
+    value, wrongmessage = usersetemail(data, auth_key["token"], 'newemail@gmail.com')
     profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
     assert profile["email"] == 'newemail@gmail.com'
 
@@ -103,20 +103,20 @@ def test_sethandle():
 
     # Invalid input
     # handle_str is no more than 20 charaters
-    value, Errormessage = usersethandle(data, None, handle_normal)
-    assert Errormessage == "token doesn't exit"
+    value, wrongmessage = usersethandle(data, None, handle_normal)
+    assert wrongmessage == "token doesn't exit"
 
-    value, Errormessage = usersethandle(data, user["token"], handle_long)
-    assert Errormessage == "handle_str must be between 3 and 20"
+    value, wrongmessage = usersethandle(data, user["token"], handle_long)
+    assert wrongmessage == "handle_str must be between 3 and 20"
 
-    value, Errormessage = usersethandle(data, user["token"], handle_used)
-    assert Errormessage == "handle is already used by another user"
+    value, wrongmessage = usersethandle(data, user["token"], handle_used)
+    assert wrongmessage == "handle is already used by another user"
 
-    value, Errormessage = usersethandle(data, 'token_not_registed', handle_normal)
-    assert Errormessage == "User with token is not a valid user"
+    value, wrongmessage = usersethandle(data, 'token_not_registed', handle_normal)
+    assert wrongmessage == "User with token is not a valid user"
 
     # Valid input
-    value, Errormessage = usersethandle(data, user["token"], 'testing')
+    value, wrongmessage = usersethandle(data, user["token"], 'testing')
     profile, error = getprofile(data, user["token"], user["u_id"])
     assert profile["handle_str"] == 'testing'
 
