@@ -45,16 +45,6 @@ def find_react(react_list, react_id):
     return None
 
 
-def send_message_buffer(data):
-    time_now = datetime.now()
-    for message in data['message_buffer'][:]:
-        time_send = datetime.strptime(message['time_created'],  "%H:%M")
-        channel = find_channel(data, message['channel_id'])
-        if time_send < time_now:
-            channel['messages'].append(message)
-            data['message_buffer'].remove(message)
-
-
 def fun_send_late(data, token, channel_id, message, time_create):
     """ Send message """
     if len(message) > 1000:
