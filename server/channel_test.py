@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on 2019/10/15
+
+@author: Meilin
+"""
+
 import pytest
 from server.channel_function import (
     ch_create,

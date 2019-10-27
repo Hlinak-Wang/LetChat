@@ -1,7 +1,9 @@
-# UTF-8
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Date start:11/10/2019
-Author: Shili Wang
+Created on 2019/10/15
+
+@author: Eric
 """
 
 from datetime import datetime, timedelta, timezone, date

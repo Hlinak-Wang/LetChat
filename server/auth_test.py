@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on 2019/10/15
+
+@author: Angeline
+"""
+
 from server.auth_functions import login, logout, register, reset_request, reset, generateToken, generateHandle
 import hashlib
 SECRET = 'IE4'

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on 2019/10/15
+
+@author: Eric
+"""
+
 from server.extra_function import message_search, fun_standup_send, fun_standup_star, permission_change
 from server.auth_functions import register
 from server.channel_function import ch_create, ch_join
