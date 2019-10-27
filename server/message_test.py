@@ -12,12 +12,14 @@ from server.auth_functions import register
 from server.channel_function import ch_create, ch_join
 
 # initial state of testing
-def getdata():
+def testdata():
     test_data = {
-        'users': [],
-        'channels': [],
+
         'message_counter': 0,
-        'message_buffer': []
+        'users': [],
+        'message_buffer': [],
+        'channels': [],
+
     }
     user_chowner = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last')
     user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last')
@@ -30,7 +32,7 @@ def getdata():
 
 
 def test_send_late():
-    data = getdata()
+    data = testdata()
     user = data['users'][0]
     channel = data['channels'][0]
     message_long = ""
@@ -57,7 +59,7 @@ def test_send_late():
     assert output == {'message_id': 2}
 
 def test_send():
-    data = getdata()
+    data = testdata()
     user = data['users'][0]
     channel = data['channels'][0]
     message_long = ""
@@ -77,7 +79,7 @@ def test_send():
 
 
 def test_remove():
-    data = getdata()
+    data = testdata()
     user_admin = data['users'][0]
     user_norm = data['users'][1]
     channel = data['channels'][0]
@@ -91,7 +93,7 @@ def test_remove():
 
 
 def test_edit():
-    data = getdata()
+    data = testdata()
     user_admin = data['users'][0]
     user_norm = data['users'][1]
     channel = data['channels'][0]
@@ -107,7 +109,7 @@ def test_edit():
 
 
 def test_react():
-    data = getdata()
+    data = testdata()
     user = data['users'][0]
     channel = data['channels'][0]
 
@@ -126,7 +128,7 @@ def test_react():
 
 
 def test_unreact():
-    data = getdata()
+    data = testdata()
     user = data['users'][0]
     channel = data['channels'][0]
 
@@ -147,7 +149,7 @@ def test_unreact():
 
 
 def test_pin():
-    data = getdata()
+    data = testdata()
     user_admin = data['users'][0]
     user_norm = data['users'][1]
     user_not_in_channel = data['users'][2]
@@ -170,7 +172,7 @@ def test_pin():
 
 
 def test_unpin():
-    data = getdata()
+    data = testdata()
     user_admin = data['users'][0]
     user_norm = data['users'][1]
     user_not_in_channel = data['users'][2]
