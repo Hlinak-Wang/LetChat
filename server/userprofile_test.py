@@ -1,14 +1,14 @@
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile
 from server.auth_function import register
 
-
+#fet global data
 def getData():
     data = {
         'users': []
     }
     return data
 
-
+#test getproflie
 def test_profile():
     data = getData()
     # Create one user for testing
@@ -29,7 +29,7 @@ def test_profile():
     # Assume the default handle is the first_namelast_name
     assert value["handle_str"] == 'name_firstname_last'
 
-
+#test setname
 def test_setname():
     data = getData()
     # create one user
@@ -61,7 +61,7 @@ def test_setname():
     assert profile["name_first"] == first_short
     assert profile["name_last"] == last_short
 
-
+#test setemail
 def test_setemail():
     data = getData()
     # Register two user for testing
@@ -89,7 +89,7 @@ def test_setemail():
     profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
     assert profile["email"] == 'newemail@gmail.com'
 
-
+#test sethanle
 def test_sethandle():
     data = getData()
     user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
@@ -120,7 +120,7 @@ def test_sethandle():
     profile, error = getprofile(data, user["token"], user["u_id"])
     assert profile["handle_str"] == 'testing'
 
-
+#test uploadphoto
 def test_uploadphoto():
     # Create one user for testing
     pass
