@@ -1,7 +1,7 @@
 from server.extra_function import message_search, fun_standup_send, fun_standup_star, permission_change
 from server.auth_function import register
 from server.channel_function import ch_create, ch_join
-from server.message_function import fun_send
+from server.message_function import fun_send, fun_react
 from datetime import datetime, timedelta
 
 def getData():
@@ -18,6 +18,8 @@ def getData():
     ch_join(data, user_inch['token'], channel['channel_id'])
     fun_send(data, user_inch['token'], channel['channel_id'], 'test2')
     fun_send(data, user_chowner['token'], channel['channel_id'], 'test')
+    fun_react(data, user_inch['token'], 0, 1)
+    fun_react(data, user_inch['token'], 1, 1)
     ch_create(data, user_chowner['token'], 'test_channel2', True)
     return data
 
