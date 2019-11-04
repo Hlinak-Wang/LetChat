@@ -1,4 +1,3 @@
-import pytest
 from channel_function import (
     ch_create,
     ch_invite,
@@ -186,6 +185,7 @@ def test_channel_messages_ok():
     for i in range(0, 25):
         fun_send(data, user['token'], channel['channel_id'], 'another test')
         fun_send(data, user['token'], channel['channel_id'], 'again')
+        i = i + 1
     message_channel2 = fun_message(data, user['token'],
                                    channel['channel_id'], 0)
     assert message_channel2['start'] == 0
@@ -202,7 +202,7 @@ def test_channel_messages_bad():
     # ValueError
     long_message = ""
     for i in range(0, 1010):
-        long_message += "a"
+        long_message += str(i)
 
     res1 = fun_send(data, user['token'], channel['channel_id'], long_message)
     assert res1 == {"ValueError": "Message is more than 1000 characters"}
@@ -211,14 +211,17 @@ def test_channel_messages_bad():
     assert res2 == {'ValueError': 'Channel ID is not a valid channel'}
 
     res3 = fun_message(data, user['token'], channel['channel_id'], 999999999)
-    assert res3 == {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
+    assert res3 == {'ValueError': 'start is greater than or equal to the total\
+ number of messages in the channel'}
 
     # AccessError
     res4 = fun_send(data, user['token'], 10, 'testing')
-    assert res4 == {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
+    assert res4 == {'AccessError': 'the authorised user has not joined the \
+channel they are trying to post to'}
 
     res5 = fun_message(data, user1['token'], channel['channel_id'], 0)
-    assert res5 == {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
+    assert res5 == {'AccessError': 'when:  the authorised user has not joined \
+the channel they are trying to post to'}
 
 
 # Testing valid input for channel_leave
@@ -243,7 +246,7 @@ def test_channel_leave_bad():
     data = getdata()
     user = data['users'][0]
     # it takes in data, token, channel_name and is_public and return channel_id
-    channel = ch_create(data, user['token'], '12345', True)
+    ch_create(data, user['token'], '12345', True)
 
     res = ch_leave(data, user['token'], 10)
     assert res == {'ValueError': 'Channel ID is invalid'}
@@ -313,7 +316,8 @@ def test_channel_addowner_bad():
     # AccessError
     res1 = ch_addowner(data, user2['token'], channel['channel_id'],
                        user1['u_id'])
-    assert res1 == {'AccessError': 'User is not an owner of the slackr or this channel'}
+    assert res1 == {'AccessError': 'User is not an owner of the slackr or this\
+ channel'}
 
     res2 = ch_addowner(data, user_admin['token'], channel['channel_id'], 99876)
     assert res2 == {'AccessError': 'Not a member of this channel'}
@@ -388,8 +392,10 @@ def test_channel_removeowner_bad():
 def test_channels_list():
     data = getdata()
     user_admin = data['users'][0]
-    channel1 = ch_create(data, user_admin['token'], 'ch_1', True)
-    channel2 = ch_create(data, user_admin['token'], 'ch_2', True)
+    # channel1
+    ch_create(data, user_admin['token'], 'ch_1', True)
+    # channel2
+    ch_create(data, user_admin['token'], 'ch_2', True)
 
     user1 = data['users'][1]
     channel3 = ch_create(data, user1['token'], 'ch_3', True)
