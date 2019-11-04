@@ -1,18 +1,19 @@
-from datetime import datetime, timedelta, timezone
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on 2019/10/15
+
+@author: Eric
+"""
+
+from datetime import datetime, timedelta
+from server.help import find_channel, print_message
 
 
 def find_user(data, value, aspect):
     for user in data['users']:
         if user[aspect] == value:
             return user
-
-    return None
-
-
-def find_channel(data, channel_id):
-    for channel in data['channels']:
-        if channel['channel_id'] == channel_id:
-            return channel
 
     return None
 
@@ -28,21 +29,7 @@ def message_search(data, token, query_str):
     for channel in channel_join_list:
         for message in channel['messages']:
             if message['message'] == query_str:
-                react_list = message['reacts']
-                for react in react_list:
-                    if user['u_id'] in react['u_ids']:
-                        react['is_this_user_reacted'] = True
-                    else:
-                        react['is_this_user_reacted'] = False
-
-                output_list.append({
-                    'message_id': message['message_id'],
-                    'u_id': message['u_id'],
-                    'message': message['message'],
-                    'time_created': message['time_created'],
-                    'reacts': react_list,
-                    'is_pinned': message['is_pinned']
-                })
+                print_message(user, message, output_list)
 
     return {
         'messages': output_list,
@@ -116,22 +103,3 @@ def fun_standup_send(data, token, channel_id, message):
 
     return {}
 
-def pop_queue(data):
-    time_now = datetime.now()
-    time_now = time_now.replace(tzinfo=timezone.utc).timestamp()
-    for channel in data['channels']:
-        if 'standup' in channel:
-            standup = channel['standup']
-            if standup['time_finish'] == '1/1/1900, 1:00:00' or time_now > standup['time_finish']:
-                if channel['standup_message'] != "":
-
-                    channel['messages'].insert(0, {
-                        'u_id': standup['u_id'],
-                        'message_id': data['message_counter'],
-                        'message': channel['standup_message'],
-                        'time_created': time_now,
-                        'reacts': [{'react_id': 1, 'u_ids': []}],
-                        'is_pinned': False,
-                    })
-                    channel['standup_message'] = ""
-                    data['message_counter'] += 1

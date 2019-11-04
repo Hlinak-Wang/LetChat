@@ -1,11 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on 2019/10/15
+
+@author: Meilin
+"""
+
 from datetime import datetime, timezone
-
-
-def find_user(data, token):
-    for user in data['users']:
-        if user['token'] == token:
-            return user
-    return None
+from server.help import find_channel, find_user, print_message
 
 
 def find_uid(data, u_id):
@@ -19,14 +21,6 @@ def is_owner(user_list, u_id):
     for user in user_list:
         if user['u_id'] == u_id:
             return user['is_owner']
-    return None
-
-
-def find_channel(data, channel_id):
-    for channel in data['channels']:
-        if channel['channel_id'] == channel_id:
-            return channel
-
     return None
 
 
@@ -238,12 +232,12 @@ def ch_lists(data, token):
         for i in ch_id:
             if channel['channel_id'] == i:
                 stack_channel.append({
-                                    'name': channel['name'],
-                                    'channel_id': channel['channel_id']
-                                    })
+                    'name': channel['name'],
+                    'channel_id': channel['channel_id']
+                })
 
     return {
-            'channels': stack_channel
+        'channels': stack_channel
     }
 
 
@@ -259,11 +253,11 @@ def ch_listall(data, token):
         elif not channel['is_public']:
             if find_member(channel, user) is not None:
                 stack_channel.append({
-                                'name': channel['name'],
-                                'channel_id': channel['channel_id']
+                    'name': channel['name'],
+                    'channel_id': channel['channel_id']
                                 })
     return {
-            'channels': stack_channel
+        'channels': stack_channel
     }
 
 
@@ -282,21 +276,7 @@ def fun_message(data, token, channel_id, start):
 
     end = start
     for message in channel['messages'][start:]:
-        react_list = message['reacts']
-        for react in react_list:
-            if user['u_id'] in react['u_ids']:
-                react['is_this_user_reacted'] = True
-            else:
-                react['is_this_user_reacted'] = False
-
-        output_list.append({
-            'message_id': message['message_id'],
-            'u_id': message['u_id'],
-            'message': message['message'],
-            'time_created': message['time_created'],
-            'reacts': react_list,
-            'is_pinned': message['is_pinned']
-        })
+        print_message(user, message, output_list)
         end += 1
         if end >= start + 50:
             return {
@@ -310,29 +290,3 @@ def fun_message(data, token, channel_id, start):
         'start': start,
         'end': -1
     }
-
-
-def fun_send(data, token, channel_id, message):
-    """ Send message """
-    if len(message) > 1000:
-        return {"ValueError": "Message is more than 1000 characters"}
-
-    user = find_user(data, token)
-
-    if channel_id not in user['channel_involve']:
-        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
-
-    channel = find_channel(data, channel_id)
-
-    # assume m_id depend on the number of message been sent
-    time_send = datetime.now()
-    channel['messages'].insert(0, {
-        'u_id': user['u_id'],
-        'message_id': data['message_counter'],
-        'message': message,
-        'time_created': time_send.replace(tzinfo=timezone.utc).timestamp(),
-        'reacts': [{'react_id': 1, 'u_ids': []}],
-        'is_pinned': False,
-    })
-    data['message_counter'] += 1
-    return {'message_id': data['message_counter'] - 1}

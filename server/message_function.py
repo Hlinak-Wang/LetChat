@@ -1,60 +1,17 @@
-# UTF-8
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Date start:11/10/2019
-Author: Shili Wang
+Created on 2019/10/15
+
+@author: Eric
 """
 
 from datetime import datetime, timedelta, timezone, date
+from server.help import find_channel, find_ownership, find_user, find_message_channel, find_react
 
 
-def find_user(data, token):
-    for user in data['users']:
-        if user['token'] == token:
-            return user
-
-    return None
-
-
-def find_channel(data, channel_id):
-    for channel in data['channels']:
-        if channel['channel_id'] == channel_id:
-            return channel
-
-    return None
-
-
-def find_message_channel(data, message_id):
-    for channel in data['channels']:
-        for message in channel['messages']:
-            if message_id == message['message_id']:
-                return message, channel
-
-    return None, None
-
-
-def find_ownership(user_list, member):
-    for user in user_list:
-        if user['u_id'] == member['u_id']:
-            return user['is_owner']
-
-
-def find_react(react_list, react_id):
-    for react in react_list:
-        if react['react_id'] == react_id:
-            return react
-    return None
-
-
-def send_message_buffer(data):
-    time_now = datetime.now()
-    for message in data['message_buffer'][:]:
-        time_send = datetime.strptime(message['time_created'],  "%H:%M")
-        channel = find_channel(data, message['channel_id'])
-        if time_send < time_now:
-            channel['messages'].append(message)
-            data['message_buffer'].remove(message)
-
-
+# Send a message from authorised_user to the channel specified by channel_id automatically at a specified time in the
+# future
 def fun_send_late(data, token, channel_id, message, time_create):
     """ Send message """
     if len(message) > 1000:
@@ -89,6 +46,7 @@ def fun_send_late(data, token, channel_id, message, time_create):
     return {'message_id': data['message_counter'] - 1}
 
 
+# Send a message from authorised_user to the channel specified by channel_id
 def fun_send(data, token, channel_id, message):
     """ Send message """
     if len(message) > 1000:
@@ -115,6 +73,7 @@ def fun_send(data, token, channel_id, message):
     return {'message_id': data['message_counter'] - 1}
 
 
+# Given a message_id for a message, this message is removed from the channel
 def fun_remove(data, token, message_id):
     """ assume remove the last one """
     user = find_user(data, token)
@@ -134,6 +93,7 @@ def fun_remove(data, token, message_id):
     return {}
 
 
+# Given a message, update it's text with new text
 def fun_edit(data, token, message_id, message_edit):
     user = find_user(data, token)
     message, channel = find_message_channel(data, message_id)
@@ -152,6 +112,7 @@ def fun_edit(data, token, message_id, message_edit):
     return {}
 
 
+# Given a message within a channel the authorised user is part of, add a "react" to that particular message
 def fun_react(data, token, message_id, react_id):
     user = find_user(data, token)
     message = find_message_channel(data, message_id)[0]
@@ -170,6 +131,7 @@ def fun_react(data, token, message_id, react_id):
     return {}
 
 
+# Given a message within a channel the authorised user is part of, remove a "react" to that particular message
 def fun_unreact(data, token, message_id, react_id):
     user = find_user(data, token)
     message = find_message_channel(data, message_id)[0]
@@ -188,6 +150,7 @@ def fun_unreact(data, token, message_id, react_id):
     return {}
 
 
+# Given a message within a channel, mark it as "pinned" to be given special display treatment by the frontend
 def fun_pin(data, token, message_id):
     user = find_user(data, token)
     message, channel = find_message_channel(data, message_id)
@@ -209,6 +172,7 @@ def fun_pin(data, token, message_id):
     return {}
 
 
+# Given a message within a channel, remove it's mark as unpinned
 def fun_unpin(data, token, message_id):
     user = find_user(data, token)
     message, channel = find_message_channel(data, message_id)

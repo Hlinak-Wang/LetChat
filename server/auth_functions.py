@@ -1,95 +1,58 @@
-from json import dumps
-from flask import Flask, request
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on 2019/10/15
+
+@author: Angeline
+"""
+
 import re
+import hashlib
 import jwt
 from datetime import datetime
-from werkzeug.exceptions import HTTPException
-from flask_cors import CORS
 
-#import functions from another file
-def defaultHandler(err):
-    response = err.get_response()
-    response.data = dumps({
-        "code": err.code,
-        "name": "System Error",
-        "message": err.get_description(),
-    })
-    response.content_type = 'application/json'
-    return response
+# HELPER FUNCTIONS BELOW
 
-APP = Flask(__name__)
-APP.config['TRAP_HTTP_EXCEPTIONS'] = True
-APP.register_error_handler(Exception, defaultHandler)
-CORS(APP)
+SECRET = 'IE4'
 
 
-#class Member:
-#    def __init__(self, u_id, name_first, name_last)
-    
+def check_valid_email(email):
+    regex = "^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+    if not re.search(regex, email):
+        return {'ValueError': "This email is not valid"}
+    return {}
 
-#self.handle = first + last;
-
-data = {
-    "messages": {}, 
-    "users": [],
-    "channel_id": {},
-}
-
-SECRET = 'IE4';
-
-#in user_data:
-#{'u_id': u_id, 'name_first': name_first, "name_last": name_last, 'token': token, "handle": handle, 'email': email, 'password': password, 'permission_id': permission_id, 'channel_involve': [], 'reset_code': reset_code}
-
-#def get_user_data():
-#    global data
-#    global SECRET
-#    return data.get("user_data")
-    #return specific type of data?
-
-#HELPER FUNCTIONS BELOW
-
-
-
-#FIX BELOW
-class ValueError(HTTPException):
-    code = 400
-    message = 'No message specified'
-#FIX ABOVE
-
-def check_valid_email(email): 
-    regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
-    if not re.search(regex, email):  
-        raise ValueError(description="This email is not valid")
 
 def check_user_details(data, email, password):
-    
     for user in data['users']:
         if user['email'] == email:
-            if user['password'] == password:
+            if user['password'] == hashlib.sha256(password.encode("utf-8")).hexdigest():
                 return user
             else:
-                raise ValueError(description="Incorrect password entered")
-                
-    raise ValueError(description="This email does not belong to a user")
-    
+                return {'ValueError': "Incorrect password entered"}
+    return {'ValueError': "This email does not belong to a user"}
+
 
 def check_valid_password(password):
     if len(password) < 6:
-        raise ValueError(description="This password is too short")
+        return {'ValueError': "This password is too short"}
+    return {}
 
 
-def check_already_user(email):
-    global data
+def check_already_user(data, email):
     for user in data['users']:
         if user['email'] == email:
-            raise ValueError(description="This email is already in use by a user")
+            return {'ValueError': "This email is already in use by a user"}
+    return {}
 
 
 def check_name(name_first, name_last):
-    if ((len(name_first) < 1) or (len(name_last) < 1)):
-        raise ValueError(description="First name or last name too short")
-    elif (len(name_first) > 50 or (len(name_last) > 50)):
-        raise ValueError(description="First name or last name too long")
+    if (len(name_first) < 1) or (len(name_last) < 1):
+        return {'ValueError': "First name or last name too short"}
+    elif len(name_first) > 50 or (len(name_last) > 50):
+        return {'ValueError': "First name or last name too long"}
+
+    return {}
 
 
 def generateToken(first, last):
@@ -98,109 +61,109 @@ def generateToken(first, last):
         'last': last,
         'time_create': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
     }
-    return jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8')
+    return str(jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8'))
 
-     
-def generateHandle(first, last):
-    global data
+
+def generateHandle(data, first, last):
     handle = first + last
     excess = len(handle) - 20
     if excess > 0:
-        handle = handle[:21]
-    
-    if (handleAlreadyExists(handle) or len(handle) < 3):
+        handle = handle[:20]
+
+    if handleAlreadyExists(data, handle) or len(handle) < 3:
         handle = datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
 
     return handle
-                
-def handleAlreadyExists(handle):
-    global data
+
+
+def handleAlreadyExists(data, handle):
     for user in data['users']:
-        if user['handle'] == handle:
+        if user['handle_str'] == handle:
             return True
     return False
 
-def findUserFromToken(token):
-    global data
+
+def findUserFromToken(data, token):
+    # print("hi")
     for user in data['users']:
+        print(user)
         if user['token'] == token:
             return user
 
     return None
 
-def findUserFromEmail(email):
-    global data
+
+def findUserFromEmail(data, email):
     for user in data['users']:
         if user['email'] == email:
-            return email
+            return user
 
+
+def find_resetcode(data, reset_code):
+    for user in data['users']:
+        if user['reset_code'] == reset_code:
+            return user
     return None
+
 
 def decoding_reset_code(reset_code):
     return jwt.decode(reset_code, SECRET, algorithms=['HS256'])
-    
 
-#HELPER FUNCTIONS ABOVE
 
-@APP.route("/auth/login", methods=['POST'])
-def auth_login():
-    # fn_auth_login(request.args.get('email'), request.form.get('password'))
-    #return dumps({})
-    
-    global data
-    print("hi")
-    email = request.args.get('email')
-    password = request.args.get('password')
-    check_valid_email(email)
+# HELPER FUNCTIONS ABOVE
+
+def login(data, email, password):
+    email_check = check_valid_email(email)
+
+    if 'ValueError' in email_check:
+        return email_check
+
     user = check_user_details(data, email, password)
-    
-    token = generateToken(user['name_first'], user['name_last'])
-    
-    return dumps({'u_id': user['u_id'], 'token': token,
-    })
-    
 
-@APP.route("/auth/logout", methods = ['POST']) #done?
-def auth_logout():
-    global data
-    
-    token = request.form.get('token')
-    
-    user = findUserFromToken(token)
-    
+    if 'ValueError' in user:
+        return user
+
+    token = generateToken(user['name_first'], user['name_last'])
+    user['token'] = token
+
+    return {'u_id': user['u_id'], 'token': token}
+
+
+def logout(data, token):
+    user = findUserFromToken(data, token)
+    # print(user)
     if user is not None:
         user['token'] = None
         is_success = True
+    else:
+        is_success = False
+    return {'is_sucess': is_success}
 
-    return dumps({
-            'is_sucess': is_success
-            })
-    
-@APP.route("/auth/register", methods=['POST'])  # done, not checked
-def auth_register():
-    global data
-    print("hi")
-    email = request.form.get('email')
-    
-    password = request.form.get('password')
-    name_first = request.form.get('name_first')
-    name_last = request.form.get('name_last')
-    check_valid_email(email)
-    
-    
-    check_valid_password(password)
-    
-    check_name(name_first, name_last)
-    
-    
-    check_already_user(email)
-    
+
+def register(data, email, password, name_first, name_last):
+    email_check = check_valid_email(email)
+    password_check = check_valid_password(password)
+    name_check = check_name(name_first, name_last)
+    user_check = check_already_user(data, email)
+
+    if 'ValueError' in email_check:
+        return email_check
+
+    if 'ValueError' in password_check:
+        return password_check
+
+    if 'ValueError' in name_check:
+        return name_check
+
+    if 'ValueError' in user_check:
+        return user_check
+
     u_id = len(data['users'])
-    
+
     token = generateToken(name_first, name_last)
-    
-    handle = generateHandle(name_first, name_last)
-    
+
+    handle = generateHandle(data, name_first, name_last)
+
     if u_id == 0:
         permission = 1
     else:
@@ -211,56 +174,41 @@ def auth_register():
         'name_first': name_first,
         'name_last': name_last,
         'token': token,
-        'handle': handle,
+        'handle_str': handle,
         'email': email,
-        'password': password,
+        'password': hashlib.sha256(password.encode("utf-8")).hexdigest(),
         'permission_id': permission,
         'channel_involve': [],
-        'reset_code': None,
-    })
-    print(data)
-    user = check_user_details(data, email, password)
-    print(user['email'])
-    return dumps({
-        'u_id': u_id,
-        'token': token
+        'reset_code': None
     })
 
+    return {'u_id': u_id, 'token': token}
 
-@APP.route("/auth/passwordreset/request", methods = ['POST'])
-def auth_reset_request():
-    global data
-    email = request.form.get('email')
-    user = findUserFromEmail(email)
-    
+
+def reset_request(data, email):
+    user = findUserFromEmail(data, email)
+
     code = jwt.encode({'email': email}, SECRET, algorithm='HS256').decode('utf-8')
-    #SEND AN EMAIL
     user['reset_code'] = code
-    
-    return dumps({})
 
-@APP.route("/auth/passwordreset/reset", methods = ['POST'])
-def auth_reset():
-    global data
-    reset_code = request.form.get('reset_code')
-    new_password = request.form.get('new_password')
-    
+    return code
+
+
+def reset(data, reset_code, new_password):
+    user = find_resetcode(data, reset_code)
+
+    if user is None:
+        return {'ValueError': "This is not a valid reset code"}
+
     return_dictionary = decoding_reset_code(reset_code)
+
     email = return_dictionary['email']
-    user = findUserFromEmail(email)
-    
-    if user == None:
-        raise ValueError(description="This is not a valid reset code")
-    
+
+    if 'ValueError' in check_valid_password(new_password):
+        return check_valid_password(new_password)
+
     check_valid_password(new_password)
-    
-    user['password'] = new_password
-    
+    user['password'] = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
     user['reset_code'] = None
-    
-    
-    return dumps({})
 
-
-if __name__ == "__main__":
-    APP.run(debug=True)
+    return {}
