@@ -8,9 +8,9 @@ from channel_function import (
     ch_removeowner,
     ch_lists,
     ch_listall,
-    fun_message,
-    fun_send
+    fun_message
 )
+from message_function import fun_send
 
 
 # initial state of testing
