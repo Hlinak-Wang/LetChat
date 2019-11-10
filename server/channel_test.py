@@ -117,11 +117,14 @@ def test_channel_invite_bad():
     res2 = ch_invite(data, user['token'], '55555', channel['channel_id'])
     assert res2 == {'ValueError': 'Invalid u_id'}
 
-    res3 = ch_invite(data, user2['token'], user2['u_id'], channel['channel_id'])
-    assert res3 == {'AccessError': 'The authorised user is not already a member of the channel'}
+    res3 = ch_invite(data, user2['token'], user2['u_id'],
+                     channel['channel_id'])
+    assert res3 == {'AccessError': 'The authorised user is not already a \
+member of the channel'}
     ch_invite(data, user['token'], user1['u_id'], channel['channel_id'])
     res4 = ch_invite(data, user['token'], user1['u_id'], channel['channel_id'])
-    assert res4 == {'AccessError': 'The invite user is already a member of the channel'}
+    assert res4 == {'AccessError': 'The invite user is already a member of the\
+ channel'}
 
 
 # Testing valid input for channel_details
@@ -385,7 +388,8 @@ def test_channel_removeowner_bad():
     # AccessError
     res3 = ch_removeowner(data, user2['token'], channel['channel_id'],
                           user1['u_id'])
-    assert res3 == {'AccessError': 'User is not an owner of the slackr or this channel'}
+    assert res3 == {'AccessError': 'User is not an owner of the slackr or \
+this channel'}
 
 
 # Testing valid input for channels_list
