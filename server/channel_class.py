@@ -1,5 +1,6 @@
 import uuid
 
+
 class Channel:
     def __init__(self, channel_name, is_public, creator_id):
         self.channel_name = channel_name
@@ -40,4 +41,3 @@ class Channel:
     def set_standup(self, time_finish, u_id):
         self.standup['time_finish'] = time_finish
         self.standup['u_id'] = u_id
-
