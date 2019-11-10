@@ -80,10 +80,12 @@ def ch_invite(data, token, u_id, channel_id):
 
     user_invite = find_user(data, token)
     if find_member(channel, user_invite) is None:
-        return {'AccessError': 'The authorised user is not already a member of the channel'}
+        return {'AccessError': 'The authorised user is not already a member of\
+ the channel'}
 
     if find_member(channel, user) is not None:
-        return {'AccessError': 'The invite user is already a member of the channel'}
+        return {'AccessError': 'The invite user is already a member of the \
+channel'}
 
     # update the data, a new member added
     user_data = {
@@ -193,7 +195,8 @@ def ch_addowner(data, token, channel_id, u_id):
     user_add = find_uid(data, u_id)
     member_add = find_member(channel, user_add)
     if user['permission_id'] == 3:
-        return {'AccessError': 'User is not an owner of the slackr or this channel'}
+        return {'AccessError': 'User is not an owner of the slackr or this \
+channel'}
 
     makeowner = find_member(channel, member_add)
     makeowner['is_owner'] = True
@@ -269,10 +272,12 @@ def fun_message(data, token, channel_id, start):
         return {'ValueError': 'Channel ID is not a valid channel'}
 
     if channel_id not in user['channel_involve']:
-        return {'AccessError': 'when:  the authorised user has not joined the channel they are trying to post to'}
+        return {'AccessError': 'when:  the authorised user has not joined the \
+channel they are trying to post to'}
 
     if start > len(channel['messages']):
-        return {'ValueError': 'start is greater than or equal to the total number of messages in the channel'}
+        return {'ValueError': 'start is greater than or equal to the total \
+number of messages in the channel'}
 
     end = start
     for message in channel['messages'][start:]:
