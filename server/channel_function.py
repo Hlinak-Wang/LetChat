@@ -6,8 +6,7 @@ Created on 2019/10/15
 @author: Meilin
 """
 
-from datetime import datetime, timezone
-from server.help import find_channel, find_user, print_message
+from server.help import (find_channel, find_user, print_message)
 
 
 def find_uid(data, u_id):
