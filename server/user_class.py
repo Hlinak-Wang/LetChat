@@ -11,7 +11,7 @@ class User():
         self.u_id = uuid.uuid1().int
         self.handle_str = name_first + name_last
         self.reset_code = ''
-        self.profile_img_url = 'https://bpic.588ku.com//element_origin_min_pic/19/01/04/46eb55e4401f9f4ddf449d1ba54b9871.jpg'
+        self.profile_img_url = 'http://127.0.0.1:1024/static/token.jpg'
 
     def login(self, token):
         self.token = token
