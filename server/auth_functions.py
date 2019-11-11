@@ -10,6 +10,8 @@ import re
 import hashlib
 import jwt
 from datetime import datetime
+import Data_class
+import user_class
 
 # HELPER FUNCTIONS BELOW
 
@@ -158,31 +160,24 @@ def register(data, email, password, name_first, name_last):
     if 'ValueError' in user_check:
         return user_check
 
-    u_id = len(data['users'])
+    #u_id = len(data['users'])
 
     token = generateToken(name_first, name_last)
 
     handle = generateHandle(data, name_first, name_last)
+    
+    password = hashlib.sha256(password.encode("utf-8")).hexdigest()
 
-    if u_id == 0:
+    if data.get_user_number() == 0:
         permission = 1
     else:
         permission = 3
+    
+    new_user = User(name_first, name_last, email, password, token, permission)
+    
+    data.add_user(new_user)
 
-    data['users'].append({
-        'u_id': u_id,
-        'name_first': name_first,
-        'name_last': name_last,
-        'token': token,
-        'handle_str': handle,
-        'email': email,
-        'password': hashlib.sha256(password.encode("utf-8")).hexdigest(),
-        'permission_id': permission,
-        'channel_involve': [],
-        'reset_code': None
-    })
-
-    return {'u_id': u_id, 'token': token}
+    return {'u_id': new_user.get_u_id(), 'token': new_user.get_token()}
 
 
 def reset_request(data, email):
