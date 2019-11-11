@@ -116,26 +116,30 @@ def decoding_reset_code(reset_code):
 
 def login(data, email, password):
     email_check = check_valid_email(email)
-
+    
+    user_check = check_user_details(data, email, password) #change to not return the user
+    
     if 'ValueError' in email_check:
         return email_check
 
-    user = check_user_details(data, email, password)
+    if 'ValueError' in user_check:
+        return user_check
 
-    if 'ValueError' in user:
-        return user
+    #user = get_user(email, password)
+    
 
-    token = generateToken(user['name_first'], user['name_last'])
-    user['token'] = token
+    token = generateToken(user['name_first'], user['name_last']) #create a function in class to get
+    #a user's firstname and lastname from email and password?? or edit the get_user_details?
+    
+    user.login(token)
 
-    return {'u_id': user['u_id'], 'token': token}
+    return {'u_id': user.get_u_id(), 'token': user.get_token()}
 
 
 def logout(data, token):
-    user = findUserFromToken(data, token)
-    # print(user)
+    #user = get_user_from token(token)
     if user is not None:
-        user['token'] = None
+        user.logout()
         is_success = True
     else:
         is_success = False
@@ -159,8 +163,6 @@ def register(data, email, password, name_first, name_last):
 
     if 'ValueError' in user_check:
         return user_check
-
-    #u_id = len(data['users'])
 
     token = generateToken(name_first, name_last)
 
