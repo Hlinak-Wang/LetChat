@@ -7,6 +7,8 @@ Created on 2019/10/15
 """
 
 from server.help import (find_channel, find_user, print_message)
+from channel_class import Channel
+from Data_class import Data
 
 
 def find_uid(data, u_id):
@@ -36,40 +38,22 @@ def ch_create(data, token, channel_name, is_public):
     # check is the channel name is valid
     if len(channel_name) > 20:
         return {'ValueError': 'The maximum characters of name is 20.'}
-    user = find_user(data, token)
+    user = data.get_user('token', token)
     if user is None:
         return {'ValueError': 'The user is not exist'}
-    channel_id = len(data['channels'])
-    # assume channel_data
-    channel_data = {
-        'name': channel_name,
-        'channel_id': channel_id,
-        'user_list': [
-            {
-                'u_id': user['u_id'],
-                'name_first': user['name_first'],
-                'name_last': user['name_last'],
-                'is_owner': True
-            }
-        ],
-        'is_public': is_public,
-        'messages': [],
-        'standup_queue': [],
-        'standup': {'time_finish': '1/1/1900, 1:00:00', 'u_id': None},
-        'standup_message': ''
-    }
-    data['channels'].append(channel_data)
-    user['channel_involve'].append(channel_id)
+    # new channel data
+    new_channel = Channel(channel_name, is_public, user.get_u_id())
+    data.add_channel(new_channel)
     # return a channel id
     return {
-        'channel_id': channel_id
+        'channel_id': new_channel.get_channel_id()
     }
 
 
 def ch_invite(data, token, u_id, channel_id):
 
     # check validation of channel id
-    channel = find_channel(data, channel_id)
+    channel = data.get_channel(channel_id)
     if channel is None:
         return {'ValueError': 'Invalid channel id'}
 
@@ -77,7 +61,7 @@ def ch_invite(data, token, u_id, channel_id):
     if user is None:
         return {'ValueError': 'Invalid u_id'}
 
-    user_invite = find_user(data, token)
+    user_invite = data.get_user('token', token)
     if find_member(channel, user_invite) is None:
         return {'AccessError': 'The authorised user is not already a member of\
  the channel'}
@@ -87,29 +71,29 @@ def ch_invite(data, token, u_id, channel_id):
 channel'}
 
     # update the data, a new member added
-    user_data = {
+    '''user_data = {
         'u_id': u_id,
         'name_first': user['name_first'],
         'name_last': user['name_last'],
         'is_owner': False
-    }
-    channel['user_list'].append(user_data)
-    user['channel_involve'].append(channel_id)
+    }'''
+    channel.join_invite_channel(user_invite)
+    # user['channel_involve'].append(channel_id)
     return {}
 
 
 def ch_details(data, token, channel_id):
 
-    channel = find_channel(data, channel_id)
+    channel = data.get_channel(channel_id)
     # check validation of channel id
     if channel is None:
         return {'ValueError': 'Invalid channel id'}
     # check auth user is a member or not
-    user = find_user(data, token)
+    user = data.get_user('token', token)
 
     if find_member(channel, user) is None:
         return {'AccessError': 'User is not a member of Channel'}
-
+'''
     owner_members = []
     all_members = []
     for member in channel['user_list']:
@@ -125,7 +109,7 @@ def ch_details(data, token, channel_id):
                 'name_first': member['name_first'],
                 'name_last': member['name_last']
             })
-
+'''
     return {
         'name': channel['name'],
         'owner_members': owner_members,
