@@ -53,6 +53,9 @@ class User:
     def get_email(self):
         return self.email
 
+    def get_password(self):
+        return self.password
+
     def get_user_detail(self):
         user_detail = {
             'u_id': self.u_id,

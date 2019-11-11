@@ -33,8 +33,15 @@ class Data:
 
     def get_user(self, key, value):
         for user in self.users_group:
-            if user.get_user_info(user, key) == value:
+            if key == 'token':
+                value_looking = user.get_token()
+            elif key == 'u_id':
+                value_looking = user.get_u_id()
+            else:
+                return None
+            if value_looking == value:
                 return user
+
         return None
 
     def get_channel(self, channel_id):
