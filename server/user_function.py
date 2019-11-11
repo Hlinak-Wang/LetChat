@@ -5,8 +5,25 @@ Created on 2019/10/15
 
 @author: Yimeng
 """
+import sys
+import urllib.request
+import requests
+from PIL import Image
+from classes import Data, User, Channel, Message
 
-import re
+def getHttpStatusCode(url):
+    try:
+
+        request = requests.get(url)
+
+        httpStatusCode = request.status_code
+
+        return httpStatusCode
+
+    except requests.exceptions.HTTPError as e:
+
+        return e
+
 
 # Make a regular expression
 # for validating an Email
@@ -23,33 +40,6 @@ def check(email):
     return 0
 
 
-# find user by token, return user if found, return None if not found
-def getuser(data, token):
-    for user in data['users']:
-        if user['token'] == token:
-            return user
-
-    return None
-
-
-# check email status if used return 0 else return 1
-def checkemailnotused(data, email):
-    for user in data['users']:
-        if user['email'] == email:
-            return 0
-
-    return 1
-
-
-# check handle status if used return 0 else return 1
-def checkhandlenotused(data, handle):
-    for user in data['users']:
-        if user['handle_str'] == handle:
-            return 0
-
-    return 1
-
-
 # get user profile by token
 def getprofile(data, token, u_id):
     value = None
@@ -59,16 +49,17 @@ def getprofile(data, token, u_id):
         wrongmessage = "Invalid token or u_id"
         return (value, wrongmessage)
 
-    user = getuser(data, token)
+    user = data.getuser(token)
 
     if user is None:
         wrongmessage = "User with u_id is not a valid user"
         return (value, wrongmessage)
 
-    value = {'email': user['email'],
-             'name_first': user['name_first'],
-             'name_last': user['name_last'],
-             'handle_str': user['handle_str'], }
+    value = {'email': user.get_email,
+             'name_first': user.get_name_first,
+             'name_last': user.get_name_last,
+             'handle_str': user.get_handle_str, 
+             'profile_img_url': 'http://127.0.0.1:5002/static/'+user.get_uid()'.jpg',}
 
     return (value, wrongmessage)
 
@@ -96,8 +87,8 @@ def usersetname(data, token, name_first, name_last):
         wrongmessage = "User with token is not a valid user"
         return (value, wrongmessage)
 
-    user['name_first'] = name_first
-    user['name_last'] = name_last
+    user.set_name_first(name_first)
+    user.set_name_last(name_last)
 
     for channel in data['channels']:
         if channel['channel_id'] in user['channel_involve']:
@@ -123,17 +114,17 @@ def usersetemail(data, token, email):
         wrongmessage = "Email entered is not a valid email"
         return (value, wrongmessage)
 
-    if checkemailnotused(data, email) == 0:
+    if data.checkemailnotused(email) == 0:
         wrongmessage = "Email address is already being used by another user"
         return (value, wrongmessage)
 
-    user = getuser(data, token)
+    user = data.getuser(token)
 
     if user is None:
         wrongmessage = "User with token is not a valid user"
         return (value, wrongmessage)
 
-    user['email'] = email
+    user.set_email(email)
 
     value = 1
 
@@ -153,18 +144,58 @@ def usersethandle(data, token, handle_str):
         wrongmessage = "handle_str must be between 3 and 20"
         return (value, wrongmessage)
 
-    if checkhandlenotused(data, handle_str) == 0:
+    if data.checkhandlenotused(handle_str) == 0:
         wrongmessage = "handle is already used by another user"
         return (value, wrongmessage)
 
-    user = getuser(data, token)
+    user = data.getuser(token)
 
     if user is None:
         wrongmessage = "User with token is not a valid user"
         return (value, wrongmessage)
 
-    user['handle_str'] = handle_str
+    user.sethandle_str(handle_str)
 
     value = 1
 
     return (value, wrongmessage)
+
+
+
+def useruploadphoto(data,token, img_url, x_start, y_start, x_end, y_end):
+
+    Errormessage = None
+
+    try:
+        status = getHttpStatusCode(img_url)
+
+        if status != 200:
+            wrongmessage = "img_url is returns an HTTP status other than 200."
+            return wrongmessage
+    except Exception as e:
+        print (e)
+
+    user = data.getuser(token)
+    uid = user.get_uid()
+
+    imagesource = './static/'+uid+'.jpg'
+    urllib.request.urlretrieve(img_url, imagesource)
+
+    imageObject = Image.open(imagesource)
+     
+    if imageObject.format != 'JPEG':
+        wrongmessage = "Image uploaded is not a JPG"
+        return wrongmessage
+    
+    if x_start < 0 or x_start > imageObject.size[0] or x_end < 0 or x_end > imageObject.size[0] \
+    or y_start < 0 or y_start > imageObject.size[1] or y_end < 0 or y_end > imageObject.size[1] \
+    or x_start < x_end or y_start < y_end:
+
+        wrongmessage = "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."
+        return wrongmessage
+
+    cropped = imageObject.crop((x_start, y_start, x_end, y_end))
+    cropped.save(imagesource)
+
+    return wrongmessage
+
