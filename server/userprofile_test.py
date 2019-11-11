@@ -6,7 +6,7 @@ Created on 2019/10/15
 @author: Yimeng
 """
 
-from server.user_function import usersetemail, usersetname, usersethandle, getprofile
+from server.user_function import usersetemail, usersetname, usersethandle, getprofile, useruploadphoto
 from server.auth_functions import register
 
 #fet global data
@@ -130,3 +130,20 @@ def test_sethandle():
     profile, error = getprofile(data, user["token"], user["u_id"])
     assert profile["handle_str"] == 'testing'
 
+def test_useruploadphoto():
+
+    # Invalid input
+    assert useruploadphoto('token', 'https://webpagecannotopen.com/', 20, 20, 500, 377) = "img_url is returns an HTTP status other than 200."
+
+    assert useruploadphoto('token', 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg',\
+     -1, -1, 500, 377) = "img_url is returns an HTTP status other than 200."
+
+    assert useruploadphoto('token', 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg',\
+     0, 0, 9999, 9999) = "img_url is returns an HTTP status other than 200."
+
+    assert useruploadphoto('token', 'https://www.google.com.hk/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',\
+     20, 20, 50, 37) = "Image uploaded is not a JPG"
+
+    # Valid input
+    useruploadphoto('token', 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377)
+    
