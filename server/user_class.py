@@ -1,7 +1,8 @@
 import uuid
 
-class User():
-    def __init__(self, name_first, name_last, email, password, token, permission_id):
+
+class User:
+    def __init__(self, name_first, name_last, email, password, handle, token, permission_id):
         self.name_first = name_first
         self.name_last = name_last
         self.email = email
@@ -9,9 +10,9 @@ class User():
         self.password = password
         self.token = token
         self.u_id = uuid.uuid1().int
-        self.handle_str = name_first + name_last
+        self.handle_str = handle
         self.reset_code = ''
-        self.profile_img_url = 'https://bpic.588ku.com//element_origin_min_pic/19/01/04/46eb55e4401f9f4ddf449d1ba54b9871.jpg'
+        self.profile_img_url = 'http://127.0.0.1:1024/static/default.jpg'
 
     def login(self, token):
         self.token = token
@@ -51,6 +52,9 @@ class User():
 
     def get_email(self):
         return self.email
+
+    def get_password(self):
+        return self.password
 
     def get_user_detail(self):
         user_detail = {

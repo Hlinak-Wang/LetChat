@@ -1,3 +1,5 @@
+import hashlib
+
 class Data:
 
     def __int__(self, users, channels, messages):
@@ -20,10 +22,26 @@ class Data:
     def get_user_number(self):
         return len(self.users_group)
 
+    def user_login_verify(self, email, password):
+        for user in self.users_group:
+            if user.get_email() == email:
+                if user.get_password() == hashlib.sha256(password.encode("utf-8")).hexdigest():
+                    return user
+                else:
+                    return {'ValueError': "Incorrect password entered"}
+        return {'ValueError': "This email does not belong to a user"}
+
     def get_user(self, key, value):
         for user in self.users_group:
-            if user.get_user_info(user, key) == value:
+            if key == 'token':
+                value_looking = user.get_token()
+            elif key == 'u_id':
+                value_looking = user.get_u_id()
+            else:
+                return None
+            if value_looking == value:
                 return user
+
         return None
 
     def get_channel(self, channel_id):
