@@ -10,11 +10,12 @@ import re
 import hashlib
 import jwt
 from datetime import datetime
+import Data_class
+import user_class
 
 # HELPER FUNCTIONS BELOW
 
 SECRET = 'IE4'
-
 
 def check_valid_email(email):
     regex = "^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
@@ -22,29 +23,10 @@ def check_valid_email(email):
         return {'ValueError': "This email is not valid"}
     return {}
 
-
-def check_user_details(data, email, password):
-    for user in data['users']:
-        if user['email'] == email:
-            if user['password'] == hashlib.sha256(password.encode("utf-8")).hexdigest():
-                return user
-            else:
-                return {'ValueError': "Incorrect password entered"}
-    return {'ValueError': "This email does not belong to a user"}
-
-
 def check_valid_password(password):
     if len(password) < 6:
         return {'ValueError': "This password is too short"}
     return {}
-
-
-def check_already_user(data, email):
-    for user in data['users']:
-        if user['email'] == email:
-            return {'ValueError': "This email is already in use by a user"}
-    return {}
-
 
 def check_name(name_first, name_last):
     if (len(name_first) < 1) or (len(name_last) < 1):
@@ -53,7 +35,6 @@ def check_name(name_first, name_last):
         return {'ValueError': "First name or last name too long"}
 
     return {}
-
 
 def generateToken(first, last):
     payload = {
@@ -64,47 +45,16 @@ def generateToken(first, last):
     return str(jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8'))
 
 
-def generateHandle(data, first, last):
-    handle = first + last
-    excess = len(handle) - 20
+def generate_handle_str(data, first, last):
+    handle_str = first + last
+    excess = len(handle_str) - 20
     if excess > 0:
-        handle = handle[:20]
+        handle_str = handle_str[:20]
 
-    if handleAlreadyExists(data, handle) or len(handle) < 3:
-        handle = datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
+    if (data.get_user('handle_str': handle_str) is not None) or (len(handle) < 3):
+        handle_str = datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
 
-    return handle
-
-
-def handleAlreadyExists(data, handle):
-    for user in data['users']:
-        if user['handle_str'] == handle:
-            return True
-    return False
-
-
-def findUserFromToken(data, token):
-    # print("hi")
-    for user in data['users']:
-        print(user)
-        if user['token'] == token:
-            return user
-
-    return None
-
-
-def findUserFromEmail(data, email):
-    for user in data['users']:
-        if user['email'] == email:
-            return user
-
-
-def find_resetcode(data, reset_code):
-    for user in data['users']:
-        if user['reset_code'] == reset_code:
-            return user
-    return None
-
+    return handle_str
 
 def decoding_reset_code(reset_code):
     return jwt.decode(reset_code, SECRET, algorithms=['HS256'])
@@ -114,37 +64,44 @@ def decoding_reset_code(reset_code):
 
 def login(data, email, password):
     email_check = check_valid_email(email)
-
+    
+    user = data.user_login_verify(email, password)
+    
     if 'ValueError' in email_check:
         return email_check
 
-    user = check_user_details(data, email, password)
-
     if 'ValueError' in user:
         return user
+    
+    user_details = user.get_user_detail()
+    
+    token = generateToken(user_details['name_first'], user_details['name_last'])
+    
+    user.login(token)
 
-    token = generateToken(user['name_first'], user['name_last'])
-    user['token'] = token
-
-    return {'u_id': user['u_id'], 'token': token}
+    return {'u_id': user.get_u_id(), 'token': user.get_token()}
 
 
 def logout(data, token):
-    user = findUserFromToken(data, token)
-    # print(user)
+    user = data.get_user('token', token)
+    
     if user is not None:
-        user['token'] = None
+        user.logout()
         is_success = True
     else:
         is_success = False
+        
     return {'is_sucess': is_success}
 
 
 def register(data, email, password, name_first, name_last):
     email_check = check_valid_email(email)
+    
     password_check = check_valid_password(password)
+    
     name_check = check_name(name_first, name_last)
-    user_check = check_already_user(data, email)
+    
+    unique = check_unique('email', email) #check if the user already exists
 
     if 'ValueError' in email_check:
         return email_check
@@ -155,47 +112,41 @@ def register(data, email, password, name_first, name_last):
     if 'ValueError' in name_check:
         return name_check
 
-    if 'ValueError' in user_check:
-        return user_check
-
-    u_id = len(data['users'])
+    if unique == False:
+        return {'ValueError': "This email is already in use by a registered user"}
 
     token = generateToken(name_first, name_last)
 
-    handle = generateHandle(data, name_first, name_last)
+    handle_str = generate_handle_str(data, name_first, name_last)
+    
+    password = hashlib.sha256(password.encode("utf-8")).hexdigest()
 
-    if u_id == 0:
-        permission = 1
+    if data.get_user_number() == 0:
+        permission_id = 1
     else:
-        permission = 3
+        permission_id = 3
+    
+    new_user = User(name_first, name_last, email, password, handle_str, token, permission_id)
+    
+    data.add_user(new_user)
 
-    data['users'].append({
-        'u_id': u_id,
-        'name_first': name_first,
-        'name_last': name_last,
-        'token': token,
-        'handle_str': handle,
-        'email': email,
-        'password': hashlib.sha256(password.encode("utf-8")).hexdigest(),
-        'permission_id': permission,
-        'channel_involve': [],
-        'reset_code': None
-    })
-
-    return {'u_id': u_id, 'token': token}
+    return {'u_id': new_user.get_u_id(), 'token': new_user.get_token()}
 
 
 def reset_request(data, email):
-    user = findUserFromEmail(data, email)
+    user = data.get_user('email', email)
+    
+    if user is None:
+        return {'ValueError': "This email does not belong to a registered user"}
 
     code = jwt.encode({'email': email}, SECRET, algorithm='HS256').decode('utf-8')
-    user['reset_code'] = code
+    user.password_code(code)
 
-    return code
+    return user.get_reset_code()
 
 
 def reset(data, reset_code, new_password):
-    user = find_resetcode(data, reset_code)
+    user = data.get_user('reset_code', reset_code)
 
     if user is None:
         return {'ValueError': "This is not a valid reset code"}
@@ -204,11 +155,13 @@ def reset(data, reset_code, new_password):
 
     email = return_dictionary['email']
 
-    if 'ValueError' in check_valid_password(new_password):
-        return check_valid_password(new_password)
-
-    check_valid_password(new_password)
-    user['password'] = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
-    user['reset_code'] = None
+    password_check = check_valid_password(new_password)
+    
+    if 'ValueError' in password_check:
+        return password_check
+    
+    new_password = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
+    
+    user.reset_password(new_password)
 
     return {}

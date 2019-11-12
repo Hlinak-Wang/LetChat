@@ -1,4 +1,4 @@
-from channel_function import (
+from server.channel_function import (
     ch_create,
     ch_invite,
     ch_details,
@@ -10,80 +10,21 @@ from channel_function import (
     ch_listall,
     fun_message
 )
-from message_function import fun_send
+from server.message_function import fun_send
+from server.auth_functions import register
+
 
 
 # initial state of testing
 def getdata():
     data = {
-        'users': [
-            {'u_id': 123,
-             'name_first': 'test',
-             'name_last': 'test',
-             'token': '12345',
-             'handle_str': 'testtest',
-             'email': 'test@test.com',
-             'password': 'test',
-             'permission_id': 1,
-             'channel_involve': [0]  # channel_id
-             },
-            {'u_id': 1234,
-             'name_first': 'test2',
-             'name_last': 'test2',
-             'token': '123456',
-             'handle_str': 'testtest2',
-             'email': 'test2@test2.com',
-             'password': 'test2',
-             'permission_id': 3,
-             'channel_involve': [0]  # channel_id
-             },
-            {'u_id': 12345,
-             'name_first': 'not in channel',
-             'name_last': 'test',
-             'token': '1234567',
-             'handle_str': 'not in channel',
-             'email': 'tests2@tests2.com',
-             'password': 'tesst2',
-             'permission_id': 3,
-             'channel_involve': []  # channel_id
-             }
-        ],
-        'channels': [{
-            'name': 'test',
-            'channel_id': 0,
-            'user_list': [
-                {'u_id': 123, 'name_first': 'test', 'name_last': 'test',
-                 'is_owner': True},
-                {'u_id': 1234, 'name_first': 'test2', 'name_last': 'test2',
-                 'is_owner': False}
-            ],
-            'is_public': True,
-            'standup_finish': None,  # time_finish
-            'messages': [
-                {
-                    'message': 'test',
-                    'u_id': 123,
-                    'reacts': [{'react_id': 1, 'u_ids': [123, 1234]}],
-                    'is_pinned': False,
-                    'time_created': '10/20/2019, 23:25:33',
-                    'message_id': 1,
-                    'channel_id': 0
-                },
-                {
-                    'message': 'test2',
-                    'u_id': 1234,
-                    'reacts': [{'react_id': 1, 'u_ids': []}],
-                    'is_pinned': False,
-                    'time_created': '10/20/2019, 23:24:33',
-                    'message_id': 0,
-                    'channel_id': 0
-                }
-            ]
-        }],
-        'message_counter': 0
+        'users': [],
+        'channels': [],
     }
+    register(data, 'test@test.com', 'test', 'test', 'test')
+    register(data, 'test2@test2.com', 'test2', 'test2', 'test2')
+    register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test')
     return data
-
 
 # Testing valid input for channel_invite
 def test_channel_invite_ok():
