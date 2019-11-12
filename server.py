@@ -14,6 +14,7 @@ from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 from datetime import datetime, timezone
 from flask_mail import Mail, Message
+from server.Data_class import Data
 from server.message_function import fun_send_late, fun_send, fun_remove, fun_edit, fun_react, fun_unreact, \
     fun_pin, fun_unpin, find_channel
 from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star
@@ -61,12 +62,7 @@ APP.config.update(
     MAIL_PASSWORD = "73python1128!"
 )
 
-data = {
-    "users": [],
-    "channels": [],
-    "message_counter": 0,
-    'message_buffer': []
-}
+data = Data()
 
 if os.path.getsize(os.getcwd() + '/save.dat') > 0:
     data = pickle.load(open('save.dat', 'rb'))
@@ -132,7 +128,7 @@ def auth_login():
 
     email = request.form.get('email')
     password = request.form.get('password')
-    result = login(data,email, password)
+    result = login(data, email, password)
     save()
     return dumps(result)
 
