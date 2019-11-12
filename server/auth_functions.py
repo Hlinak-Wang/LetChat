@@ -125,7 +125,7 @@ def login(data, email, password):
     if 'ValueError' in user_check:
         return user_check
 
-    #user = get_user(email, password)
+    #user = get_user_from_email(email)
     
 
     token = generateToken(user['name_first'], user['name_last']) #create a function in class to get
@@ -137,7 +137,7 @@ def login(data, email, password):
 
 
 def logout(data, token):
-    #user = get_user_from token(token)
+    #user = get_user_from_token(token)
     if user is not None:
         user.logout()
         is_success = True
@@ -183,16 +183,18 @@ def register(data, email, password, name_first, name_last):
 
 
 def reset_request(data, email):
-    user = findUserFromEmail(data, email)
+    #user = get_user_from_email(data, email)
+    
+    #if user is None...
 
     code = jwt.encode({'email': email}, SECRET, algorithm='HS256').decode('utf-8')
-    user['reset_code'] = code
+    user.password_code(code)
 
-    return code
+    return user.get_reset_code()
 
 
 def reset(data, reset_code, new_password):
-    user = find_resetcode(data, reset_code)
+    #user = find_user_from_reset_code(data, reset_code)
 
     if user is None:
         return {'ValueError': "This is not a valid reset code"}
@@ -201,8 +203,9 @@ def reset(data, reset_code, new_password):
 
     email = return_dictionary['email']
 
-    if 'ValueError' in check_valid_password(new_password):
-        return check_valid_password(new_password)
+    password_check = check_valid_password(new_password)
+    if 'ValueError' in password_check:
+        return password_check
 
     check_valid_password(new_password)
     user['password'] = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
