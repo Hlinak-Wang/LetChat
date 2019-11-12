@@ -1,6 +1,9 @@
 import uuid
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> b07ef0dbbc59ad7bed835ed4fd79c5baa9ac17f3
 class User:
     def __init__(self, name_first, name_last, email, password, handle, token, permission_id):
         self.name_first = name_first
@@ -20,8 +23,12 @@ class User:
     def logout(self):
         self.token = None
 
+    def password_code(self, code):
+        self.reset_code = code
+        
     def reset_password(self, new_password):
         self.password = new_password
+        self.reset_code = ''
 
     def set_first_name(self, new_first):
         self.name_first = new_first
@@ -52,6 +59,15 @@ class User:
 
     def get_email(self):
         return self.email
+    
+    def get_handle(self):
+        return self.handle_str
+
+    def get_password(self):
+        return self.password
+    
+    def get_reset_code(self):
+        return self.reset_code
 
     def get_password(self):
         return self.password
