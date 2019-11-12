@@ -204,11 +204,12 @@ def reset(data, reset_code, new_password):
     email = return_dictionary['email']
 
     password_check = check_valid_password(new_password)
+    
     if 'ValueError' in password_check:
         return password_check
-
-    check_valid_password(new_password)
-    user['password'] = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
-    user['reset_code'] = None
+    
+    new_password = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
+    
+    user.reset_password(new_password)
 
     return {}
