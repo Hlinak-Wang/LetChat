@@ -7,9 +7,6 @@ Created on 2019/10/15
 """
 
 from channel_class import Channel
-from Data_class import Data
-from user_class import User
-from message_class import Message
 
 
 def is_owner(user_list, u_id):
