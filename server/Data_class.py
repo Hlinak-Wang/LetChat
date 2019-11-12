@@ -42,6 +42,7 @@ class Data:
                 value_looking = user.get_handle()
             elif key == 'reset_code':
                 value_looking = user.get_reset_code()
+
             else:
                 return None
             if value_looking == value:
