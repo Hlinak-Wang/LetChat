@@ -20,8 +20,12 @@ class User:
     def logout(self):
         self.token = None
 
+    def password_code(self, code):
+        self.reset_code = code
+        
     def reset_password(self, new_password):
         self.password = new_password
+        self.reset_code = ''
 
     def set_first_name(self, new_first):
         self.name_first = new_first
@@ -55,6 +59,9 @@ class User:
 
     def get_password(self):
         return self.password
+    
+    def get_reset_code(self):
+        return self.reset_code
 
     def get_user_detail(self):
         user_detail = {
