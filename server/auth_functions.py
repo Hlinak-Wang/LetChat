@@ -10,8 +10,8 @@ import re
 import hashlib
 import jwt
 from datetime import datetime
-import Data_class
-import user_class
+import server.Data_class
+import server.user_class
 
 # HELPER FUNCTIONS BELOW
 
@@ -51,7 +51,7 @@ def generate_handle_str(data, first, last):
     if excess > 0:
         handle_str = handle_str[:20]
 
-    if (data.get_user('handle_str': handle_str) is not None) or (len(handle) < 3):
+    if (data.get_user('handle_str', handle_str) is not None) or (len(handle) < 3):
         handle_str = datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
 
     return handle_str
