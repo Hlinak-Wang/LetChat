@@ -1,5 +1,6 @@
 import hashlib
 
+
 class Data:
 
     def __init__(self, users, channels, messages):
@@ -133,3 +134,9 @@ class Data:
         return {
             'messages': message_match,
         }
+
+    def count_message(self):
+        count = 0
+        for message in self.messages_group:
+            count = count + 1
+        return count
