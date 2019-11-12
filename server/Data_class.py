@@ -1,6 +1,9 @@
 import hashlib
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> b07ef0dbbc59ad7bed835ed4fd79c5baa9ac17f3
 class Data:
 
     def __init__(self, users, channels, messages):
@@ -38,10 +41,13 @@ class Data:
                 value_looking = user.get_token()
             elif key == 'u_id':
                 value_looking = user.get_u_id()
+<<<<<<< HEAD
             elif key == 'handle_str':
                 value_looking = user.get_handle()
             elif key == 'reset_code':
                 value_looking = user.get_reset_code()
+=======
+>>>>>>> b07ef0dbbc59ad7bed835ed4fd79c5baa9ac17f3
             else:
                 return None
             if value_looking == value:

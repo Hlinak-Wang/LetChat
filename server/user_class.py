@@ -1,5 +1,9 @@
 import uuid
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> b07ef0dbbc59ad7bed835ed4fd79c5baa9ac17f3
 class User:
     def __init__(self, name_first, name_last, email, password, handle, token, permission_id):
         self.name_first = name_first
@@ -64,6 +68,9 @@ class User:
     
     def get_reset_code(self):
         return self.reset_code
+
+    def get_password(self):
+        return self.password
 
     def get_user_detail(self):
         user_detail = {
