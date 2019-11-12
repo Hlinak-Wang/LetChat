@@ -1,5 +1,6 @@
 import uuid
 
+
 class User:
     def __init__(self, name_first, name_last, email, password, handle, token, permission_id):
         self.name_first = name_first
@@ -12,6 +13,9 @@ class User:
         self.handle_str = handle
         self.reset_code = ''
         self.profile_img_url = 'http://127.0.0.1:1024/static/default.jpg'
+
+    def __getattribute__(self, item):
+        return object.__getattribute__(self, item)
 
     def login(self, token):
         self.token = token
@@ -43,30 +47,6 @@ class User:
 
     def set_permission_id(self, new_permission):
         self.permission_id = new_permission
-
-    def get_permission(self):
-        return self.permission_id
-
-    def get_u_id(self):
-        return self.u_id
-
-    def get_token(self):
-        return self.token
-
-    def get_email(self):
-        return self.email
-    
-    def get_handle(self):
-        return self.handle_str
-
-    def get_password(self):
-        return self.password
-    
-    def get_reset_code(self):
-        return self.reset_code
-
-    def get_password(self):
-        return self.password
 
     def get_user_detail(self):
         user_detail = {
