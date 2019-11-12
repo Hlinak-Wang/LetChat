@@ -6,11 +6,11 @@ Created on 2019/10/15
 @author: Meilin
 """
 
-from server.help import (find_channel, find_user, print_message)
 from channel_class import Channel
 from Data_class import Data
 from user_class import User
 from message_class import Message
+
 
 def is_owner(user_list, u_id):
     for user in user_list:
@@ -57,7 +57,7 @@ def ch_invite(data, token, u_id, channel_id):
         return {'ValueError': 'Invalid u_id'}
 
     user_invite = data.get_user('token', token)
-    if user_invite['u_id'] not in channel.get_user_list()        
+    if user_invite['u_id'] not in channel.get_user_list():
         return {'AccessError': 'The authorised user is not already a member of\
  the channel'}
 
@@ -66,12 +66,6 @@ def ch_invite(data, token, u_id, channel_id):
 channel'}
 
     # update the data, a new member added
-    '''user_data = {
-        'u_id': u_id,
-        'name_first': user['name_first'],
-        'name_last': user['name_last'],
-        'is_owner': False
-    }'''
     channel.join_invite_channel(new_member)
     return {}
 
@@ -131,10 +125,7 @@ def ch_addowner(data, token, channel_id, u_id):
     channel = data.get_channel(channel_id)
     if channel is None:
         return {'ValueError': 'Invalid Channel ID'}
-    '''user_list = channel['user_list']
-    owner = is_owner(user_list, u_id)
-    if owner is None:
-    '''
+    # if u_id is not a member of that channel
     if u_id not in channel.get_user_list():
         return {'AccessError': 'Not a member of this channel'}
     # check the user is already the owner or not
@@ -143,11 +134,9 @@ def ch_addowner(data, token, channel_id, u_id):
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = data.get_user('token', token)
-    # user_add = find_uid(data, u_id)
-    # member_add = find_member(channel, user_add)
-    # if user['permission_id'] == 3:
-        # return {'AccessError': 'User is not an owner of the slackr or this \
-# channel'}
+    if user.get_permission() == 3:
+        return {'AccessError': 'User is not an owner of the slackr or this \
+channel'}
 
     channel.add_owner(u_id)
 
@@ -161,19 +150,16 @@ def ch_removeowner(data, token, channel_id, u_id):
         return {'ValueError': 'Invalid Channel ID'}
 
     # check the remove user is owner or not
-    # if is_owner(channel['user_list'], u_id) is False:
     if u_id not in channel.get_owner_list():
         return {'ValueError': 'User is not an owner of the channel'}
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = data.get_user('token', token)
-    # owner = is_owner(channel['user_list'], user['u_id'])
-    # if user['permission_id'] == 3 or owner is False:
-    if user['u_id'] not in channel.get_owner_list():
+    if user.get_permission() == 3 or user['u_id'] not in channel.get_owner_list():
         return {
             'AccessError': "User is not an owner of the slackr or this channel"
         }
-    channel.remove_onwer(u_id)      # <--- is owner or not? make true or false?
+    channel.remove_onwer(u_id)
     return {}
 
 
@@ -196,8 +182,7 @@ def fun_message(data, token, channel_id, start):
     if user['u_id'] not in channel.get_user_list():
         return {'AccessError': 'when:  the authorised user has not joined the \
 channel they are trying to post to'}
-    message = data.get_message(1)   # is this correct? before there is a print function
-    if start > len(message):
+    if start > data.count_message():
         return {'ValueError': 'start is greater than or equal to the total \
 number of messages in the channel'}
 
