@@ -56,6 +56,18 @@ class User:
 
     def get_email(self):
         return self.email
+    
+    def get_handle(self):
+        return self.handle_str
+
+    def get_password(self):
+        return self.password
+    
+    def get_reset_code(self):
+        return self.reset_code
+
+    def get_password(self):
+        return self.password
 
     def get_password(self):
         return self.password
