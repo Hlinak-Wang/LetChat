@@ -2,7 +2,7 @@ import hashlib
 
 class Data:
 
-    def __int__(self, users, channels, messages):
+    def __init__(self, users, channels, messages):
         self.users_group = []
         self.channels_group = []
         self.messages_group = []
@@ -37,6 +37,10 @@ class Data:
                 value_looking = user.get_token()
             elif key == 'u_id':
                 value_looking = user.get_u_id()
+            elif key == 'handle_str':
+                value_looking = user.get_handle()
+            elif key == 'reset_code':
+                value_looking = user.get_reset_code()
             else:
                 return None
             if value_looking == value:
@@ -57,7 +61,6 @@ class Data:
         return None
 
     def check_unique(self, key, value):
-
         for user in self.users_group:
             if user.get_user_info(user, key) == value:
                 return False

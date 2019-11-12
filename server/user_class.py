@@ -1,6 +1,5 @@
 import uuid
 
-
 class User:
     def __init__(self, name_first, name_last, email, password, handle, token, permission_id):
         self.name_first = name_first
@@ -56,6 +55,9 @@ class User:
 
     def get_email(self):
         return self.email
+    
+    def get_handle(self):
+        return self.handle_str
 
     def get_password(self):
         return self.password
