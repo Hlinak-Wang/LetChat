@@ -12,13 +12,11 @@ from server.channel_function import (
 )
 from server.message_function import fun_send
 from server.auth_functions import register
-<<<<<<< HEAD
+
 from server.Data_class import Data
 from server.channel_class import Channel
 from server.user_class import User
-=======
 
->>>>>>> 2092e7b3b9c3c1f08224850a572876a645e0ce06
 
 # initial state of testing
 def getdata():
