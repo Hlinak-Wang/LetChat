@@ -29,3 +29,7 @@ class Channel:
     def set_standup(self, time_finish, u_id):
         self.standup['time_finish'] = time_finish
         self.standup['u_id'] = u_id
+
+    def standup_send(self, message):
+        self.standup_message += message
+        self.standup_message += '\n'

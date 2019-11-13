@@ -11,14 +11,14 @@ from server.channel_class import Channel
 
 def is_owner(user_list, u_id):
     for user in user_list:
-        if user['u_id'] == u_id:
+        if user.u_id == u_id:
             return user['is_owner']
     return None
 
 
 def find_member(channel, user):
     for member in channel['user_list']:
-        if member['u_id'] == user['u_id']:
+        if member.u_id == user.u_id:
             return member
 
     return None
@@ -36,6 +36,7 @@ def ch_create(data, token, channel_name, is_public):
     # new channel data
     new_channel = Channel(channel_name, is_public, user.u_id)
     data.add_channel(new_channel)
+
     # return a channel id
     return {
         'channel_id': new_channel.channel_id

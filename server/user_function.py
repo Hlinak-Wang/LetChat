@@ -10,10 +10,6 @@ import re
 import urllib.request
 import requests
 from PIL import Image
-from server.Data_class import Data
-from server.message_class import Message
-from server.user_class import User
-from server.channel_class import Channel
 
 
 def getHttpStatusCode(url):

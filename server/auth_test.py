@@ -6,40 +6,22 @@ Created on 2019/10/15
 @author: Angeline
 """
 
-from server.auth_functions import login, logout, register, reset_request, reset, generateToken, generateHandle
+from server.auth_functions import login, logout, register, reset_request, reset, generateToken, generate_handle_str
+import server.user_class
+import Data_class
 import hashlib
 SECRET = 'IE4'
 
 
 def clearData():
-    data = {
-        "messages": {},
-        "users": [],
-        "channel_id": {},
-    }
+    data = Data()
     return data
 
-
 def testData():
-    data = {
-        "messages": {},
-        "users": [
-            {
-                'u_id': 0,
-                'name_first': "hello",
-                'name_last': "goodbye",
-                'token': "dummytoken",
-                'handle_str': "hellogoodbye",
-                'email': "hi@gmail.com",
-                'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-                'permission_id': 1,
-                'channel_involve': [],
-                'reset_code': None
-            }
-        ],
-        "channel_id": {},
-    }
-
+    data = Data()
+    user = User("hello", "goodbye", "hi@gmail.com", hashlib.sha256("123456".encode("utf-8")).hexdigest(), "hellogoodbye", "dummytoken", 1)
+    #name_first, name_last, email, password, handle, token, permission_id
+    Data.add_user(user)}
     return data
 
 
