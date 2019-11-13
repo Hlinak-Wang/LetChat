@@ -20,7 +20,6 @@ def clearData():
 def testData():
     data = Data()
     user = User("hello", "goodbye", "hi@gmail.com", hashlib.sha256("123456".encode("utf-8")).hexdigest(), "hellogoodbye", "dummytoken", 1)
-    #name_first, name_last, email, password, handle, token, permission_id
     Data.add_user(user)
     return data
 
@@ -90,33 +89,10 @@ def test_auth_register_handle():
     name_last = "goodbye"
 
     register_output = register(data, email, password, name_first, name_last)
-    check_token = generateToken(name_first, name_last)
-    check_handle = generateHandle(data, name_first, name_last)
-
-    assert data['users'] == [{
-        'u_id': 0,
-        'name_first': "hello",
-        'name_last': "goodbye",
-        'token': "dummytoken",
-        'handle_str': "hellogoodbye",
-        'email': "hi@gmail.com",
-        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-        'permission_id': 1,
-        'channel_involve': [],
-        'reset_code': None
-    }, {
-        'u_id': 1,
-        'name_first': "hello",
-        'name_last': "goodbye",
-        'token': check_token,
-        'handle_str': check_handle,
-        'email': "bye@gmail.com",
-        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-        'permission_id': 3,
-        'channel_involve': [],
-        'reset_code': None
-    }]
-
+    #check_token = generateToken(name_first, name_last)
+    check_handle = generate_handle_str(data, name_first, name_last)
+    user = Data.get_user('u_id', 1)
+    assert user.handle_str = check_handle
 
 def test_auth_register_invalid_email():
     data = clearData()
