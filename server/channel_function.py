@@ -76,7 +76,7 @@ def ch_details(data, token, channel_id):
     # check auth user is a member or not
     user = data.get_user('token', token)
 
-    if user['u_id'] not in channel.user_list:
+    if user.u_id not in channel.user_list:
         return {'AccessError': 'User is not a member of Channel'}
 
     return {
@@ -107,10 +107,10 @@ def ch_join(data, token, channel_id):
     # check the channel is public or private
     # when the authorised user is not an admin
     user = data.get_user('token', token)
-    if channel.is_public is False and user.permission_id == 1:  # <---
+    if channel.is_public is False and user.permission_id == 1:
         return {'AccessError': 'The channel is private'}
     # if the user is already a member of that channel
-    if user['u_id'] in channel.user_list:
+    if user.u_id in channel.user_list:
         return {'AccessError': 'Already a member of that channel'}
     # add a list of that user's data
     channel.join_invite_channel(user)
@@ -122,18 +122,20 @@ def ch_addowner(data, token, channel_id, u_id):
     channel = data.get_channel(channel_id)
     if channel is None:
         return {'ValueError': 'Invalid Channel ID'}
-    # if u_id is not a member of that channel
-    if u_id not in channel.user_list:
-        return {'AccessError': 'Not a member of this channel'}
-    # check the user is already the owner or not
-    if u_id in channel.owner_list:
-        return {'ValueError': 'User is already an owner of the channel'}
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = data.get_user('token', token)
     if user.permission_id == 3:
         return {'AccessError': 'User is not an owner of the slackr or this \
 channel'}
+
+    # if u_id is not a member of that channel
+    if u_id not in channel.user_list:
+        return {'AccessError': 'Not a member of this channel'}
+
+    # check the user is already the owner or not
+    if u_id in channel.owner_list:
+        return {'ValueError': 'User is already an owner of the channel'}
 
     channel.add_owner(u_id)
 
@@ -146,16 +148,17 @@ def ch_removeowner(data, token, channel_id, u_id):
     if channel is None:
         return {'ValueError': 'Invalid Channel ID'}
 
+    # accesserror when the auth_user is not an owner of the slackr or channel
+    user = data.get_user('token', token)
+    if user.permission_id == 3 or user.u_id not in channel.owner_list:
+        return {
+            'AccessError': "User is not an owner of the slackr or this channel"
+        }
+
     # check the remove user is owner or not
     if u_id not in channel.owner_list:
         return {'ValueError': 'User is not an owner of the channel'}
 
-    # accesserror when the auth_user is not an owner of the slackr or channel
-    user = data.get_user('token', token)
-    if user.permission_id == 3 or user['u_id'] not in channel.owner_list:
-        return {
-            'AccessError': "User is not an owner of the slackr or this channel"
-        }
     channel.remove_onwer(u_id)
     return {}
 
@@ -178,7 +181,7 @@ def fun_message(data, token, channel_id, start):
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 
-    if user['u_id'] not in channel.user_list:
+    if user.u_id not in channel.user_list:
         return {'AccessError': 'when:  the authorised user has not joined the \
 channel they are trying to post to'}
     if start > data.count_message():
