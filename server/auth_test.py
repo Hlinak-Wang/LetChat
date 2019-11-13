@@ -7,8 +7,8 @@ Created on 2019/10/15
 """
 
 from server.auth_functions import login, logout, register, reset_request, reset, generateToken, generate_handle_str
-import server.user_class
-import server.Data_class
+from server.user_class import User
+from server.Data_class import Data
 import hashlib
 SECRET = 'IE4'
 
