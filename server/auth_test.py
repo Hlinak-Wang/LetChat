@@ -21,7 +21,7 @@ def testData():
     data = Data()
     user = User("hello", "goodbye", "hi@gmail.com", hashlib.sha256("123456".encode("utf-8")).hexdigest(), "hellogoodbye", "dummytoken", 1)
     #name_first, name_last, email, password, handle, token, permission_id
-    Data.add_user(user)}
+    Data.add_user(user)
     return data
 
 
@@ -39,18 +39,17 @@ def test_auth_register_valid():
 
     assert register_output['u_id'] == 0
     assert register_output['token'] == check_token_1
-    assert data['users'] == [{
+    assert Data.get_all_user_detail() ==  [{
         'u_id': 0,
+        'email': "hi@gmail.com",
         'name_first': "hello",
         'name_last': "goodbye",
-        'token': check_token_1,
         'handle_str': "hellogoodbye",
-        'email': "hi@gmail.com",
-        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-        'permission_id': 1,
-        'channel_involve': [],
-        'reset_code': None
+        'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }]
+    user = Data.get_user('u_id', 0)
+    assert user.password == hashlib.sha256("123456".encode("utf-8")).hexdigest()
+    assert user.permission_id == 1
 
     email = "good@gmail.com"
     password = "9876543"
@@ -62,30 +61,24 @@ def test_auth_register_valid():
 
     assert register_output['u_id'] == 1
     assert register_output['token'] == check_token_2
-    assert data['users'] == [{
+    assert Data.get_all_user_detail() == [{
         'u_id': 0,
+        'email': "hi@gmail.com",
         'name_first': "hello",
         'name_last': "goodbye",
-        'token': check_token_1,
         'handle_str': "hellogoodbye",
-        'email': "hi@gmail.com",
-        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-        'permission_id': 1,
-        'channel_involve': [],
-        'reset_code': None
+        'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }, {
         'u_id': 1,
+        'email': "good@gmail.com",
         'name_first': "hellohowareyou",
         'name_last': "imfinethankyou",
-        'token': check_token_2,
         'handle_str': "hellohowareyouimfine",
-        'email': "good@gmail.com",
-        'password': hashlib.sha256("9876543".encode("utf-8")).hexdigest(),
-        'permission_id': 3,
-        'channel_involve': [],
-        'reset_code': None
+        'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }]
-
+    user = Data.get_user('u_id', 1)
+    assert user.password == hashlib.sha256("9876543".encode("utf-8")).hexdigest()
+    assert user.permission_id == 3
 
 # below is a test to check what happens when a handle is already in use
 def test_auth_register_handle():
