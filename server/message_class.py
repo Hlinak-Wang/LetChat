@@ -3,28 +3,16 @@ import uuid
 
 class Message:
     def __init__(self, content, channel_id, u_id, time_create):
-        self._channel_id = channel_id
-        self._u_id = u_id
-        self._message_id = uuid.uuid1().int
+        self.channel_id = channel_id
+        self.u_id = u_id
+        self.message_id = uuid.uuid1().int
         self.message = content
         self.time_created = time_create,
         self.reacts = [React(1)]
         self.is_pinned = False
 
-    def get_message_id(self):
-        return self._message_id
-
-    def get_channel_id(self):
-        return self._channel_id
-
-    def get_content(self):
-        return self.message
-
-    def user_get_sender_id(self):
-        return self._u_id
-
-    def get_pin_state(self):
-        return self.is_pinned
+    def __getattribute__(self, item):
+        return object.__getattribute__(self, item)
 
     def user_edit(self, new_content):
         self.message = new_content
@@ -50,8 +38,8 @@ class Message:
     def get_message_info(self, u_id):
 
         message_info = {
-            'message_id': self._message_id,
-            'u_id': self._u_id,
+            'message_id': self.message_id,
+            'u_id': self.u_id,
             'message': self.message,
             'time_created': self.time_created,
             'reacts': self.__get_react_all(u_id)
@@ -64,17 +52,14 @@ class React:
         self.react_id = react_id
         self.u_ids = []
 
+    def __getattribute__(self, item):
+        return object.__getattribute__(self, item)
+
     def user_react(self, u_id):
         self.u_ids.append(u_id)
 
     def user_unreact(self, u_id):
         self.u_ids.remove(u_id)
-
-    def get_react_id(self):
-        return self.react_id
-
-    def get_u_ids(self):
-        return self.u_ids
 
     def is_react(self, u_id):
         if u_id in self.u_ids:

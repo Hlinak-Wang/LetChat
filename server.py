@@ -15,9 +15,9 @@ from flask_cors import CORS
 from datetime import datetime, timezone
 from flask_mail import Mail, Message
 from server.Data_class import Data
-from server.message_function import fun_send_late, fun_send, fun_remove, fun_edit, fun_react, fun_unreact, \
-    fun_pin, fun_unpin, find_channel
-from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star
+from server.message_function import fun_send, fun_remove, fun_edit, react_unreact, \
+    pin_unpin
+#from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile
 from server.channel_function import (
     ch_create,
@@ -87,7 +87,7 @@ def save():
     with open('save.dat', 'wb') as FILE:
         pickle.dump(data, FILE, True)
 
-
+"""
 def send_message_buffer():
     global data
     time_now = datetime.now()
@@ -119,7 +119,7 @@ def pop_queue():
                     })
                     channel['standup_message'] = ""
                     data['message_counter'] += 1
-
+"""
 
 @APP.route("/auth/login", methods=['POST'])
 def auth_login():
@@ -249,8 +249,7 @@ def channel_details():
 
 @APP.route('/channel/messages', methods=['GET'])
 def channel_message():
-    pop_queue()
-    send_message_buffer()
+
     channel_id = int(request.args.get('channel_id'))
     token = request.args.get('token')
     start = int(request.args.get('start'))
@@ -267,14 +266,12 @@ def channel_message():
 @APP.route('/message/send_later', methods=['POST'])
 def message_send_later():
     global data
-    pop_queue()
-    send_message_buffer()
     message = request.form.get('message')
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     time_create = request.form.get('time_create')
 
-    output = fun_send_late(data, token, channel_id, message, time_create)
+    output = fun_send(data, token, channel_id, message, time_create)
     save()
 
     return dumps(output)
@@ -313,7 +310,7 @@ def message_remove():
     return dumps(output)
 
 
-@APP.route('/message/edit', methods=['POST','PUT'])
+@APP.route('/message/edit', methods=['POST', 'PUT'])
 def message_edit():
     global data
     message_id = int(request.form.get('message_id'))
@@ -336,7 +333,7 @@ def message_react():
     react_id = int(request.form.get('react_id'))
     token = request.form.get('token')
 
-    output = fun_react(data, token, message_id, react_id)
+    output = react_unreact(data, token, message_id, react_id, 'react')
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
     save()
@@ -350,7 +347,7 @@ def message_unreact():
     message_id = int(request.form.get('message_id'))
     react_id = int(request.form.get('react_id'))
     token = request.form.get('token')
-    output = fun_unreact(data, token, message_id, react_id)
+    output = react_unreact(data, token, message_id, react_id, 'unreact')
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
     save()
@@ -364,7 +361,7 @@ def message_pin():
 
     message_id = int(request.form.get('message_id'))
     token = request.form.get('token')
-    output = fun_pin(data, token, message_id)
+    output = pin_unpin(data, token, message_id, 'pin')
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
@@ -380,7 +377,7 @@ def message_unpin():
 
     message_id = int(request.form.get('message_id'))
     token = request.form.get('token')
-    output = fun_unpin(data, token, message_id)
+    output = pin_unpin(data, token, message_id, 'unpin')
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
@@ -459,8 +456,7 @@ def channel_list():
     global data
 
     token = request.args.get('token')
-    save()
-
+    print(token)
     return dumps(ch_lists(data, token))
 
 
@@ -470,8 +466,6 @@ def channel_listall():
 
     token = request.args.get('token')
     listall = ch_listall(data, token)
-    save()
-
     return dumps(listall)
 
 
@@ -550,7 +544,7 @@ def uploadphoto():
 
     return dumps({})
 
-
+"""
 @APP.route('/search', methods=['GET'])
 def search():
     global data
@@ -620,7 +614,7 @@ def standup_send():
     save()
 
     return dumps(output)
-
+"""
 
 if __name__ == '__main__':
     APP.run(port=(sys.argv[1] if len(sys.argv) > 1 else 5000))
