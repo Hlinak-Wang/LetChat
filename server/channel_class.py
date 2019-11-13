@@ -14,8 +14,8 @@ class Channel:
     def __getattribute__(self, item):
         return object.__getattribute__(self, item)
 
-    def join_invite_channel(self, user):
-        self.user_list.append(user)
+    def join_invite_channel(self, user_id):
+        self.user_list.append(user_id)
 
     def leave_channel(self, user_id):
         self.user_list.remove(user_id)
@@ -29,3 +29,7 @@ class Channel:
     def set_standup(self, time_finish, u_id):
         self.standup['time_finish'] = time_finish
         self.standup['u_id'] = u_id
+
+    def standup_send(self, message):
+        self.standup_message += message
+        self.standup_message += '\n'

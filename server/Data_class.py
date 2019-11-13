@@ -8,6 +8,9 @@ class Data:
         self.channels_group = []
         self.messages_group = []
 
+    def __getattribute__(self, item):
+        return object.__getattribute__(self, item)
+
     def add_user(self, user):
         self.users_group.append(user)
 
@@ -16,7 +19,7 @@ class Data:
 
     def message_operation(self, message, action):
         if action == 'add':
-            self.messages_group.append(message)
+            self.messages_group.insert(0, message)
         elif action == 'remove':
             self.messages_group.remove(message)
 
@@ -49,6 +52,13 @@ class Data:
                 return user
 
         return None
+
+    def get_channels_joined(self, u_id):
+        channel_joined = []
+        for channel in self.channels_group:
+            if u_id in channel.user_list:
+                channel_joined.append(channel.channel_id)
+        return channel_joined
 
     def get_channel(self, channel_id):
         for channel in self.channels_group:
@@ -117,23 +127,6 @@ class Data:
             'messages': channel_message,
             'start': start,
             'end': -1
-        }
-
-    def message_search(self, u_id, query_str):
-
-        searching_list = []
-        for channel in self.channels_group:
-            if u_id in channel.get_user_list:
-                searching_list.append(channel.channel_id)
-
-        message_match = []
-        for message in self.messages_group:
-            if message.channel_id in searching_list:
-                if message.message == query_str:
-                    message_match.append(message.get_message_info(u_id))
-
-        return {
-            'messages': message_match,
         }
 
     def count_message(self):

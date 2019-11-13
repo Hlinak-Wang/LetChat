@@ -12,9 +12,8 @@ from server.Data_class import Data
 from server.auth_functions import register
 from server.channel_function import ch_create, ch_join
 
-
 # initial state of testing
-def testdata():
+def get_data():
     test_data = Data()
     user_chowner = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last')
     user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last')
@@ -27,17 +26,15 @@ def testdata():
 
 
 def test_send_late():
-    data = testdata()
+    data = get_data()
     user = data.users_group[0]
     channel = data.channels_group[0]
     message_long = ""
     for i in range(0, 1010):
         message_long += "a"
-    time_valid = datetime.now() + timedelta(seconds=10)
-    time_invalid = datetime.now() - timedelta(seconds=10)
+    time_valid = datetime.now() + timedelta(seconds=100)
+    time_invalid = datetime.now() - timedelta(seconds=100)
     # Invalid input
-    assert fun_send(data, user.token, channel.channel_id, 'short', time_valid) == {'AccessError': 'User not exist'}
-
     assert fun_send(data, user.token, channel.channel_id, message_long, time_valid) == {
            "ValueError": "Message is more than 1000 characters"
     }
@@ -51,11 +48,11 @@ def test_send_late():
 
     # Valid input
     output = fun_send(data, user.token, channel.channel_id, 'short_message', time_valid)
-    assert output.u_id == user.u_id
+    assert data.get_message(output['message_id']) is not None
 
 
 def test_send():
-    data = testdata()
+    data = get_data()
     user = data.users_group[0]
     channel = data.channels_group[0]
     message_long = ""
@@ -71,11 +68,11 @@ def test_send():
 
     # Valid input
     output = fun_send(data, user.token, channel.channel_id, 'short_message')
-    assert output.u_id == user.u_id
+    assert data.get_message(output['message_id']) is not None
 
 
 def test_remove():
-    data = testdata()
+    data = get_data()
     user_admin = data.users_group[0]
     user_norm = data.users_group[1]
     message = data.messages_group[0]
@@ -89,7 +86,7 @@ def test_remove():
 
 
 def test_edit():
-    data = testdata()
+    data = get_data()
     user_admin = data.users_group[0]
     user_norm = data.users_group[1]
     message = data.messages_group[0]
@@ -105,7 +102,7 @@ def test_edit():
 
 
 def test_react():
-    data = testdata()
+    data = get_data()
     user = data.users_group[0]
     message = data.messages_group[0]
 
@@ -124,7 +121,7 @@ def test_react():
 
 
 def test_unreact():
-    data = testdata()
+    data = get_data()
     user = data.users_group[0]
     message = data.messages_group[0]
 
@@ -148,7 +145,7 @@ def test_unreact():
 
 
 def test_pin():
-    data = testdata()
+    data = get_data()
     user_admin = data.users_group[0]
     user_norm = data.users_group[1]
     user_not_in_channel = data.users_group[2]
@@ -171,7 +168,7 @@ def test_pin():
 
 
 def test_unpin():
-    data = testdata()
+    data = get_data()
     user_admin = data.users_group[0]
     user_norm = data.users_group[1]
     user_not_in_channel = data.users_group[2]
@@ -189,6 +186,6 @@ def test_unpin():
 
     # Pin the message in advance, if the next test raise exception
     # means the message is successfully pinned
-    pin_unpin(data, user_admin.token, message.message_id, 'unpin')
+    pin_unpin(data, user_admin.token, message.message_id, 'pin')
     output = pin_unpin(data, user_admin.token, message.message_id, 'unpin')
     assert output == {}

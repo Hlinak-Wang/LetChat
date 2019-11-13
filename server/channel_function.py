@@ -11,14 +11,14 @@ from server.channel_class import Channel
 
 def is_owner(user_list, u_id):
     for user in user_list:
-        if user['u_id'] == u_id:
+        if user.u_id == u_id:
             return user['is_owner']
     return None
 
 
 def find_member(channel, user):
     for member in channel['user_list']:
-        if member['u_id'] == user['u_id']:
+        if member.u_id == user.u_id:
             return member
 
     return None
@@ -77,7 +77,7 @@ def ch_details(data, token, channel_id):
     # check auth user is a member or not
     user = data.get_user('token', token)
 
-    if user['u_id'] not in channel.user_list:
+    if user.u_id not in channel.user_list:
         return {'AccessError': 'User is not a member of Channel'}
 
     return {
@@ -111,10 +111,10 @@ def ch_join(data, token, channel_id):
     if channel.is_public is False and user.permission_id == 1:  # <---
         return {'AccessError': 'The channel is private'}
     # if the user is already a member of that channel
-    if user['u_id'] in channel.user_list:
+    if user.u_id in channel.user_list:
         return {'AccessError': 'Already a member of that channel'}
     # add a list of that user's data
-    channel.join_invite_channel(user)
+    channel.join_invite_channel(user.u_id)
     return {}
 
 
@@ -153,7 +153,7 @@ def ch_removeowner(data, token, channel_id, u_id):
 
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = data.get_user('token', token)
-    if user.permission_id == 3 or user['u_id'] not in channel.owner_list:
+    if user.permission_id == 3 or user.u_id not in channel.owner_list:
         return {
             'AccessError': "User is not an owner of the slackr or this channel"
         }
@@ -179,7 +179,7 @@ def fun_message(data, token, channel_id, start):
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 
-    if user['u_id'] not in channel.user_list:
+    if user.u_id not in channel.user_list:
         return {'AccessError': 'when:  the authorised user has not joined the \
 channel they are trying to post to'}
     if start > data.count_message():

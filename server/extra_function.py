@@ -6,100 +6,93 @@ Created on 2019/10/15
 @author: Eric
 """
 
-from datetime import datetime, timedelta
-from server.help import find_channel, print_message
-
-
-def find_user(data, value, aspect):
-    for user in data['users']:
-        if user[aspect] == value:
-            return user
-
-    return None
+from datetime import datetime, timedelta, timezone
 
 
 def message_search(data, token, query_str):
-    user = find_user(data, token, 'token')
+    user = data.get_user('token', token)
 
-    channel_join_list = []
-    for channel_join in user['channel_involve']:
-        channel_join_list.append(find_channel(data, channel_join))
-
+    channel_join = data.get_channels_joined(user.u_id)
     output_list = []
-    for channel in channel_join_list:
-        for message in channel['messages']:
-            if message['message'] == query_str:
-                print_message(user, message, output_list)
+    for message in data.messages_group:
+        if message.channel_id in channel_join and message.message == query_str:
+            output_list.append(message.get_message_info(user.u_id))
 
     return {
-        'messages': output_list,
+        'messages': output_list
     }
 
 
 def permission_change(data, token, u_id, permission_id):
-    user = find_user(data, token, 'token')
+    user = data.get_user('token', token)
 
-    if user['permission_id'] == 3:
+    if user.permission_id == 3:
         return {'AcessError': 'The authorised user is not an admin or owner'}
 
-    target = find_user(data, u_id, 'u_id')
+    target = data.get_user('u_id', u_id)
     if target is None:
         return {'ValueError': 'u_id does not refer to a valid user'}
 
     if permission_id not in range(1, 4):
         return {'ValueError': 'permission_id does not refer to a value permission'}
 
-    target['permission_id'] = permission_id
-    print(target)
+    target.set_permission_id(permission_id)
     return {}
 
 
 def fun_standup_star(data, token, channel_id):
-    user = find_user(data, token, 'token')
-    channel = find_channel(data, channel_id)
+    user = data.get_user('token', token)
+    channel = data.get_channel(channel_id)
+    time_start = datetime.now().replace(tzinfo=timezone.utc).timestamp()
 
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 
-    if channel_id not in user['channel_involve']:
+    if user.u_id not in channel.user_list:
         return {'AccessError': 'The authorised user is not a member of the channel that the message is within'}
 
-    if datetime.now() < datetime.strptime(channel['standup']['time_finish'], "%m/%d/%Y, %H:%M:%S"):
+    if time_start < channel.standup['time_finish']:
         return {'ValueError': 'An active standup is currently running in this channel'}
 
-    channel['standup']['time_finish'] = datetime.strftime(datetime.now() + timedelta(seconds=900), "%m/%d/%Y, %H:%M:%S")
-    channel['standup']['u_id'] = user['u_id']
+    channel.set_standup(time_start + 900, user.u_id)
 
     return {
-        'time_finish': channel['standup']['time_finish']
+        'time_finish': channel.standup['time_finish']
+    }
+
+
+def fun_standup_activate(data, token, channel_id):
+
+    channel = data.get_channel(channel_id)
+    time_now = datetime.now().replace(tzinfo=timezone.utc).timestamp()
+    if channel.standup['time_finish'] < time_now:
+        is_activate = False
+    else:
+        is_activate = True
+
+    return {
+        'is_activate': is_activate,
+        'time_finish': channel.standup['time_finish']
     }
 
 
 def fun_standup_send(data, token, channel_id, message):
-
-    user = find_user(data, token, 'token')
-    channel = find_channel(data, channel_id)
-
+    user = data.get_user('token', token)
+    channel = data.get_channel(channel_id)
+    time_now = datetime.now().replace(tzinfo=timezone.utc).timestamp()
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 
-    if datetime.now() > datetime.strptime(channel['standup']['time_finish'], "%m/%d/%Y, %H:%M:%S"):
+    if time_now > channel.standup['time_finish']:
         return {'ValueError': 'An active standup is not currently running in this channel'}
 
     if len(message) > 1000:
         return {'ValueError': 'Message is more than 1000 characters'}
 
-    if channel_id not in user['channel_involve']:
+    if user.u_id not in channel.user_list:
         return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
 
-    channel['standup_queue'].append({
-        'u_id': user['u_id'],
-        'message_id': data['message_counter'],
-        'message': message,
-        'time_created': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S"),
-        'reacts': [{'react_id': 1, 'u_ids': []}],
-        'is_pinned': False,
-    })
+    channel.standup_send(message)
 
     return {}
 
