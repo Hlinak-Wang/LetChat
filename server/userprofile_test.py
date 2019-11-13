@@ -8,18 +8,13 @@ Created on 2019/10/15
 
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile, useruploadphoto
 from server.auth_functions import register
+from server.Data_class import Data
 
 #fet global data
-def getData():
-    data = {
-        'users': [],
-        'channels': []
-    }
-    return data
-
+data = Data()
 #test getproflie
 def test_profile():
-    data = getData()
+    global data
     # Create one user for testing
     auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
 
@@ -40,7 +35,7 @@ def test_profile():
 
 #test setname
 def test_setname():
-    data = getData()
+    global data
     # create one user
     auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
 
@@ -72,7 +67,7 @@ def test_setname():
 
 #test setemail
 def test_setemail():
-    data = getData()
+    global data
     # Register two user for testing
     auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
     register(data, 'email@gmail.com1', 'password1', 'name_first1', 'name_last1')
@@ -101,7 +96,7 @@ def test_setemail():
 
 # test sethanle
 def test_sethandle():
-    data = getData()
+    global data
     user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
     other_user = register(data, 'other@gmail.com', 'password', 'first', 'last')
 

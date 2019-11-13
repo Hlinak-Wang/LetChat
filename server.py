@@ -15,7 +15,7 @@ from flask_cors import CORS
 from datetime import datetime, timezone
 from flask_mail import Mail, Message
 from server.Data_class import Data
-from server.message_function import fun_send, fun_remove, fun_edit, react_unreact, \
+from server.message_function import fun_send, message_operation, react_unreact, \
     pin_unpin
 #from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile
@@ -300,7 +300,7 @@ def message_remove():
     global data
     message_id = int(request.form.get('message_id'))
     token = request.form.get('token')
-    output = fun_remove(data, token, message_id)
+    output = message_operation(data, token, message_id)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:
@@ -316,7 +316,7 @@ def message_edit():
     message_id = int(request.form.get('message_id'))
     message = request.form.get('message')
     token = request.form.get('token')
-    output = fun_edit(data, token, message_id, message)
+    output = message_operation(data, token, message_id, message)
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
     if 'AccessError' in output:

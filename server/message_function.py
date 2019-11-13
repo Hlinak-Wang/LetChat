@@ -27,7 +27,6 @@ def fun_send(data, token, channel_id, message, time_create=datetime.now()):
     data.message_operation(new_message, 'add')
     return {'message_id': new_message.message_id}
 
-
 # Given a message, update it's text with new text
 def message_operation(data, token, message_id, message_edit=""):
 
@@ -52,6 +51,7 @@ def message_operation(data, token, message_id, message_edit=""):
         data.message_operation(message, 'remove')
     else:
         message.user_edit(message_edit)
+
     return {}
 
 

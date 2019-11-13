@@ -14,7 +14,6 @@ from server.message_function import fun_send
 from server.auth_functions import register
 
 
-
 # initial state of testing
 def getdata():
     data = {
@@ -25,6 +24,7 @@ def getdata():
     register(data, 'test2@test2.com', 'test2', 'test2', 'test2')
     register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test')
     return data
+
 
 # Testing valid input for channel_invite
 def test_channel_invite_ok():
