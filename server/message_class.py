@@ -14,8 +14,12 @@ class Message:
     def __getattribute__(self, item):
         return object.__getattribute__(self, item)
 
-    def user_edit(self, new_content):
-        self.message = new_content
+    def __setattr__(self, key, value):
+
+        if key == 'message':
+            object.__setattr__(self, key, value)
+        elif key == 'pin':
+            object.__setattr__(self, key, value)
 
     def user_pin(self):
         self.is_pinned = True

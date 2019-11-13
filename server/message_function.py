@@ -28,32 +28,8 @@ def fun_send(data, token, channel_id, message, time_create=datetime.now()):
     return {'message_id': new_message.message_id}
 
 
-# Given a message_id for a message, this message is removed from the channel
-def fun_remove(data, token, message_id):
-
-    user = data.get_user('token', token)
-    message = data.get_message(message_id)
-    channel = data.get_channel(message.channel_id)
-
-    if message is None:
-        return {'ValueError': 'Message (based on ID) no longer exists'}
-    if user.u_id in channel.owner_list:
-        is_owner = True
-    else:
-        is_owner = False
-
-    if user.u_id != message.u_id:
-        if not is_owner or user.permission_id == 3:
-            return {
-                'AccessError': 'permission denied'
-            }
-
-    data.message_operation(message, 'remove')
-    return {}
-
-
 # Given a message, update it's text with new text
-def fun_edit(data, token, message_id, message_edit):
+def message_operation(data, token, message_id, message_edit=""):
 
     user = data.get_user('token', token)
     message = data.get_message(message_id)
@@ -72,7 +48,10 @@ def fun_edit(data, token, message_id, message_edit):
                 'AccessError': 'permission denied'
             }
 
-    message.user_edit(message_edit)
+    if message_edit == "":
+        data.message_operation(message, 'remove')
+    else:
+        message.user_edit(message_edit)
     return {}
 
 

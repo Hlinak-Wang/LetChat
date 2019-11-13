@@ -36,6 +36,7 @@ def ch_create(data, token, channel_name, is_public):
     # new channel data
     new_channel = Channel(channel_name, is_public, user.u_id)
     data.add_channel(new_channel)
+
     # return a channel id
     return {
         'channel_id': new_channel.channel_id
