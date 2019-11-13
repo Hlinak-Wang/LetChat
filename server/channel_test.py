@@ -24,8 +24,6 @@ def getdata():
     register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test')
     channel1 = ch_create(data, ch_owner['token'], 'ch_test', True)
     ch_join(data, ch_member['token'], channel1['channel_id'])
-    # it seems that the channel doesn;t create successfully, because the 
-    # channellists function only has two channels
     return data
 
 
@@ -75,7 +73,6 @@ member of the channel'}
 def test_channel_details_ok():
     data = getdata()
     user = data.users_group[0]
-    print(user)
     # it takes in data, token, channel_name and is_public
     channel = ch_create(data, user.token, '12345', True)
 
@@ -351,13 +348,13 @@ def test_channels_list():
 
     channels = ch_lists(data, user1.token)
 
-    assert channels['channels'][0]['channel_id'] == channel3['channel_id']
-    assert channels['channels'][0]['name'] == 'ch_3'
+    assert channels['channels'][1]['channel_id'] == channel3['channel_id']
+    assert channels['channels'][1]['name'] == 'ch_3'
 
-    assert channels['channels'][1]['channel_id'] == channel4['channel_id']
-    assert channels['channels'][1]['name'] == 'ch_4'
+    assert channels['channels'][2]['channel_id'] == channel4['channel_id']
+    assert channels['channels'][2]['name'] == 'ch_4'
 
-    assert len(channels['channels']) == 2
+    assert len(channels['channels']) == 3
 
 
 # Testing valid input for channels_listall

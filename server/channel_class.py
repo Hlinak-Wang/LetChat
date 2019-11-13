@@ -14,8 +14,8 @@ class Channel:
     def __getattribute__(self, item):
         return object.__getattribute__(self, item)
 
-    def join_invite_channel(self, user):
-        self.user_list.append(user)
+    def join_invite_channel(self, user_id):
+        self.user_list.append(user_id)
 
     def leave_channel(self, user_id):
         self.user_list.remove(user_id)

@@ -107,13 +107,13 @@ def ch_join(data, token, channel_id):
     # check the channel is public or private
     # when the authorised user is not an admin
     user = data.get_user('token', token)
-    if channel.is_public is False and user.permission_id == 1:
+    if channel.is_public is False and user.permission_id != 1:
         return {'AccessError': 'The channel is private'}
     # if the user is already a member of that channel
     if user.u_id in channel.user_list:
         return {'AccessError': 'Already a member of that channel'}
     # add a list of that user's data
-    channel.join_invite_channel(user)
+    channel.join_invite_channel(user.u_id)
     return {}
 
 
@@ -159,7 +159,7 @@ def ch_removeowner(data, token, channel_id, u_id):
     if u_id not in channel.owner_list:
         return {'ValueError': 'User is not an owner of the channel'}
 
-    channel.remove_onwer(u_id)
+    channel.remove_owner(u_id)
     return {}
 
 
@@ -188,4 +188,4 @@ channel they are trying to post to'}
         return {'ValueError': 'start is greater than or equal to the total \
 number of messages in the channel'}
 
-    return data.get_channel_message(channel_id, start)
+    return data.get_channel_message(channel_id, user.u_id, start)
