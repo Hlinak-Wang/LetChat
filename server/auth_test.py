@@ -7,8 +7,8 @@ Created on 2019/10/15
 """
 
 from server.auth_functions import login, logout, register, reset_request, reset, generateToken, generate_handle_str
-import server.user_class
-import Data_class
+from server.user_class import User
+from server.Data_class import Data
 import hashlib
 SECRET = 'IE4'
 
@@ -20,8 +20,7 @@ def clearData():
 def testData():
     data = Data()
     user = User("hello", "goodbye", "hi@gmail.com", hashlib.sha256("123456".encode("utf-8")).hexdigest(), "hellogoodbye", "dummytoken", 1)
-    #name_first, name_last, email, password, handle, token, permission_id
-    Data.add_user(user)
+    data.add_user(user)
     return data
 
 
@@ -39,7 +38,7 @@ def test_auth_register_valid():
 
     assert register_output['u_id'] == 0
     assert register_output['token'] == check_token_1
-    assert Data.get_all_user_detail() ==  [{
+    assert data.get_all_user_detail() ==  [{
         'u_id': 0,
         'email': "hi@gmail.com",
         'name_first': "hello",
@@ -47,7 +46,7 @@ def test_auth_register_valid():
         'handle_str': "hellogoodbye",
         'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }]
-    user = Data.get_user('u_id', 0)
+    user = data.get_user('u_id', 0)
     assert user.password == hashlib.sha256("123456".encode("utf-8")).hexdigest()
     assert user.permission_id == 1
 
@@ -61,7 +60,7 @@ def test_auth_register_valid():
 
     assert register_output['u_id'] == 1
     assert register_output['token'] == check_token_2
-    assert Data.get_all_user_detail() == [{
+    assert data.get_all_user_detail() == [{
         'u_id': 0,
         'email': "hi@gmail.com",
         'name_first': "hello",
@@ -76,7 +75,7 @@ def test_auth_register_valid():
         'handle_str': "hellohowareyouimfine",
         'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }]
-    user = Data.get_user('u_id', 1)
+    user = data.get_user('u_id', 1)
     assert user.password == hashlib.sha256("9876543".encode("utf-8")).hexdigest()
     assert user.permission_id == 3
 
@@ -90,33 +89,10 @@ def test_auth_register_handle():
     name_last = "goodbye"
 
     register_output = register(data, email, password, name_first, name_last)
-    check_token = generateToken(name_first, name_last)
-    check_handle = generateHandle(data, name_first, name_last)
-
-    assert data['users'] == [{
-        'u_id': 0,
-        'name_first': "hello",
-        'name_last': "goodbye",
-        'token': "dummytoken",
-        'handle_str': "hellogoodbye",
-        'email': "hi@gmail.com",
-        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-        'permission_id': 1,
-        'channel_involve': [],
-        'reset_code': None
-    }, {
-        'u_id': 1,
-        'name_first': "hello",
-        'name_last': "goodbye",
-        'token': check_token,
-        'handle_str': check_handle,
-        'email': "bye@gmail.com",
-        'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-        'permission_id': 3,
-        'channel_involve': [],
-        'reset_code': None
-    }]
-
+    #check_token = generateToken(name_first, name_last)
+    check_handle = generate_handle_str(data, name_first, name_last)
+    user = data.get_user('u_id', 1)
+    assert user.handle_str == check_handle
 
 def test_auth_register_invalid_email():
     data = clearData()
@@ -232,20 +208,16 @@ def test_auth_logout_valid():
     logout_output = logout(data, token)
 
     assert logout_output == {'is_sucess': True}
-    assert data['users'] == [
-        {
+    assert data.get_all_user_detail() == [{
             'u_id': 0,
+            'email': "hi@gmail.com",
             'name_first': "hello",
             'name_last': "goodbye",
-            'token': None,
             'handle_str': "hellogoodbye",
-            'email': "hi@gmail.com",
-            'password': hashlib.sha256("123456".encode("utf-8")).hexdigest(),
-            'permission_id': 1,
-            'channel_involve': [],
-            'reset_code': None
-        }]
-
+            'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
+    }]
+    user = data.get_user('u_id', 0)
+    assert user.token == None
 
 def test_auth_logout_invalid_token():
     data = testData()
@@ -264,19 +236,15 @@ def test_auth_logout_invalid_token():
 
 # START TEST AUTH_PASSWORDRESET_RESET
 
-def test_passworldreset():
+def test_passwordreset():
     data = testData()
     code = reset_request(data, 'hi@gmail.com')
     # Assume the reset request is sent
 
     # Invalid test
-    assert reset(data, code, '') == {
-        'ValueError': "This password is too short"
-    }
+    assert reset(data, code, '') == {'ValueError': "This password is too short"}
 
-    assert reset(data, 'asdf', '1234561') == {
-        'ValueError': "This is not a valid reset code"
-    }
+    assert reset(data, 'asdf', '1234561') == {'ValueError': "This is not a valid reset code"}
 
     # Valid test
     output = reset(data, code, 'abcdsdg')
