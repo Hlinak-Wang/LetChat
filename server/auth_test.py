@@ -35,18 +35,18 @@ def test_auth_register_valid():
 
     register_output = register(data, email, password, name_first, name_last)
     check_token_1 = generateToken(name_first, name_last)
-
-    assert register_output['u_id'] == 0
+    
+    u_id1 = register_output['u_id']
     assert register_output['token'] == check_token_1
     assert data.get_all_user_detail() ==  [{
-        'u_id': 0,
+        'u_id': u_id1,
         'email': "hi@gmail.com",
         'name_first': "hello",
         'name_last': "goodbye",
         'handle_str': "hellogoodbye",
         'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }]
-    user = data.get_user('u_id', 0)
+    user = data.get_user('u_id', u_id1)
     assert user.password == hashlib.sha256("123456".encode("utf-8")).hexdigest()
     assert user.permission_id == 1
 
@@ -58,24 +58,24 @@ def test_auth_register_valid():
     register_output = register(data, email, password, name_first, name_last)
     check_token_2 = generateToken(name_first, name_last)
 
-    assert register_output['u_id'] == 1
+    u_id2 = register_output['u_id']
     assert register_output['token'] == check_token_2
     assert data.get_all_user_detail() == [{
-        'u_id': 0,
+        'u_id': u_id1,
         'email': "hi@gmail.com",
         'name_first': "hello",
         'name_last': "goodbye",
         'handle_str': "hellogoodbye",
         'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }, {
-        'u_id': 1,
+        'u_id': u_id2,
         'email': "good@gmail.com",
         'name_first': "hellohowareyou",
         'name_last': "imfinethankyou",
         'handle_str': "hellohowareyouimfine",
         'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }]
-    user = data.get_user('u_id', 1)
+    user = data.get_user('u_id', u_id2)
     assert user.password == hashlib.sha256("9876543".encode("utf-8")).hexdigest()
     assert user.permission_id == 3
 
@@ -89,9 +89,9 @@ def test_auth_register_handle():
     name_last = "goodbye"
 
     register_output = register(data, email, password, name_first, name_last)
-    #check_token = generateToken(name_first, name_last)
     check_handle = generate_handle_str(data, name_first, name_last)
-    user = data.get_user('u_id', 1)
+    u_id = register_output['u_id']
+    user = data.get_user('u_id', u_id)
     assert user.handle_str == check_handle
 
 def test_auth_register_invalid_email():
@@ -148,7 +148,7 @@ def test_auth_register_already_user():
 
     register_output = register(data, email, password, name_first, name_last)
 
-    assert register_output == {'ValueError': "This email is already in use by a user"}
+    assert register_output == {'ValueError': "This email is already in use by a registered user"}
 
 
 # END TEST AUTH_REGISTER
@@ -166,7 +166,7 @@ def test_auth_login_valid():
     check_token = generateToken(name_first, name_last)
     login_output = login(data, email, password)
 
-    assert login_output == {'u_id': 0, 'token': check_token}
+    assert login_output['token'] == check_token
 
 
 def test_auth_login_invalid_email():
@@ -208,15 +208,18 @@ def test_auth_logout_valid():
     logout_output = logout(data, token)
 
     assert logout_output == {'is_sucess': True}
+    
+    user = data.get_user('handle_str', 'hellogoodbye')
+    u_id = user.u_id
+    
     assert data.get_all_user_detail() == [{
-            'u_id': 0,
+            'u_id': u_id,
             'email': "hi@gmail.com",
             'name_first': "hello",
             'name_last': "goodbye",
             'handle_str': "hellogoodbye",
             'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
     }]
-    user = data.get_user('u_id', 0)
     assert user.token == None
 
 def test_auth_logout_invalid_token():
@@ -247,8 +250,15 @@ def test_passwordreset():
     assert reset(data, 'asdf', '1234561') == {'ValueError': "This is not a valid reset code"}
 
     # Valid test
+    user = data.get_user('handle_str', "hellogoodbye")
+    u_id = user.u_id
+    user.password_code(code)
     output = reset(data, code, 'abcdsdg')
     assert output == {}
 
     is_success = login(data, 'hi@gmail.com', 'abcdsdg')
-    assert is_success['u_id'] == 0
+    assert is_success['u_id'] == u_id
+    
+    
+    #add a function to test valid and invalid reset_request
+    #check somewhere decoding reset_code

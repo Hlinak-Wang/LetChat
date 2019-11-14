@@ -10,7 +10,7 @@ import re
 import hashlib
 import jwt
 from datetime import datetime
-import server.Data_class
+from server.Data_class import Data
 from server.user_class import User
 
 # HELPER FUNCTIONS BELOW
@@ -144,15 +144,16 @@ def reset_request(data, email):
 
 
 def reset(data, reset_code, new_password):
-    user = data.get_user('reset_code', reset_code)
-
-    if user is None:
-        return {'ValueError': "This is not a valid reset code"}
-
+    
     password_check = check_valid_password(new_password)
     
     if 'ValueError' in password_check:
         return password_check
+    
+    user = data.get_user('reset_code', reset_code)
+
+    if user is None:
+        return {'ValueError': "This is not a valid reset code"}
     
     new_password = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
     
