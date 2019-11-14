@@ -64,7 +64,7 @@ def ch_invite(data, token, u_id, channel_id):
 channel'}
 
     # update the data, a new member added
-    channel.join_invite_channel(new_member)
+    channel.join_invite_channel(new_member.u_id)
     return {}
 
 
@@ -176,7 +176,6 @@ def ch_listall(data, token):
 
 
 def fun_message(data, token, channel_id, start):
-    print(token)
     user = data.get_user('token', token)
     channel = data.get_channel(channel_id)
     if channel is None:

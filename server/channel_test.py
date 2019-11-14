@@ -14,18 +14,20 @@ from server.message_function import fun_send
 from server.auth_functions import register
 
 from server.Data_class import Data
-from server.channel_class import Channel
-from server.user_class import User
 
 
 # initial state of testing
 def getdata():
     data = Data()
     ch_owner = register(data, 'test@test.com', 'testtest', 'test', 'test')
-    ch_member = register(data, 'test2@test2.com', 'test2test2', 'test2', 'test2')
+    ch_member = register(data, 'test2@test2.com', 'test2test2', 'test2',
+                         'test2')
     register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test')
     channel1 = ch_create(data, ch_owner['token'], 'ch_test', True)
     ch_join(data, ch_member['token'], channel1['channel_id'])
+    # data, token, channel_id, message, time_create=datetime.now()
+    fun_send(data, ch_owner['token'], channel1['channel_id'], 'test')
+    fun_send(data, ch_member['token'], channel1['channel_id'], 'test2')
     return data
 
 
@@ -112,21 +114,22 @@ def test_channel_messages_ok():
     fun_send(data, user.token, channel['channel_id'], 'testing')
     message_channel = fun_message(data, user.token,
                                   channel['channel_id'], 0)
-    channel1 = data['channels'][0]
+    channel1 = data.channels_group[0]
     message_channel1 = fun_message(data, user.token,
-                                   channel1['channel_id'], 0)
+                                   channel1.channel_id, 0)
+    print(message_channel1)
     # Checking the output
     assert message_channel['start'] == 0
     assert message_channel['end'] == -1
     messages = message_channel['messages']
     assert messages[0]['message'] == 'testing'
-    assert messages[0] == user.u_id
+    assert messages[0]['u_id'] == user.u_id
 
     assert message_channel1['start'] == 0
     assert message_channel1['end'] == -1
     messages1 = message_channel1['messages']
-    assert messages1[0]['message'] == 'test'
-    assert messages1[0] == user.u_id
+    assert messages1[1]['message'] == 'test'
+    assert messages1[1]['u_id'] == user.u_id
 
     for i in range(0, 25):
         fun_send(data, user.token, channel['channel_id'], 'another test')

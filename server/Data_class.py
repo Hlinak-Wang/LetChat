@@ -109,12 +109,12 @@ class Data:
             'channels': channel_list_all
         }
 
-    def get_channel_message(self, channel_id, start):
+    def get_channel_message(self, channel_id, u_id, start):
         channel_message = []
         end = start
         for message in self.messages_group:
             if message.channel_id == channel_id:
-                channel_message = message.get_message_info()
+                channel_message.append(message.get_message_info(u_id))
                 end += 1
             if end >= start + 50:
                 return {
