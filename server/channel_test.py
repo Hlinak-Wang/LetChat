@@ -45,8 +45,8 @@ def test_channel_invite_ok():
     # it takes in data, token and channel_id
     channel_profile = ch_details(data, user.token, channel['channel_id'])
     member_list = channel_profile['all_members']
-    assert member_list[0] == user.u_id
-    assert member_list[1] == user1.u_id
+    assert member_list[0]['u_id'] == user.u_id
+    assert member_list[1]['u_id'] == user1.u_id
 
 
 # Testing invalid input for channel_invite
@@ -85,10 +85,10 @@ def test_channel_details_ok():
     assert channel_profile['name'] == "12345"
 
     owner_list = channel_profile["owner_members"]
-    assert owner_list[0] == user.u_id
+    assert owner_list[0]['u_id'] == user.u_id
 
     member_list = channel_profile["all_members"]
-    assert member_list[0] == user.u_id
+    assert member_list[0]['u_id'] == user.u_id
 
 
 # Testing invalid input for channel detail
@@ -187,7 +187,7 @@ def test_channel_leave_ok():
     # Check the member in channel
     channel_profile = ch_details(data, user.token, channel['channel_id'])
     member_list = channel_profile['all_members']
-    assert member_list[0] == user.u_id
+    assert member_list[0]['u_id'] == user.u_id
 
 
 # Testing invalid input for channel_leave
@@ -212,8 +212,8 @@ def test_channel_join_ok():
 
     # Check the new user has join the channel
     member_list = channel_profile["all_members"]
-    assert member_list[0] == user.u_id
-    assert member_list[1] == user2.u_id
+    assert member_list[0]['u_id'] == user.u_id
+    assert member_list[1]['u_id'] == user2.u_id
 
 
 # Testing invalid input for channel_join
@@ -247,8 +247,8 @@ def test_channel_addowner_ok():
     channel_profile = ch_details(data, user.token, channel['channel_id'])
     owner_list = channel_profile['owner_members']
     # Checking there is two owner in this channel
-    assert owner_list[0] == user.u_id
-    assert owner_list[1] == user2.u_id
+    assert owner_list[0]['u_id'] == user.u_id
+    assert owner_list[1]['u_id'] == user2.u_id
 
 
 # Testing invalid input for channel_addowner
@@ -298,14 +298,14 @@ def test_channel_removeowner_ok():
     channel_profile = ch_details(data, user_admin.token,
                                  channel['channel_id'])
     owner_list = channel_profile["owner_members"]
-
+    print(owner_list)
     # if user1["u_id"] is in the owner list
     # Means channel_removeowner is not working
     if user1.u_id not in owner_list:
         exist = 1
     assert exist == 1
 
-    assert owner_list[0] == user_admin.u_id
+    assert owner_list[0]['u_id'] == user_admin.u_id
 
 
 # Testing invalid input for channel_removeowner
