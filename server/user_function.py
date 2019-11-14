@@ -194,6 +194,6 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     cropped = imageObject.crop((x_start, y_start, x_end, y_end))
     cropped.save(imagesource)
 
-    new_photo = 'http://127.0.0.1:1024/static/' + handle_str + '.jpg'
+    new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
     user.set_photo(new_photo)
     return wrongmessage

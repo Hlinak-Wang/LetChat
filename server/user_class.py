@@ -12,7 +12,7 @@ class User:
         self.u_id = int(uuid.uuid1().int / (10**25))
         self.handle_str = handle
         self.reset_code = ''
-        self.profile_img_url = 'http://127.0.0.1:1024/static/default.jpg'
+        self.profile_img_url = 'http://127.0.0.1:5555/static/default.jpg'
 
     def __getattribute__(self, item):
         return object.__getattribute__(self, item)
@@ -58,3 +58,12 @@ class User:
             'profile_img_url': self.profile_img_url
         }
         return user_detail
+
+    def get_member_detail(self):
+        member_detail = {
+            'u_id': self.u_id,
+            'name_first': self.name_first,
+            'name_last': self.name_last,
+            'profile_img_url': self.profile_img_url
+        }
+        return member_detail

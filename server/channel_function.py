@@ -80,10 +80,22 @@ def ch_details(data, token, channel_id):
     if user.u_id not in channel.user_list:
         return {'AccessError': 'User is not a member of Channel'}
 
+    channelowner_list = []
+    for uids in channel.owner_list:
+            user = data.get_user('u_id', uids)
+            member = user.get_member_detail()
+            channelowner_list.append(member)
+
+    channeluser_list = []
+    for uids in channel.user_list:
+            user = data.get_user('u_id', uids)
+            member = user.get_member_detail()
+            channeluser_list.append(member)                
+
     return {
         'name': channel.channel_name,
-        'owner_members': channel.owner_list,
-        'all_members': channel.user_list
+        'owner_members': channelowner_list,
+        'all_members': channeluser_list
     }
 
 

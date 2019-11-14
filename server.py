@@ -17,7 +17,7 @@ from server.Data_class import Data
 from server.message_function import fun_send, message_operation, react_unreact, \
     pin_unpin
 from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_activate, fun_standup_star
-from server.user_function import usersetemail, usersetname, usersethandle, getprofile
+from server.user_function import usersetemail, usersetname, usersethandle, getprofile, useruploadphoto
 from server.channel_function import (
     ch_create,
     ch_invite,
@@ -63,8 +63,9 @@ APP.config.update(
 
 data = Data()
 
-if os.path.getsize(os.getcwd() + '/save.dat') > 0:
-    data = pickle.load(open('save.dat', 'rb'))
+if os.path.exists(os.getcwd() + '/save.dat') == True:
+    if os.path.getsize(os.getcwd() + '/save.dat') > 0:
+        data = pickle.load(open('save.dat', 'rb'))
 
 SECRET = 'IE4'
 
@@ -540,7 +541,16 @@ def sethandle():
 @APP.route('/user/profile/uploadphoto', methods=['POST'])
 def uploadphoto():
     # (note: this is not requried to be completed until iteration 3)
-
+    global data
+    
+    token = request.form.get('token')
+    img_url = request.form.get('img_url')
+    x_start = request.form.get('x_start')
+    y_start = request.form.get('y_start')
+    x_end = request.form.get('x_end')
+    y_end = request.form.get('y_end')
+    
+    useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
     return dumps({})
 
 
