@@ -12,12 +12,11 @@ from json import dumps
 from flask import Flask, request, send_from_directory
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
-from datetime import datetime, timezone
 from flask_mail import Mail, Message
 from server.Data_class import Data
 from server.message_function import fun_send, message_operation, react_unreact, \
     pin_unpin
-#from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_star
+from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_activate, fun_standup_star
 from server.user_function import usersetemail, usersetname, usersethandle, getprofile
 from server.channel_function import (
     ch_create,
@@ -263,15 +262,18 @@ def channel_message():
     return dumps(messages)
 
 
-@APP.route('/message/send_later', methods=['POST'])
+@APP.route('/message/sendlater', methods=['POST'])
 def message_send_later():
     global data
     message = request.form.get('message')
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
-    time_create = request.form.get('time_create')
+    time_create = int(float(request.form.get('time_sent')))
+    print(type(time_create))
+    print("time_send ", time_create)
 
-    output = fun_send(data, token, channel_id, message, time_create)
+    #output = fun_send(data, token, channel_id, message, time_create)
+    output = {}
     save()
 
     return dumps(output)
@@ -544,12 +546,10 @@ def uploadphoto():
 
     return dumps({})
 
-"""
+
 @APP.route('/search', methods=['GET'])
 def search():
     global data
-    pop_queue()
-    send_message_buffer()
     query_str = request.args.get('query_str')
     token = request.args.get('token')
     output = message_search(data, token, query_str)
@@ -597,6 +597,16 @@ def standup_start():
 
     return dumps(output)
 
+@APP.route('/standup/active', methods=['GET'])
+def standup_activate():
+    global data
+
+    token = request.args.get('token')
+    test = request.args.get('channel_id')
+    print(test)
+    channel_id = int(test)
+    output = fun_standup_activate(data, token, channel_id)
+    return dumps(output)
 
 @APP.route('/standup/send', methods=['POST'])
 def standup_send():
@@ -614,7 +624,7 @@ def standup_send():
     save()
 
     return dumps(output)
-"""
+
 
 if __name__ == '__main__':
     APP.run(port=(sys.argv[1] if len(sys.argv) > 1 else 5000))

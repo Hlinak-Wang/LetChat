@@ -9,7 +9,7 @@ class User:
         self.permission_id = permission_id
         self.password = password
         self.token = token
-        self.u_id = uuid.uuid1().int
+        self.u_id = int(uuid.uuid1().int / (10**25))
         self.handle_str = handle
         self.reset_code = ''
         self.profile_img_url = 'http://127.0.0.1:1024/static/default.jpg'

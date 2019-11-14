@@ -5,7 +5,7 @@ class Message(object):
     def __init__(self, content, channel_id, u_id, time_create):
         self.channel_id = channel_id
         self.u_id = u_id
-        self.message_id = uuid.uuid1().int
+        self.message_id = int(uuid.uuid1().int / (10**25))
         self.message = content
         self.time_created = time_create
         self.reacts = [React(1)]

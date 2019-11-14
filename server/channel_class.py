@@ -4,7 +4,7 @@ import uuid
 class Channel:
     def __init__(self, channel_name, is_public, creator_id):
         self.channel_name = channel_name
-        self.channel_id = uuid.uuid1().int
+        self.channel_id = int(uuid.uuid1().int / (10**25))
         self.owner_list = [creator_id]
         self.user_list = [creator_id]
         self.is_public = is_public
