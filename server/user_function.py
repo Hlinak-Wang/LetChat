@@ -158,6 +158,7 @@ def usersethandle(data, token, handle_str):
 
 
 def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
+
     wrongmessage = None
 
     try:
@@ -169,10 +170,10 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     except Exception as e:
         print(e)
 
-    user = data.getuser(token)
-    uid = user.get_uid()
+    user = data.get_user('token', token)
+    handle_str = user.handle_str
 
-    imagesource = './static/' + uid + '.jpg'
+    imagesource = '../static/' + handle_str + '.jpg'
     urllib.request.urlretrieve(img_url, imagesource)
 
     imageObject = Image.open(imagesource)
@@ -190,4 +191,6 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     cropped = imageObject.crop((x_start, y_start, x_end, y_end))
     cropped.save(imagesource)
 
+    new_photo = 'http://127.0.0.1:1024/static/' + handle_str + '.jpg'
+    user.set_photo(self, new_photo)
     return wrongmessage
