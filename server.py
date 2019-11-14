@@ -269,11 +269,8 @@ def message_send_later():
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     time_create = int(float(request.form.get('time_sent')))
-    print(type(time_create))
-    print("time_send ", time_create)
 
-    #output = fun_send(data, token, channel_id, message, time_create)
-    output = {}
+    output = fun_send(data, token, channel_id, message, time_create)
     save()
 
     return dumps(output)

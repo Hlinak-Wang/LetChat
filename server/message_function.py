@@ -11,14 +11,12 @@ from server.message_class import Message
 
 
 # Send a message from authorised_user to the channel specified by channel_id
-def fun_send(data, token, channel_id, message, time_create="1970/1/1, 0:0:0"):
+def fun_send(data, token, channel_id, message, time_create=0):
     """ Send message """
-    if time_create == "1970/1/1, 0:0:0":
-        #time_create_stamp = datetime.strptime()
-        time_create = datetime.now().replace(tzinfo=timezone.utc).timestamp()
-    else:
-        time_create_stamp = datetime.strptime(time_create, "%Y/%m/%d, %H:%M:%S")
-        time_create = time_create_stamp.replace(tzinfo=timezone.utc).timestamp()
+    time_now = datetime.now().replace(tzinfo=timezone.utc).timestamp()
+    if time_create == 0:
+        time_create = time_now
+
     if len(message) > 1000:
         return {"ValueError": "Message is more than 1000 characters"}
 
@@ -28,7 +26,7 @@ def fun_send(data, token, channel_id, message, time_create="1970/1/1, 0:0:0"):
     if channel is None or user.u_id not in channel.user_list:
         return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
 
-    if time_create < datetime.now().replace(tzinfo=timezone.utc).timestamp():
+    if time_create < time_now:
         return {"ValueError": 'Time sent is a time in the past'}
 
     new_message = Message(message, channel_id, user.u_id, time_create)
