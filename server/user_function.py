@@ -169,6 +169,9 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
             return wrongmessage
     except Exception as e:
         print(e)
+        wrongmessage = "img_url is returns an HTTP status other than 200."
+        return wrongmessage
+        
 
     user = data.get_user('token', token)
     handle_str = user.handle_str
@@ -192,5 +195,5 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     cropped.save(imagesource)
 
     new_photo = 'http://127.0.0.1:1024/static/' + handle_str + '.jpg'
-    user.set_photo(self, new_photo)
+    user.set_photo(new_photo)
     return wrongmessage
