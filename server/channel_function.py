@@ -9,21 +9,6 @@ Created on 2019/10/15
 from server.channel_class import Channel
 
 
-def is_owner(user_list, u_id):
-    for user in user_list:
-        if user.u_id == u_id:
-            return user['is_owner']
-    return None
-
-
-def find_member(channel, user):
-    for member in channel['user_list']:
-        if member.u_id == user.u_id:
-            return member
-
-    return None
-
-
 # create a channel
 def ch_create(data, token, channel_name, is_public):
     # check is the channel name is valid
