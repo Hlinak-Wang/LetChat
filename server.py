@@ -63,8 +63,9 @@ APP.config.update(
 
 data = Data()
 
-if os.path.getsize(os.getcwd() + '/save.dat') > 0:
-    data = pickle.load(open('save.dat', 'rb'))
+if os.path.exists(os.getcwd() + '/save.dat') == True:
+    if os.path.getsize(os.getcwd() + '/save.dat') > 0:
+        data = pickle.load(open('save.dat', 'rb'))
 
 SECRET = 'IE4'
 
