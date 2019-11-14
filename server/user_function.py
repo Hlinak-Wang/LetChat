@@ -110,11 +110,11 @@ def usersetemail(data, token, email):
         wrongmessage = "Email entered is not a valid email"
         return value, wrongmessage
 
-    if data.checkemailnotused(email) == 0:
+    if data.check_unique('email', email) == False:
         wrongmessage = "Email address is already being used by another user"
         return value, wrongmessage
 
-    user = data.getuser(token)
+    user = data.get_user('token', token)
 
     if user is None:
         wrongmessage = "User with token is not a valid user"
@@ -140,17 +140,17 @@ def usersethandle(data, token, handle_str):
         wrongmessage = "handle_str must be between 3 and 20"
         return value, wrongmessage
 
-    if data.checkhandlenotused(handle_str) == 0:
+    if data.check_unique('handle_str', handle_str) == False:
         wrongmessage = "handle is already used by another user"
         return value, wrongmessage
 
-    user = data.getuser(token)
+    user = data.get_user('token', token)
 
     if user is None:
         wrongmessage = "User with token is not a valid user"
         return value, wrongmessage
 
-    user.sethandle_str(handle_str)
+    user.set_handle(handle_str)
 
     value = 1
 
@@ -158,7 +158,8 @@ def usersethandle(data, token, handle_str):
 
 
 def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
-    Errormessage = None
+
+    wrongmessage = None
 
     try:
         status = getHttpStatusCode(img_url)
@@ -168,11 +169,14 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
             return wrongmessage
     except Exception as e:
         print(e)
+        wrongmessage = "img_url is returns an HTTP status other than 200."
+        return wrongmessage
+        
 
-    user = data.getuser(token)
-    uid = user.get_uid()
+    user = data.get_user('token', token)
+    handle_str = user.handle_str
 
-    imagesource = './static/' + uid + '.jpg'
+    imagesource = '../static/' + handle_str + '.jpg'
     urllib.request.urlretrieve(img_url, imagesource)
 
     imageObject = Image.open(imagesource)
@@ -190,4 +194,6 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     cropped = imageObject.crop((x_start, y_start, x_end, y_end))
     cropped.save(imagesource)
 
+    new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
+    user.set_photo(new_photo)
     return wrongmessage
