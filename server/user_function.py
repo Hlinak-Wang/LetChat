@@ -110,7 +110,7 @@ def usersetemail(data, token, email):
         wrongmessage = "Email entered is not a valid email"
         return value, wrongmessage
 
-    if data.check_unique('email', email) == True:
+    if data.check_unique('email', email) == False:
         wrongmessage = "Email address is already being used by another user"
         return value, wrongmessage
 
@@ -140,17 +140,17 @@ def usersethandle(data, token, handle_str):
         wrongmessage = "handle_str must be between 3 and 20"
         return value, wrongmessage
 
-    if data.data.check_unique('handle_str', email) == True:
+    if data.check_unique('handle_str', handle_str) == False:
         wrongmessage = "handle is already used by another user"
         return value, wrongmessage
 
-    user = data.getuser(token)
+    user = data.get_user('token', token)
 
     if user is None:
         wrongmessage = "User with token is not a valid user"
         return value, wrongmessage
 
-    user.sethandle_str(handle_str)
+    user.set_handle(handle_str)
 
     value = 1
 
@@ -158,7 +158,7 @@ def usersethandle(data, token, handle_str):
 
 
 def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
-    Errormessage = None
+    wrongmessage = None
 
     try:
         status = getHttpStatusCode(img_url)
