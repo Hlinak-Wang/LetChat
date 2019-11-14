@@ -110,11 +110,11 @@ def usersetemail(data, token, email):
         wrongmessage = "Email entered is not a valid email"
         return value, wrongmessage
 
-    if data.checkemailnotused(email) == 0:
+    if data.check_unique('email', email) == True:
         wrongmessage = "Email address is already being used by another user"
         return value, wrongmessage
 
-    user = data.getuser(token)
+    user = data.get_user('token', token)
 
     if user is None:
         wrongmessage = "User with token is not a valid user"
@@ -140,7 +140,7 @@ def usersethandle(data, token, handle_str):
         wrongmessage = "handle_str must be between 3 and 20"
         return value, wrongmessage
 
-    if data.checkhandlenotused(handle_str) == 0:
+    if data.data.check_unique('handle_str', email) == True:
         wrongmessage = "handle is already used by another user"
         return value, wrongmessage
 
