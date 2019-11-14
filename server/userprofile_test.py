@@ -61,7 +61,7 @@ def test_setname():
 
     # Valid input
     usersetname(data, auth_key["token"], first_short, last_short)
-    profile = getprofile(data, auth_key["token"], auth_key["u_id"])[0]
+    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])[0]
     assert profile["name_first"] == first_short
     assert profile["name_last"] == last_short
 
@@ -76,21 +76,21 @@ def test_setemail():
     email_used_already = 'email@gmail.com'
 
     # Invalid input
-    wrongmessage = usersetemail(data, None, invalid_email)[1]
+    value, wrongmessage = usersetemail(data, None, invalid_email)
     assert wrongmessage == "token doesn't exit"
 
-    wrongmessage = usersetemail(data, auth_key["token"], invalid_email)[1]
+    value, wrongmessage = usersetemail(data, auth_key["token"], invalid_email)
     assert wrongmessage == 'Email entered is not a valid email'
 
-    wrongmessage = usersetemail(data, auth_key["token"], email_used_already)[1]
+    value, wrongmessage = usersetemail(data, auth_key["token"], email_used_already)
     assert wrongmessage == 'Email address is already being used by another user'
 
-    wrongmessage = usersetemail(data, 'token_not_registed', '123@gmail.com')[1]
+    value, wrongmessage = usersetemail(data, 'token_not_registed', '123@gmail.com')
     assert wrongmessage == 'User with token is not a valid user'
 
     # Valid input
     usersetemail(data, auth_key["token"], 'newemail@gmail.com')
-    profile = getprofile(data, auth_key["token"], auth_key["u_id"])[0]
+    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
     assert profile["email"] == 'newemail@gmail.com'
 
 
@@ -126,19 +126,21 @@ def test_sethandle():
     assert profile["handle_str"] == 'testing'
 
 def test_useruploadphoto():
+    global data
 
+    user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
     # Invalid input
-    assert useruploadphoto('token', 'https://webpagecannotopen.com/', 20, 20, 500, 377) == "img_url is returns an HTTP status other than 200."
+    assert useruploadphoto(data, user['token'], 'https://webpagecannotopen.com/', 20, 20, 500, 377) == "img_url is returns an HTTP status other than 200."
 
-    assert useruploadphoto('token', 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg',\
+    assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
      -1, -1, 500, 377) == "img_url is returns an HTTP status other than 200."
 
-    assert useruploadphoto('token', 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg',\
+    assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
      0, 0, 9999, 9999) == "img_url is returns an HTTP status other than 200."
 
-    assert useruploadphoto('token', 'https://www.google.com.hk/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',\
+    assert useruploadphoto(data, user['token'], 'https://www.google.com.hk/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png', \
      20, 20, 50, 37) == "Image uploaded is not a JPG"
 
     # Valid input
-    useruploadphoto('token', 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377)
+    useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377)
     
