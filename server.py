@@ -455,7 +455,7 @@ def channel_list():
 
     token = request.args.get('token')
     print(token)
-    return dumps(ch_lists(data, token))
+    return dumps(ch_lists_listall(data, token, 'lists'))
 
 
 @APP.route('/channels/listall', methods=['GET'])
@@ -463,7 +463,7 @@ def channel_listall():
     global data
 
     token = request.args.get('token')
-    listall = ch_listall(data, token)
+    listall = ch_lists_listall(data, token, 'listall')
     return dumps(listall)
 
 
