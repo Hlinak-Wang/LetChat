@@ -75,7 +75,7 @@ def ch_details(data, token, channel_id):
     for uids in channel.user_list:
             user = data.get_user('u_id', uids)
             member = user.get_member_detail()
-            channeluser_list.append(member)                
+            channeluser_list.append(member)
 
     return {
         'name': channel.channel_name,
