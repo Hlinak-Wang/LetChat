@@ -7,10 +7,10 @@ Created on 2019/10/15
 """
 
 from server.message_function import fun_send, message_operation, react_unreact, pin_unpin
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from server.Data_class import Data
 from server.auth_functions import register
-from server.channel_function import ch_create, ch_join
+from server.channel_function import ch_create, ch_join_leave
 
 # initial state of testing
 def get_data():
@@ -19,7 +19,7 @@ def get_data():
     user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last')
     register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last')
     channel = ch_create(test_data, user_chowner['token'], 'test_channel', True)
-    ch_join(test_data, user_inch['token'], channel['channel_id'])
+    ch_join_leave(test_data, user_inch['token'], channel['channel_id'], 'join')
     fun_send(test_data, user_inch['token'], channel['channel_id'], 'test2')
     fun_send(test_data, user_chowner['token'], channel['channel_id'], 'test')
     return test_data
@@ -32,8 +32,8 @@ def test_send_late():
     message_long = ""
     for i in range(0, 1010):
         message_long += "a"
-    time_valid = datetime.now() + timedelta(seconds=100)
-    time_invalid = datetime.now() - timedelta(seconds=100)
+    time_valid = datetime.now().replace(tzinfo=timezone.utc).timestamp() + 10
+    time_invalid = datetime.now().replace(tzinfo=timezone.utc).timestamp() - 10
     # Invalid input
     assert fun_send(data, user.token, channel.channel_id, message_long, time_valid) == {
            "ValueError": "Message is more than 1000 characters"
