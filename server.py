@@ -22,12 +22,9 @@ from server.channel_function import (
     ch_create,
     ch_invite,
     ch_details,
-    ch_leave,
-    ch_join,
-    ch_addowner,
-    ch_removeowner,
-    ch_lists,
-    ch_listall,
+    ch_join_leave,
+    ch_add_or_remove_owner,
+    ch_lists_listall,
     fun_message,
 )
 from server.auth_functions import login, logout, register, reset_request, reset
@@ -424,7 +421,7 @@ def channel_addowner():
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
-    addowner = ch_addowner(data, token, channel_id, u_id)
+    addowner = ch_add_or_remove_owner(data, token, channel_id, u_id, 'add')
     if 'ValueError' in addowner:
         raise ValueError(description=addowner['ValueError'])
     elif 'AccessError' in addowner:
@@ -441,7 +438,8 @@ def channel_removeowner():
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
-    removeowner = ch_removeowner(data, token, channel_id, u_id)
+    removeowner = ch_add_or_remove_owner(data, token, channel_id,
+                                         u_id, 'remove')
     if 'ValueError' in removeowner:
         raise ValueError(description=removeowner['ValueError'])
     elif 'AccessError' in removeowner:
