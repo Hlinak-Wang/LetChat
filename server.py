@@ -609,7 +609,13 @@ def uploadphoto():
     x_end = request.form.get('x_end')
     y_end = request.form.get('y_end')
     
-    useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
+    wrongmesage = useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
+        
+    if wrongmesage != None:
+        raise ValueError(description=wrongmesage)
+    save()
+    
+
     return dumps({})
 
 
