@@ -84,92 +84,66 @@ def ch_details(data, token, channel_id):
     }
 
 
-def ch_leave(data, token, channel_id):
+def ch_join_leave(data, token, channel_id, action):
     # check validation of ch_id
     channel = data.get_channel(channel_id)
     if channel is None:
         return {'ValueError': 'Channel ID is invalid'}
-
     user = data.get_user('token', token)
-    # remove a list of that user's data
-    channel.leave_channel(user.u_id)
+    if action == 'join':
+        # check the channel is public or private
+        # when the authorised user is not an admin
+        if channel.is_public is False and user.permission_id != 1:
+            return {'AccessError': 'The channel is private'}
+        # if the user is already a member of that channel
+        if user.u_id in channel.user_list:
+            return {'AccessError': 'Already a member of that channel'}
+        # add a list of that user's data
+        channel.join_invite_channel(user.u_id)
+    elif action == 'leave':
+        # remove a list of that user's data
+        channel.leave_channel(user.u_id)
 
     return {}
 
 
-def ch_join(data, token, channel_id):
-    # check validation of ch_id
-    channel = data.get_channel(channel_id)
-    if channel is None:
-        return {'ValueError': 'Channel ID is invalid'}
-    # check the channel is public or private
-    # when the authorised user is not an admin
-    user = data.get_user('token', token)
-    if channel.is_public is False and user.permission_id != 1:
-        return {'AccessError': 'The channel is private'}
-    # if the user is already a member of that channel
-    if user.u_id in channel.user_list:
-        return {'AccessError': 'Already a member of that channel'}
-    # add a list of that user's data
-    channel.join_invite_channel(user.u_id)
-    return {}
-
-
-def ch_addowner(data, token, channel_id, u_id):
+def ch_add_remove_owner(data, token, channel_id, u_id, action):
     # check validation of the channel id
     channel = data.get_channel(channel_id)
     if channel is None:
         return {'ValueError': 'Invalid Channel ID'}
-
-    # accesserror when the auth_user is not an owner of the slackr or channel
-    user = data.get_user('token', token)
-    if user.permission_id == 3:
-        return {'AccessError': 'User is not an owner of the slackr or this \
-channel'}
 
     # if u_id is not a member of that channel
     if u_id not in channel.user_list:
         return {'AccessError': 'Not a member of this channel'}
 
-    # check the user is already the owner or not
-    if u_id in channel.owner_list:
-        return {'ValueError': 'User is already an owner of the channel'}
-
-    channel.add_owner(u_id)
-
-    return {}
-
-
-def ch_removeowner(data, token, channel_id, u_id):
-    # check validation of the channel id
-    channel = data.get_channel(channel_id)
-    if channel is None:
-        return {'ValueError': 'Invalid Channel ID'}
-
     # accesserror when the auth_user is not an owner of the slackr or channel
     user = data.get_user('token', token)
     if user.permission_id == 3 or user.u_id not in channel.owner_list:
-        return {
-            'AccessError': "User is not an owner of the slackr or this channel"
-        }
+        return {'AccessError': 'User is not an owner of the slackr or this \
+channel'}
 
-    # check the remove user is owner or not
-    if u_id not in channel.owner_list:
-        return {'ValueError': 'User is not an owner of the channel'}
+    if action == 'add':
+        # check the user is already the owner or not
+        if u_id in channel.owner_list:
+            return {'ValueError': 'User is already an owner of the channel'}
 
-    channel.remove_owner(u_id)
+        channel.add_owner(u_id)
+    elif action == 'remove':
+        # check the remove user is owner or not
+        if u_id not in channel.owner_list:
+            return {'ValueError': 'User is not an owner of the channel'}
+
+        channel.remove_owner(u_id)
     return {}
 
 
-def ch_lists(data, token):
-    print(token)
+def ch_lists_listall(data, token, action):
     user = data.get_user('token', token)
-    return data.get_channel_list(user.u_id)
-
-
-def ch_listall(data, token):
-    user = data.get_user('token', token)
-    return data.get_channel_list_all(user.u_id)
+    if action == 'lists':
+        return data.get_channel_list(user.u_id)
+    elif action == 'listall':
+        return data.get_channel_list_all(user.u_id)
 
 
 def fun_message(data, token, channel_id, start):

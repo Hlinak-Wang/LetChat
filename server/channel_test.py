@@ -2,12 +2,9 @@ from server.channel_function import (
     ch_create,
     ch_invite,
     ch_details,
-    ch_leave,
-    ch_join,
-    ch_addowner,
-    ch_removeowner,
-    ch_lists,
-    ch_listall,
+    ch_join_leave,
+    ch_add_remove_owner,
+    ch_lists_listall,
     fun_message
 )
 from server.message_function import fun_send
@@ -24,7 +21,7 @@ def getdata():
                          'test2')
     register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test')
     channel1 = ch_create(data, ch_owner['token'], 'ch_test', True)
-    ch_join(data, ch_member['token'], channel1['channel_id'])
+    ch_join_leave(data, ch_member['token'], channel1['channel_id'], 'join')
     # data, token, channel_id, message, time_create=datetime.now()
     fun_send(data, ch_owner['token'], channel1['channel_id'], 'test')
     fun_send(data, ch_member['token'], channel1['channel_id'], 'test2')
@@ -117,7 +114,6 @@ def test_channel_messages_ok():
     channel1 = data.channels_group[0]
     message_channel1 = fun_message(data, user.token,
                                    channel1.channel_id, 0)
-    print(message_channel1)
     # Checking the output
     assert message_channel['start'] == 0
     assert message_channel['end'] == -1
@@ -181,8 +177,8 @@ def test_channel_leave_ok():
     # it takes in data, token, channel_name and is_public and return channel_id
     channel = ch_create(data, user.token, '12345', True)
 
-    ch_join(data, user1.token, channel['channel_id'])
-    ch_leave(data, user1.token, channel['channel_id'])
+    ch_join_leave(data, user1.token, channel['channel_id'], 'join')
+    ch_join_leave(data, user1.token, channel['channel_id'], 'leave')
 
     # Check the member in channel
     channel_profile = ch_details(data, user.token, channel['channel_id'])
@@ -197,7 +193,7 @@ def test_channel_leave_bad():
     # it takes in data, token, channel_name and is_public and return channel_id
     ch_create(data, user.token, '12345', True)
 
-    res = ch_leave(data, user.token, 10)
+    res = ch_join_leave(data, user.token, 10, 'leave')
     assert res == {'ValueError': 'Channel ID is invalid'}
 
 
@@ -207,7 +203,7 @@ def test_channel_join_ok():
     user = data.users_group[0]
     channel = ch_create(data, user.token, '12345', True)
     user2 = data.users_group[1]
-    ch_join(data, user2.token, channel['channel_id'])
+    ch_join_leave(data, user2.token, channel['channel_id'], 'join')
     channel_profile = ch_details(data, user2.token, channel['channel_id'])
 
     # Check the new user has join the channel
@@ -223,15 +219,16 @@ def test_channel_join_bad():
     channel = ch_create(data, user.token, '12345', True)
     user2 = data.users_group[1]
     # ValueError
-    res1 = ch_join(data, user2.token, channel['channel_id'] - 123)
+    res1 = ch_join_leave(data, user2.token, channel['channel_id'] - 123,
+                         'join')
     assert res1 == {'ValueError': 'Channel ID is invalid'}
 
     # AccessError
     channel2 = ch_create(data, user.token, '12345', False)
-    res2 = ch_join(data, user2.token, channel2['channel_id'])
+    res2 = ch_join_leave(data, user2.token, channel2['channel_id'], 'join')
     assert res2 == {'AccessError': 'The channel is private'}
 
-    res3 = ch_join(data, user.token, channel['channel_id'])
+    res3 = ch_join_leave(data, user.token, channel['channel_id'], 'join')
     assert res3 == {'AccessError': 'Already a member of that channel'}
 
 
@@ -241,9 +238,10 @@ def test_channel_addowner_ok():
     user = data.users_group[0]
     channel = ch_create(data, user.token, '12345', True)
     user2 = data.users_group[2]
-    ch_join(data, user2.token, channel['channel_id'])
+    ch_join_leave(data, user2.token, channel['channel_id'], 'join')
 
-    ch_addowner(data, user.token, channel['channel_id'], user2.u_id)
+    ch_add_remove_owner(data, user.token, channel['channel_id'], user2.u_id,
+                        'add')
     channel_profile = ch_details(data, user.token, channel['channel_id'])
     owner_list = channel_profile['owner_members']
     # Checking there is two owner in this channel
@@ -258,26 +256,28 @@ def test_channel_addowner_bad():
     user1 = data.users_group[1]
     user2 = data.users_group[2]
     channel = ch_create(data, user_admin.token, '12345', True)
-    ch_join(data, user1.token, channel['channel_id'])
+    ch_join_leave(data, user1.token, channel['channel_id'], 'join')
 
-    ch_join(data, user2.token, channel['channel_id'])
+    ch_join_leave(data, user2.token, channel['channel_id'], 'join')
     # AccessError
-    res1 = ch_addowner(data, user2.token, channel['channel_id'],
-                       user1.u_id)
+    res1 = ch_add_remove_owner(data, user2.token, channel['channel_id'],
+                               user1.u_id, 'add')
     assert res1 == {'AccessError': 'User is not an owner of the slackr or this\
  channel'}
 
-    res2 = ch_addowner(data, user_admin.token, channel['channel_id'], 99876)
+    res2 = ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                               99876, 'add')
     assert res2 == {'AccessError': 'Not a member of this channel'}
 
     # ValueError
-    res3 = ch_addowner(data, user_admin.token, channel['channel_id'] - 123,
-                       user1.u_id)
+    invalid_ch_id = channel['channel_id'] - 123
+    res3 = ch_add_remove_owner(data, user_admin.token, invalid_ch_id,
+                               user1.u_id, 'add')
     assert res3 == {'ValueError': 'Invalid Channel ID'}
-    ch_addowner(data, user_admin.token, channel['channel_id'],
-                user1.u_id)
-    res4 = ch_addowner(data, user_admin.token, channel['channel_id'],
-                       user1.u_id)
+    ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                        user1.u_id, 'add')
+    res4 = ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                               user1.u_id, 'add')
     assert res4 == {'ValueError': 'User is already an owner of the channel'}
 
 
@@ -288,17 +288,16 @@ def test_channel_removeowner_ok():
     user1 = data.users_group[1]
     channel = ch_create(data, user_admin.token, '12345', True)
 
-    ch_join(data, user1.token, channel['channel_id'])
+    ch_join_leave(data, user1.token, channel['channel_id'], 'join')
 
-    ch_addowner(data, user_admin.token, channel['channel_id'],
-                user1.u_id)
-    ch_removeowner(data, user_admin.token, channel['channel_id'],
-                   user1.u_id)
+    ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                        user1.u_id, 'remove')
+    ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                        user1.u_id, 'remove')
 
     channel_profile = ch_details(data, user_admin.token,
                                  channel['channel_id'])
     owner_list = channel_profile["owner_members"]
-    print(owner_list)
     # if user1["u_id"] is in the owner list
     # Means channel_removeowner is not working
     if user1.u_id not in owner_list:
@@ -316,24 +315,25 @@ def test_channel_removeowner_bad():
     user2 = data.users_group[2]
     channel = ch_create(data, user_admin.token, '12345', True)
 
-    ch_join(data, user1.token, channel['channel_id'])
-    ch_join(data, user2.token, channel['channel_id'])
+    ch_join_leave(data, user1.token, channel['channel_id'], 'join')
+    ch_join_leave(data, user2.token, channel['channel_id'], 'join')
 
-    ch_addowner(data, user_admin.token, channel['channel_id'],
-                user1.u_id)
+    ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                        user1.u_id, 'remove')
     # ValueError
-    res1 = ch_removeowner(data, user_admin.token,
-                          channel['channel_id'] - 123, user1.u_id)
+    invalid_ch_id = channel['channel_id'] - 123
+    res1 = ch_add_remove_owner(data, user_admin.token, invalid_ch_id,
+                               user1.u_id, 'remove')
     assert res1 == {'ValueError': 'Invalid Channel ID'}
 
-    res2 = ch_removeowner(data, user_admin.token, channel['channel_id'],
-                          user2.u_id)
+    res2 = ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                               user2.u_id, 'remove')
     assert res2 == {'ValueError': 'User is not an owner of the channel'}
-    ch_addowner(data, user_admin.token, channel['channel_id'],
-                user1.u_id)
+    ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
+                        user1.u_id, 'remove')
     # AccessError
-    res3 = ch_removeowner(data, user2.token, channel['channel_id'],
-                          user1.u_id)
+    res3 = ch_add_remove_owner(data, user2.token, channel['channel_id'],
+                               user1.u_id, 'remove')
     assert res3 == {'AccessError': 'User is not an owner of the slackr or \
 this channel'}
 
@@ -351,7 +351,7 @@ def test_channels_list():
     channel3 = ch_create(data, user1.token, 'ch_3', True)
     channel4 = ch_create(data, user1.token, 'ch_4', True)
 
-    channels = ch_lists(data, user1.token)
+    channels = ch_lists_listall(data, user1.token, 'lists')
 
     assert channels['channels'][1]['channel_id'] == channel3['channel_id']
     assert channels['channels'][1]['name'] == 'ch_3'
@@ -373,7 +373,7 @@ def test_channels_listall():
     channel4 = ch_create(data, user1.token, '123aszxcdf45', True)
     channel5 = ch_create(data, user1.token, '123asd12f45', False)
 
-    channels = ch_listall(data, user1.token)
+    channels = ch_lists_listall(data, user1.token, 'listall')
 
     assert channels['channels'][1]['channel_id'] == channel1['channel_id']
     assert channels['channels'][1]['name'] == '12345'
