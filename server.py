@@ -390,7 +390,7 @@ def channel_leave():
 
     channel_id = int(request.form.get('channel_id'))
     token = request.form.get('token')
-    output = ch_leave(data, token, channel_id)
+    output = ch_join_leave(data, token, channel_id, 'leave')
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
     save()
@@ -404,7 +404,7 @@ def channel_join():
 
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
-    join = ch_join(data, token, channel_id)
+    join = ch_join_leave(data, token, channel_id, 'join')
     if 'ValueError' in join:
         raise ValueError(description=join['ValueError'])
     elif 'AccessError' in join:
@@ -421,7 +421,7 @@ def channel_addowner():
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
-    addowner = ch_add_or_remove_owner(data, token, channel_id, u_id, 'add')
+    addowner = ch_add_remove_owner(data, token, channel_id, u_id, 'add')
     if 'ValueError' in addowner:
         raise ValueError(description=addowner['ValueError'])
     elif 'AccessError' in addowner:
@@ -438,8 +438,8 @@ def channel_removeowner():
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
     u_id = int(request.form.get('u_id'))
-    removeowner = ch_add_or_remove_owner(data, token, channel_id,
-                                         u_id, 'remove')
+    removeowner = ch_add_remove_owner(data, token, channel_id,
+                                      u_id, 'remove')
     if 'ValueError' in removeowner:
         raise ValueError(description=removeowner['ValueError'])
     elif 'AccessError' in removeowner:
