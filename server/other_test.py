@@ -8,7 +8,7 @@ Created on 2019/10/15
 
 from server.extra_function import message_search, fun_standup_send, fun_standup_star, permission_change
 from server.auth_functions import register
-from server.channel_function import ch_create, ch_join
+from server.channel_function import ch_create, ch_join_leave
 from server.message_function import fun_send, react_unreact
 from datetime import datetime, timedelta, timezone
 from server.Data_class import Data
@@ -20,7 +20,7 @@ def get_data():
     user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last')
     register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last')
     channel = ch_create(test_data, user_chowner['token'], 'test_channel', True)
-    ch_join(test_data, user_inch['token'], channel['channel_id'])
+    ch_join_leave(test_data, user_inch['token'], channel['channel_id'], 'join')
     message_inch = fun_send(test_data, user_inch['token'], channel['channel_id'], 'test2')
     message_chowner = fun_send(test_data, user_chowner['token'], channel['channel_id'], 'test')
     react_unreact(test_data, user_inch['token'], message_inch['message_id'], 1, 'react')
