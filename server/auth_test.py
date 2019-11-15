@@ -44,7 +44,7 @@ def test_auth_register_valid():
         'name_first': "hello",
         'name_last': "goodbye",
         'handle_str': "hellogoodbye",
-        'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
+        'profile_img_url': 'http://127.0.0.1:5555/static/default.jpg'
     }]
     user = data.get_user('u_id', u_id1)
     assert user.password == hashlib.sha256("123456".encode("utf-8")).hexdigest()
@@ -66,14 +66,14 @@ def test_auth_register_valid():
         'name_first': "hello",
         'name_last': "goodbye",
         'handle_str': "hellogoodbye",
-        'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
+        'profile_img_url': 'http://127.0.0.1:5555/static/default.jpg'
     }, {
         'u_id': u_id2,
         'email': "good@gmail.com",
         'name_first': "hellohowareyou",
         'name_last': "imfinethankyou",
         'handle_str': "hellohowareyouimfine",
-        'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
+        'profile_img_url': 'http://127.0.0.1:5555/static/default.jpg'
     }]
     user = data.get_user('u_id', u_id2)
     assert user.password == hashlib.sha256("9876543".encode("utf-8")).hexdigest()
@@ -218,7 +218,7 @@ def test_auth_logout_valid():
             'name_first': "hello",
             'name_last': "goodbye",
             'handle_str': "hellogoodbye",
-            'profile_img_url': 'http://127.0.0.1:1024/static/default.jpg'
+            'profile_img_url': 'http://127.0.0.1:5555/static/default.jpg'
     }]
     assert user.token == None
 
