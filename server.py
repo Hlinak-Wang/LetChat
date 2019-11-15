@@ -23,7 +23,7 @@ from server.channel_function import (
     ch_invite,
     ch_details,
     ch_join_leave,
-    ch_add_or_remove_owner,
+    ch_add_remove_owner,
     ch_lists_listall,
     fun_message,
 )
