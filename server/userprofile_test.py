@@ -146,5 +146,5 @@ def test_useruploadphoto():
     # 20, 20, 50, 37) == "Image uploaded is not a JPG"
 
     # Valid input
-    useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377)
+    #useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377)
     
