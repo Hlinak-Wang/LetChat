@@ -131,13 +131,17 @@ def test_channel_messages_ok():
     for i in range(0, 24):
         fun_send(data, user.token, channel['channel_id'], 'another test')
         fun_send(data, user.token, channel['channel_id'], 'again')
-        fun_standup_star(data, user.token, channel['channel_id'])
-        fun_standup_send(data, user.token, channel['channel_id'], 'testing')
         i = i + 1
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
     assert message_channel2['start'] == 0
-    assert message_channel2['end'] == 50
+    assert message_channel2['end'] == -1
+    fun_standup_star(data, user.token, channel['channel_id'])
+    fun_standup_send(data, user.token, channel['channel_id'], 'testing')
+    fun_standup_send(data, user.token, channel['channel_id'], 'testing again')
+    message_channel2 = fun_message(data, user.token,
+                                   channel['channel_id'], 0)
+    assert message_channel2['end'] = 50
     
 
 # Testing invalid input for channel_message
