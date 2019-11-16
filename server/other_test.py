@@ -35,22 +35,22 @@ def test_standup_start():
     user = data.users_group[0]
     user_notch = data.users_group[2]
     channel = data.channels_group[0]
-    
+    length = 100
     # Invalid input
-    assert standup_begin(data, user.token, -123) == {
+    assert standup_begin(data, user.token, -123, length) == {
         'ValueError': 'Channel ID is not a valid channel'
     }
 
-    assert standup_begin(data, user_notch.token, channel.channel_id) == {
+    assert standup_begin(data, user_notch.token, channel.channel_id, length) == {
         'AccessError': 'The authorised user is not a member of the channel that the message is within'
     }
 
-    output = standup_begin(data, user.token, channel.channel_id)
-    time_finish = datetime.now().replace(tzinfo=timezone.utc).timestamp() + 900
+    output = standup_begin(data, user.token, channel.channel_id, length)
+    time_finish = datetime.now().timestamp() + length
     assert time_finish - 1 <= output['time_finish'] <= time_finish + 1
 
     # Start standup again
-    assert standup_begin(data, user.token, channel.channel_id) == {
+    assert standup_begin(data, user.token, channel.channel_id, length) == {
         'ValueError': 'An active standup is currently running in this channel'
     }
 
@@ -61,13 +61,13 @@ def test_standup_send():
     user_notch = data.users_group[2]
     channel = data.channels_group[0]
     channel2 = data.channels_group[1]
-
+    length = 100
     message_long = ''
     for i in range(0, 1010):
         message_long += '1'
-    
+
     # Test in the environment of standup has started
-    standup_begin(data, user.token, channel.channel_id)
+    standup_begin(data, user.token, channel.channel_id, length)
     
     # Testing invalid input
     assert standup_message(data, user.token, -123, 'message_short') == {

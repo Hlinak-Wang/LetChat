@@ -6,7 +6,7 @@ Created on 2019/10/15
 @author: Eric
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 
 def message_search(data, token, query_str):
@@ -15,8 +15,10 @@ def message_search(data, token, query_str):
     channel_join = data.get_channels_joined(user.u_id)
     output_list = []
     for message in data.messages_group:
-        if message.channel_id in channel_join and message.message == query_str:
-            output_list.append(message.get_message_info(user.u_id))
+        time_now = datetime.now().timestamp()
+        if message.channel_id in channel_join and message.time_created <= time_now:
+            if message.message == query_str:
+                output_list.append(message.get_message_info(user.u_id))
 
     return {
         'messages': output_list
@@ -40,10 +42,10 @@ def permission_change(data, token, u_id, permission_id):
     return {}
 
 
-def standup_begin(data, token, channel_id):
+def standup_begin(data, token, channel_id, length):
     user = data.get_user('token', token)
     channel = data.get_channel(channel_id)
-    time_start = datetime.now().replace(tzinfo=timezone.utc).timestamp()
+    time_start = datetime.now().timestamp()
 
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
@@ -54,7 +56,7 @@ def standup_begin(data, token, channel_id):
     if time_start < channel.standup['time_finish']:
         return {'ValueError': 'An active standup is currently running in this channel'}
 
-    channel.set_standup(time_start + 900, user.u_id)
+    channel.set_standup(time_start + length, user.u_id)
 
     return {
         'time_finish': channel.standup['time_finish']
@@ -64,12 +66,14 @@ def standup_begin(data, token, channel_id):
 def standup_active(data, token, channel_id):
 
     channel = data.get_channel(channel_id)
-    time_now = datetime.now().replace(tzinfo=timezone.utc).timestamp()
+    time_now = datetime.now().timestamp()
     if channel.standup['time_finish'] < time_now:
         is_activate = False
     else:
         is_activate = True
 
+    if not is_activate:
+        
     return {
         'is_activate': is_activate,
         'time_finish': channel.standup['time_finish']
@@ -79,7 +83,7 @@ def standup_active(data, token, channel_id):
 def standup_message(data, token, channel_id, message):
     user = data.get_user('token', token)
     channel = data.get_channel(channel_id)
-    time_now = datetime.now().replace(tzinfo=timezone.utc).timestamp()
+    time_now = datetime.now().timestamp()
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 

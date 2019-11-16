@@ -138,7 +138,7 @@ def test_channel_messages_ok():
         fun_send(data, user.token, channel['channel_id'], 'another test')
         fun_send(data, user.token, channel['channel_id'], 'again')
         i = i + 1
-    standup_begin(data, user.token, channel['channel_id'])
+    standup_begin(data, user.token, channel['channel_id'], 10)
     standup_message(data, user.token, channel['channel_id'], 'testing')
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
@@ -315,6 +315,7 @@ def test_channel_removeowner_ok():
     owner_list = channel_profile["owner_members"]
     # if user1["u_id"] is in the owner list
     # Means channel_removeowner is not working
+    exist = 0
     if user1.u_id not in owner_list:
         exist = 1
     assert exist == 1

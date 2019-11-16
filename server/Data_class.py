@@ -1,5 +1,5 @@
 import hashlib
-
+from datetime import datetime
 
 class Data:
 
@@ -113,8 +113,9 @@ class Data:
         channel_message = []
         counter = 0
         end = start
+        time_now = datetime.now().timestamp()
         for message in self.messages_group[start:]:
-            if message.channel_id == channel_id:
+            if message.channel_id == channel_id and message.time_created <= time_now:
                 channel_message.append(message.get_message_info(u_id))
                 counter += 1
             end += 1
@@ -124,7 +125,6 @@ class Data:
                     'start': start,
                     'end': end
                 }
-
         return {
             'messages': channel_message,
             'start': start,

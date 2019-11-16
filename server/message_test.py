@@ -7,7 +7,7 @@ Created on 2019/10/15
 """
 
 from server.message_function import fun_send, message_operation, react_unreact, pin_unpin
-from datetime import datetime, timezone
+from datetime import datetime
 from server.Data_class import Data
 from server.auth_functions import register
 from server.channel_function import ch_create, ch_join_leave
@@ -63,8 +63,8 @@ def test_send_late_bad():
     for i in range(0, 1010):
         message_long += "a"
 
-    time_valid = datetime.now().replace(tzinfo=timezone.utc).timestamp() + 10
-    time_invalid = datetime.now().replace(tzinfo=timezone.utc).timestamp() - 10
+    time_valid = datetime.now().timestamp() + 10
+    time_invalid = datetime.now().timestamp() - 10
     # Invalid input
     assert fun_send(data, user_admin.token, channel.channel_id, message_long, time_valid) == {
            "ValueError": "Message is more than 1000 characters"
@@ -83,7 +83,7 @@ def test_send_late_good():
     user_admin = getting_user(data)[0]
     channel = getting_channel(data)
 
-    time_valid = datetime.now().replace(tzinfo=timezone.utc).timestamp() + 10
+    time_valid = datetime.now().timestamp() + 10
 
     output = fun_send(data, user_admin.token, channel.channel_id, 'short_message', time_valid)
     assert data.get_message(output['message_id']) is not None
