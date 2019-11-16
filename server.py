@@ -143,6 +143,18 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
     user.set_photo(new_photo)
     return wrongmessage
+    
+#decorator below
+def unmarshall(function):
+    def wrapper(httpSrc, req: list=[]):
+        args = [httpSrc.get(r) for r in req]
+        return function *args
+    return wrapper
+
+@unmarshall
+def do_get(item):
+    return item
+#decorator above
 
 
 @APP.route("/auth/login", methods=['POST'])
@@ -150,8 +162,13 @@ def auth_login():
 
     global data
 
-    email = request.form.get('email')
-    password = request.form.get('password')
+    #email = request.form.get('email')
+    #password = request.form.get('password')
+    
+    #email = do_get(request.form, ['email']) 
+    #password = do_get(request.form, ['password'])
+    email, password = do_get(request.form, ['email', 'password'])
+    
     result = login(data, email, password)
     save()
     return dumps(result)
@@ -161,7 +178,9 @@ def auth_login():
 def auth_logout():
     global data
 
-    token = request.form.get('token')
+    #token = request.form.get('token')
+    token = do_get(request.form, ['token'])
+    
     result = logout(data, token)
     save()
 
@@ -172,11 +191,12 @@ def auth_logout():
 def auth_register():
     global data
 
-    email = request.form.get('email')
-
-    password = request.form.get('password')
-    name_first = request.form.get('name_first')
-    name_last = request.form.get('name_last')
+    #email = request.form.get('email')
+    #password = request.form.get('password')
+    #name_first = request.form.get('name_first')
+    #name_last = request.form.get('name_last')
+    
+    email, password, name_first, name_last = do_get(request.form, ['email', 'password', 'name_first', 'name_last'])
 
     result = register(data, email, password, name_first, name_last)
     save()
@@ -187,7 +207,9 @@ def auth_register():
 def auth_reset_request():
     global data
 
-    email = request.form.get('email')
+    #email = request.form.get('email')
+    email = do_get(request.form, ['email'])
+    
     code = reset_request(data, email)
 
     mail = Mail(APP)
@@ -209,8 +231,10 @@ def auth_reset_request():
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
 def auth_reset():
     global data
-    reset_code = request.form.get('reset_code')
-    new_password = request.form.get('new_password')
+    #reset_code = request.form.get('reset_code')
+    #new_password = request.form.get('new_password')
+    
+    reset_code, new_password = do_get(request.form, ['reset_code', 'new_password'])
 
     result = reset(data, reset_code, new_password)
     save()
