@@ -7,7 +7,7 @@ Created on 2019/10/15
 """
 
 from datetime import datetime
-
+from server.message_function import fun_send
 
 def message_search(data, token, query_str):
     user = data.get_user('token', token)
@@ -72,8 +72,10 @@ def standup_active(data, token, channel_id):
     else:
         is_activate = True
 
-    if not is_activate:
-        
+    if not is_activate and channel.standup_message != '':
+        fun_send(data, token, channel_id, channel.standup_message)
+        channel.standup_message = ''
+
     return {
         'is_activate': is_activate,
         'time_finish': channel.standup['time_finish']

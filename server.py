@@ -143,41 +143,7 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
     user.set_photo(new_photo)
     return wrongmessage
-    
-    
-"""
-def send_message_buffer():
-    global data
-    time_now = datetime.now()
-    for message in data['message_buffer'][:]:
-        time_send = datetime.strptime(message['time_created'],  "%H:%M")
-        channel = find_channel(data, message['channel_id'])
-        if time_send < time_now:
-            channel['messages'].append(message)
-            data['message_buffer'].remove(message)
 
-
-def pop_queue():
-    global data
-    time_now = datetime.now()
-    time_now = time_now.replace(tzinfo=timezone.utc).timestamp()
-    for channel in data['channels']:
-        if 'standup' in channel:
-            standup = channel['standup']
-            if standup['time_finish'] == '1/1/1900, 1:00:00' or time_now > standup['time_finish']:
-                if channel['standup_message'] != "":
-
-                    channel['messages'].insert(0, {
-                        'u_id': standup['u_id'],
-                        'message_id': data['message_counter'],
-                        'message': channel['standup_message'],
-                        'time_created': time_now,
-                        'reacts': [{'react_id': 1, 'u_ids': []}],
-                        'is_pinned': False,
-                    })
-                    channel['standup_message'] = ""
-                    data['message_counter'] += 1
-"""
 
 @APP.route("/auth/login", methods=['POST'])
 def auth_login():
@@ -330,6 +296,10 @@ def message_send_later():
     time_create = int(float(request.form.get('time_sent')))
 
     output = fun_send(data, token, channel_id, message, time_create)
+    if 'AccessError' in output:
+        raise AccessError(description=output['AccessError'])
+    if 'ValueError' in output:
+        raise ValueError(description=output['ValueError'])
     save()
 
     return dumps(output)
@@ -343,7 +313,6 @@ def message_send():
     channel_id = int(request.form.get('channel_id'))
     output = fun_send(data, token, channel_id, message)
 
-    # save()
     if 'AccessError' in output:
         raise AccessError(description=output['AccessError'])
     if 'ValueError' in output:
@@ -671,8 +640,8 @@ def standup_start():
 
     token = request.form.get('token')
     channel_id = int(request.form.get('channel_id'))
-
-    output = fun_standup_star(data, token, channel_id)
+    length = int(request.form.get('length'))
+    output = standup_begin(data, token, channel_id, length)
 
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
@@ -682,16 +651,17 @@ def standup_start():
 
     return dumps(output)
 
+
 @APP.route('/standup/active', methods=['GET'])
 def standup_activate():
     global data
 
     token = request.args.get('token')
     test = request.args.get('channel_id')
-    print(test)
     channel_id = int(test)
-    output = fun_standup_activate(data, token, channel_id)
+    output = standup_active(data, token, channel_id)
     return dumps(output)
+
 
 @APP.route('/standup/send', methods=['POST'])
 def standup_send():
@@ -700,7 +670,7 @@ def standup_send():
     channel_id = int(request.form.get('channel_id'))
     message = request.form.get('message')
 
-    output = fun_standup_send(data, token, channel_id, message)
+    output = standup_message(data, token, channel_id, message)
 
     if 'ValueError' in output:
         raise ValueError(description=output['ValueError'])
