@@ -34,7 +34,7 @@ def test_auth_register_valid():
     name_last = "goodbye"
 
     register_output = register(data, email, password, name_first, name_last)
-    check_token_1 = generateToken(name_first, name_last)
+    check_token_1 = generateToken(email)
     
     u_id1 = register_output['u_id']
     assert register_output['token'] == check_token_1
@@ -56,7 +56,7 @@ def test_auth_register_valid():
     name_last = "imfinethankyou"
 
     register_output = register(data, email, password, name_first, name_last)
-    check_token_2 = generateToken(name_first, name_last)
+    check_token_2 = generateToken(email)
 
     u_id2 = register_output['u_id']
     assert register_output['token'] == check_token_2
@@ -160,10 +160,8 @@ def test_auth_login_valid():
 
     email = "hi@gmail.com"
     password = "123456"
-    name_first = "hello"
-    name_last = "goodbye"
 
-    check_token = generateToken(name_first, name_last)
+    check_token = generateToken(email)
     login_output = login(data, email, password)
 
     assert login_output['token'] == check_token

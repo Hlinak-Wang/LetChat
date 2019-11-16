@@ -10,9 +10,12 @@ from server.user_function import usersetemail, usersetname, usersethandle, getpr
 from server.auth_functions import register
 from server.Data_class import Data
 
-#fet global data
+
+# fet global data
 data = Data()
-#test getproflie
+
+
+# test getproflie
 def test_profile():
     global data
     # Create one user for testing

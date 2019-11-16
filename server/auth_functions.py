@@ -36,10 +36,9 @@ def check_name(name_first, name_last):
 
     return {}
 
-def generateToken(first, last):
+def generateToken(email):
     payload = {
-        'first': first,
-        'last': last,
+        'email': email,
         'time_create': datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
     }
     return str(jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8'))
@@ -73,7 +72,7 @@ def login(data, email, password):
     if type(user) == dict and 'ValueError' in user:
         return user
     
-    token = generateToken(user.name_first, user.name_last)
+    token = generateToken(user.email)
     
     user.login(token)
 
@@ -113,7 +112,7 @@ def register(data, email, password, name_first, name_last):
     if not unique:
         return {'ValueError': "This email is already in use by a registered user"}
 
-    token = generateToken(name_first, name_last)
+    token = generateToken(email)
 
     handle_str = generate_handle_str(data, name_first, name_last)
     
