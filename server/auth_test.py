@@ -231,7 +231,12 @@ def test_auth_logout_invalid_token():
 
 # START TEST AUTH_PASSWORDRESET_REQUEST
 
-def test_reset_request():
+def test_reset_request_invalid():
+    data = testData()
+    reset_check = reset_request(data, "hello@gmail.com")
+    assert reset_check == {'ValueError': "This email does not belong to a registered user"}
+
+def test_reset_request_valid():
     data = testData()
     reset_code = reset_request(data, "hi@gmail.com")
     user = data.get_user('handle_str', "hellogoodbye")
