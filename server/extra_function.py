@@ -73,8 +73,9 @@ def standup_active(data, token, channel_id):
     else:
         is_activate = True
 
+    user = data.get_user('u_id', channel.standup['u_id'])
     if not is_activate and channel.standup_message != '':
-        send_message(data, token, channel_id, channel.standup_message)
+        send_message(data, user.token, channel_id, channel.standup_message)
         channel.standup_message = ''
 
     return {

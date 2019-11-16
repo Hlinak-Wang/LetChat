@@ -479,7 +479,7 @@ def sethandle():
     return dumps(result)
 
 
-@APP.route('/user/profile/uploadphoto', methods=['POST'])
+@APP.route('/user/profiles/uploadphoto', methods=['POST'])
 def uploadphoto():
 
     global data
