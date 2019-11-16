@@ -13,7 +13,7 @@ from server.extra_function import fun_standup_star, fun_standup_send
 
 from server.Data_class import Data
 
-from datatime import time
+from datetime import time
 
 
 # initial state of testing
