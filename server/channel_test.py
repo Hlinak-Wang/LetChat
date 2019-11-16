@@ -138,6 +138,8 @@ def test_channel_messages_ok():
         fun_send(data, user.token, channel['channel_id'], 'another test')
         fun_send(data, user.token, channel['channel_id'], 'again')
         i = i + 1
+    fun_standup_start(data, user.token, channel['channel_id'])
+    fun_standup_send(data, user.token, channel['channel_id'], 'testing')
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
     assert message_channel2['start'] == 0
