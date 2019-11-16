@@ -185,14 +185,20 @@ def test_channel_leave_ok():
     user1 = data.users_group[1]
     # it takes in data, token, channel_name and is_public and return channel_id
     channel = ch_create(data, user.token, '12345', True)
-
+    # user1 join to the channel
     ch_join_leave(data, user1.token, channel['channel_id'], 'join')
+    # add user1 to be the owner of the channel
+    ch_add_remove_owner(data, user.token, channel['channel_id'],
+                        user1.u_id, 'add')
+    # user1 leave the channel
     ch_join_leave(data, user1.token, channel['channel_id'], 'leave')
 
     # Check the member in channel
     channel_profile = ch_details(data, user.token, channel['channel_id'])
+    owner_list = channel_profile['owner_members']
     member_list = channel_profile['all_members']
-    assert member_list[0]['u_id'] == user.u_id
+    assert len(owner_list) == 1
+    assert len(member_list) == 1
 
 
 # Testing invalid input for channel_leave
