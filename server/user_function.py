@@ -58,14 +58,19 @@ def getprofile(data, token, u_id):
     return value, wrongmessage
 
 
-"""
-    value = {'email': user.email,
-             'name_first': user.get_name_first(),
-             'name_last': user.get_name_last(),
-             'handle_str': user.get_handle_str(),
-             'profile_img_url': 'http://127.0.0.1:5002/static/'+user.get_uid()'.jpg'}
-"""
+def get_all_users(data, token):
+    value = None
+    wrongmessage = None
+    if data.get_user('token', token) is None:
+        wrongmessage = 'Invalid token'
 
+    user_list = data.get_all_user_detail()
+    value = {
+        'users': user_list
+    }
+
+    return value, wrongmessage
+    
 
 # set username by token
 def usersetname(data, token, name_first, name_last):

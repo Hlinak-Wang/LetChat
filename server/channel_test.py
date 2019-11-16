@@ -10,9 +10,9 @@ from server.channel_function import (
 from server.message_function import fun_send
 from server.auth_functions import register
 from server.extra_function import (
-    fun_standup_star,
-    fun_standup_send,
-    fun_standup_activate
+    standup_message,
+    standup_active,
+    standup_begin
 )
 
 from server.Data_class import Data
@@ -138,11 +138,13 @@ def test_channel_messages_ok():
         fun_send(data, user.token, channel['channel_id'], 'another test')
         fun_send(data, user.token, channel['channel_id'], 'again')
         i = i + 1
+    standup_begin(data, user.token, channel['channel_id'])
+    standup_message(data, user.token, channel['channel_id'], 'testing')
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
     assert message_channel2['start'] == 0
     assert message_channel2['end'] == 50
-    
+
 
 # Testing invalid input for channel_message
 def test_channel_messages_bad():

@@ -19,6 +19,8 @@ class Channel:
 
     def leave_channel(self, user_id):
         self.user_list.remove(user_id)
+        if user_id in self.owner_list:
+            self.owner_list.remove(user_id)
 
     def add_owner(self, user_id):
         self.owner_list.append(user_id)

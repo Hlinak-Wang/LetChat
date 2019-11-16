@@ -157,7 +157,7 @@ def fun_message(data, token, channel_id, start):
     if user.u_id not in channel.user_list:
         return {'AccessError': 'when:  the authorised user has not joined the \
 channel they are trying to post to'}
-    if start > data.count_message():
+    if start > data.get_earliest_index(channel_id):
         return {'ValueError': 'start is greater than or equal to the total \
 number of messages in the channel'}
 

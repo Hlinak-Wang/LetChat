@@ -111,6 +111,6 @@ def pin_unpin(data, token, message_id, action):
         if not message.is_pinned:
             return {"ValueError": "Message with ID message_id is already unpinned"}
 
-        message.user_pin()
+        message.user_unpin()
 
     return {}

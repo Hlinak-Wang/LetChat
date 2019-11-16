@@ -16,8 +16,8 @@ from flask_mail import Mail, Message
 from server.Data_class import Data
 from server.message_function import fun_send, message_operation, react_unreact, \
     pin_unpin
-from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_activate, fun_standup_star
-from server.user_function import usersetemail, usersetname, usersethandle, getprofile
+from server.extra_function import message_search, permission_change, standup_message, standup_active, standup_begin
+from server.user_function import usersetemail, usersetname, usersethandle, getprofile, get_all_users
 from server.channel_function import (
     ch_create,
     ch_invite,
@@ -548,6 +548,19 @@ def profile():
 
     return dumps(value)
 
+
+@APP.route('/users/all', methods=['GET'])
+def users_all():
+    global data
+
+    token = request.args.get('token')
+    (value, Errormessage) = get_all_users(data, token)
+    if value is None:
+        raise ValueError(description=Errormessage)
+    save()
+
+    return dumps(value)
+    
 
 @APP.route('/user/profile/setname', methods=['PUT'])
 def setname():
