@@ -134,15 +134,13 @@ def test_channel_messages_ok():
     assert messages1[1]['message'] == 'test'
     assert messages1[1]['u_id'] == user.u_id
     standup_begin(data, user.token, channel['channel_id'], 10)
-    for i in range(0, 24):
+    for i in range(0, 25):
         fun_send(data, user.token, channel['channel_id'], 'another test')
         fun_send(data, user.token, channel['channel_id'], 'again')
         standup_message(data, user.token, channel['channel_id'], 'testing')
         i = i + 1
-    time.sleep(10)
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
-    
     assert message_channel2['start'] == 0
     assert message_channel2['end'] == 50
     #fun_send(data, user.token, channel['channel_id'], 'again')
