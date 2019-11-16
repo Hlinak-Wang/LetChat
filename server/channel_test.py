@@ -134,6 +134,7 @@ def test_channel_messages_ok():
         fun_send(data, user.token, channel['channel_id'], 'another test')
         fun_send(data, user.token, channel['channel_id'], 'again')
         i = i + 1
+    fun_send(data, user.token, channel['channel_id'], 'again')
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
     assert message_channel2['start'] == 0
@@ -141,10 +142,11 @@ def test_channel_messages_ok():
     fun_standup_star(data, user.token, channel['channel_id'])
     fun_standup_send(data, user.token, channel['channel_id'], 'testing')
     fun_standup_send(data, user.token, channel['channel_id'], 'testing again')
-    time.sleep(900)
-    message_channel2 = fun_message(data, user.token,
+    is_activate = fun_standup_activate(data, user.token, channel['channel_id'])
+    if is_activate == False:
+        message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
-    assert message_channel2['end'] == 50
+        assert message_channel2['end'] == 50
     
 
 # Testing invalid input for channel_message
