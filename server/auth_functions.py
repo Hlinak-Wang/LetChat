@@ -56,10 +56,6 @@ def generate_handle_str(data, first, last):
 
     return handle_str
 
-def decoding_reset_code(reset_code):
-    return jwt.decode(reset_code, SECRET, algorithms=['HS256'])
-
-
 # HELPER FUNCTIONS ABOVE
 
 def login(data, email, password):

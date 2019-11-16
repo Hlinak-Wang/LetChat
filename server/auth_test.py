@@ -233,7 +233,12 @@ def test_auth_logout_invalid_token():
 
 # START TEST AUTH_PASSWORDRESET_REQUEST
 
-# We can be sure that this function has worked correctly if we receive an email with a reset code, and no exceptions have been thrown.
+def test_reset_request():
+    data = testData()
+    reset_code = reset_request(data, "hi@gmail.com")
+    user = data.get_user('handle_str', "hellogoodbye")
+    assert user.reset_code == reset_code
+
 
 # END TEST AUTH_PASSWORDRESET_REQUEST
 
@@ -258,7 +263,3 @@ def test_passwordreset():
 
     is_success = login(data, 'hi@gmail.com', 'abcdsdg')
     assert is_success['u_id'] == u_id
-    
-    
-    #add a function to test valid and invalid reset_request
-    #check somewhere decoding reset_code
