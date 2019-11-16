@@ -37,20 +37,20 @@ def test_standup_start():
     channel = data.channels_group[0]
     
     # Invalid input
-    assert fun_standup_star(data, user.token, -123) == {
+    assert standup_begin(data, user.token, -123) == {
         'ValueError': 'Channel ID is not a valid channel'
     }
 
-    assert fun_standup_star(data, user_notch.token, channel.channel_id) == {
+    assert standup_begin(data, user_notch.token, channel.channel_id) == {
         'AccessError': 'The authorised user is not a member of the channel that the message is within'
     }
 
-    output = fun_standup_star(data, user.token, channel.channel_id)
+    output = standup_begin(data, user.token, channel.channel_id)
     time_finish = datetime.now().replace(tzinfo=timezone.utc).timestamp() + 900
     assert time_finish - 1 <= output['time_finish'] <= time_finish + 1
 
     # Start standup again
-    assert fun_standup_star(data, user.token, channel.channel_id) == {
+    assert standup_begin(data, user.token, channel.channel_id) == {
         'ValueError': 'An active standup is currently running in this channel'
     }
 
@@ -67,26 +67,26 @@ def test_standup_send():
         message_long += '1'
     
     # Test in the environment of standup has started
-    fun_standup_star(data, user.token, channel.channel_id)
+    standup_begin(data, user.token, channel.channel_id)
     
     # Testing invalid input
-    assert fun_standup_send(data, user.token, -123, 'message_short') == {
+    assert standup_message(data, user.token, -123, 'message_short') == {
         'ValueError': 'Channel ID is not a valid channel'
     }
 
-    assert fun_standup_send(data, user.token, channel.channel_id, message_long) == {
+    assert standup_message(data, user.token, channel.channel_id, message_long) == {
         'ValueError': 'Message is more than 1000 characters'
     }
 
-    assert fun_standup_send(data, user_notch.token, channel.channel_id, 'message_short') == {
+    assert standup_message(data, user_notch.token, channel.channel_id, 'message_short') == {
         'AccessError': 'the authorised user has not joined the channel they are trying to post to'
     }
 
-    assert fun_standup_send(data, user_notch.token, channel2.channel_id, 'message_short') == {
+    assert standup_message(data, user_notch.token, channel2.channel_id, 'message_short') == {
         'ValueError': 'An active standup is not currently running in this channel'
     }
 
-    fun_standup_send(data, user.token, channel.channel_id, 'message_short')
+    standup_message(data, user.token, channel.channel_id, 'message_short')
     assert channel.standup_message == 'message_short\n'
 
 
