@@ -146,7 +146,7 @@ def test_channel_messages_ok():
     fun_standup_send(data, user.token, channel['channel_id'], 'testing')
     fun_standup_send(data, user.token, channel['channel_id'], 'testing again')
     is_activate = fun_standup_activate(data, user.token, channel['channel_id'])
-    if is_activate == False:
+    if is_activate['is_activate'] == False:
         message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
         assert message_channel2['end'] == 50
