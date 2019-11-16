@@ -11,6 +11,7 @@ import requests
 from PIL import Image
 import urllib.request
 
+
 def getHttpStatusCode(url):
     try:
 
@@ -141,7 +142,7 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     user = data.get_user('token', token)
     handle_str = user.handle_str
 
-    imagesource = '../static/' + handle_str + '.jpg'
+    imagesource = './static/' + handle_str + '.jpg'
     urllib.request.urlretrieve(img_url, imagesource)
 
     imageObject = Image.open(imagesource)
@@ -149,6 +150,11 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     if imageObject.format != 'JPEG':
         return {'ValueError': "Image uploaded is not a JPG"}
     
+    x_start = int(x_start)
+    y_start = int(y_start)
+    x_end = int(x_end)
+    y_end = int(y_end)
+      
     if x_start < 0 or x_start > imageObject.size[0] or x_end < 0 or x_end > imageObject.size[0] \
             or y_start < 0 or y_start > imageObject.size[1] or y_end < 0 or y_end > imageObject.size[1] \
             or x_start > x_end or y_start > y_end:
@@ -161,5 +167,7 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
 
     new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
     user.set_photo(new_photo)
+    print(user.profile_img_url )
     return {}
+
 
