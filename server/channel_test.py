@@ -135,7 +135,9 @@ def test_channel_messages_ok():
                                    channel['channel_id'], 0)
     assert message_channel2['start'] == 0
     assert message_channel2['end'] == 50
-
+    fun_standup_star(data, user.token, channel['channel_id'])
+    fun_standup_send(data, user.token, channel['channel_id'],
+                     message_channel['messages'])
 
 # Testing invalid input for channel_message
 def test_channel_messages_bad():
