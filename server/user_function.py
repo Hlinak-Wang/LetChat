@@ -6,6 +6,7 @@ Created on 2019/10/15
 @author: Yimeng
 """
 import re
+import os
 import requests
 from PIL import Image
 import urllib.request
@@ -112,7 +113,6 @@ def usersethandle(data, token, handle_str):
         return {'ValueError': "token not valid"}
 
     if len(handle_str) > 20 or len(handle_str) < 3:
-        wrongmessage = "handle_str must be between 3 and 20"
         return {'ValueError': "handle_str must be between 3 and 20"}
 
     if data.check_unique('handle_str', handle_str) == False:
@@ -148,10 +148,10 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
 
     if imageObject.format != 'JPEG':
         return {'ValueError': "Image uploaded is not a JPG"}
-
+    
     if x_start < 0 or x_start > imageObject.size[0] or x_end < 0 or x_end > imageObject.size[0] \
             or y_start < 0 or y_start > imageObject.size[1] or y_end < 0 or y_end > imageObject.size[1] \
-            or x_start < x_end or y_start < y_end:
+            or x_start > x_end or y_start > y_end:
         return {
             'ValueError': "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."
         }
