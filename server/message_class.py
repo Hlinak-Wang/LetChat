@@ -29,7 +29,7 @@ class Message(object):
                 return react
         return None
 
-    def __get_react_all(self, u_id):
+    def get_react_all(self, u_id):
         react_list = []
         for react in self.reacts:
             react_list.append(react.get_react_detail(u_id))
@@ -42,7 +42,8 @@ class Message(object):
             'u_id': self.u_id,
             'message': self.message,
             'time_created': self.time_created,
-            'reacts': self.__get_react_all(u_id)
+            'reacts': self.get_react_all(u_id),
+            'is_pinned': self.is_pinned
         }
         return message_info
 
