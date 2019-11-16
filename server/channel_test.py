@@ -7,7 +7,7 @@ from server.channel_function import (
     ch_lists_listall,
     fun_message
 )
-from server.message_function import fun_send
+from server.message_function import send_message
 from server.auth_functions import register
 from server.extra_function import (
     standup_message,
@@ -27,8 +27,8 @@ def getdata():
     channel1 = ch_create(data, ch_owner['token'], 'ch_test', True)
     ch_join_leave(data, ch_member['token'], channel1['channel_id'], 'join')
     # data, token, channel_id, message, time_create=datetime.now()
-    fun_send(data, ch_owner['token'], channel1['channel_id'], 'test')
-    fun_send(data, ch_member['token'], channel1['channel_id'], 'test2')
+    send_message(data, ch_owner['token'], channel1['channel_id'], 'test')
+    send_message(data, ch_member['token'], channel1['channel_id'], 'test2')
     return data
 
 
@@ -112,7 +112,7 @@ def test_channel_messages_ok():
     data = getdata()
     user = data.users_group[0]
     channel = ch_create(data, user.token, '12345', True)
-    fun_send(data, user.token, channel['channel_id'], 'testing')
+    send_message(data, user.token, channel['channel_id'], 'testing')
     message_channel = fun_message(data, user.token,
                                   channel['channel_id'], 0)
     channel1 = data.channels_group[0]
@@ -132,8 +132,8 @@ def test_channel_messages_ok():
     assert messages1[1]['u_id'] == user.u_id
     standup_begin(data, user.token, channel['channel_id'], 10)
     for i in range(0, 25):
-        fun_send(data, user.token, channel['channel_id'], 'another test')
-        fun_send(data, user.token, channel['channel_id'], 'again')
+        send_message(data, user.token, channel['channel_id'], 'another test')
+        send_message(data, user.token, channel['channel_id'], 'again')
         standup_message(data, user.token, channel['channel_id'], 'testing')
         i = i + 1
     message_channel2 = fun_message(data, user.token,
@@ -154,7 +154,7 @@ def test_channel_messages_bad():
     for i in range(0, 1010):
         long_message += str(i)
 
-    res1 = fun_send(data, user.token, channel['channel_id'], long_message)
+    res1 = send_message(data, user.token, channel['channel_id'], long_message)
     assert res1 == {"ValueError": "Message is more than 1000 characters"}
 
     res2 = fun_message(data, user.token, channel['channel_id'] - 123, 0)
@@ -165,7 +165,7 @@ def test_channel_messages_bad():
  number of messages in the channel'}
 
     # AccessError
-    res4 = fun_send(data, user.token, 10, 'testing')
+    res4 = send_message(data, user.token, 10, 'testing')
     assert res4 == {'AccessError': 'the authorised user has not joined the \
 channel they are trying to post to'}
 

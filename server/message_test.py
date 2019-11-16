@@ -6,7 +6,7 @@ Created on 2019/10/15
 @author: Eric
 """
 
-from server.message_function import fun_send, message_operation, react_unreact, pin_unpin
+from server.message_function import send_message, message_operation, react_unreact, pin_unpin
 from datetime import datetime
 from server.Data_class import Data
 from server.auth_functions import register
@@ -25,9 +25,9 @@ def generate_data():
     ch_join_leave(test_data, user_admin['token'], channel['channel_id'], 'join')
     ch_join_leave(test_data, user_in_channel['token'], channel['channel_id'], 'join')
 
-    fun_send(test_data, user_in_channel['token'], channel['channel_id'], 'test3')
-    fun_send(test_data, user_channel_owner['token'], channel['channel_id'], 'test2')
-    fun_send(test_data, user_admin['token'], channel['channel_id'], 'test')
+    send_message(test_data, user_in_channel['token'], channel['channel_id'], 'test3')
+    send_message(test_data, user_channel_owner['token'], channel['channel_id'], 'test2')
+    send_message(test_data, user_admin['token'], channel['channel_id'], 'test')
 
     return test_data
 
@@ -66,14 +66,14 @@ def test_send_late_bad():
     time_valid = datetime.now().timestamp() + 10
     time_invalid = datetime.now().timestamp() - 10
     # Invalid input
-    assert fun_send(data, user_admin.token, channel.channel_id, message_long, time_valid) == {
+    assert send_message(data, user_admin.token, channel.channel_id, message_long, time_valid) == {
            "ValueError": "Message is more than 1000 characters"
     }
-    assert fun_send(data, user_notin_channel.token, 1232, 'short_message', time_valid) == {
+    assert send_message(data, user_notin_channel.token, 1232, 'short_message', time_valid) == {
         'AccessError': 'the authorised user has not joined the channel they are trying to post to'
     }
 
-    assert fun_send(data, user_admin.token, channel.channel_id, 'short_message', time_invalid) == {
+    assert send_message(data, user_admin.token, channel.channel_id, 'short_message', time_invalid) == {
         'ValueError': 'Time sent is a time in the past'
     }
 
@@ -85,7 +85,7 @@ def test_send_late_good():
 
     time_valid = datetime.now().timestamp() + 10
 
-    output = fun_send(data, user_admin.token, channel.channel_id, 'short_message', time_valid)
+    output = send_message(data, user_admin.token, channel.channel_id, 'short_message', time_valid)
     assert data.get_message(output['message_id']) is not None
 
 
@@ -98,10 +98,10 @@ def test_send_bad():
     for i in range(0, 1010):
         message_long += "a"
 
-    assert fun_send(data, user_admin.token, channel.channel_id, message_long) == {
+    assert send_message(data, user_admin.token, channel.channel_id, message_long) == {
         "ValueError": "Message is more than 1000 characters"}
 
-    assert fun_send(data, user_notin_channel.token, 2, 'short_message') == {
+    assert send_message(data, user_notin_channel.token, 2, 'short_message') == {
         'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
 
 
@@ -110,7 +110,7 @@ def test_send_good():
     user_admin = getting_user(data)[0]
     channel = getting_channel(data)
 
-    output = fun_send(data, user_admin.token, channel.channel_id, 'short_message')
+    output = send_message(data, user_admin.token, channel.channel_id, 'short_message')
     assert data.get_message(output['message_id']) is not None
 
 
@@ -140,7 +140,7 @@ def test_remove_good():
     assert data.get_message(message_norm.message_id) is None
 
     # case 3
-    new_message = fun_send(data, user_in_channel.token, channel.channel_id, "new")
+    new_message = send_message(data, user_in_channel.token, channel.channel_id, "new")
     output = message_operation(data, user_in_channel.token, new_message["message_id"])
     assert output == {}
     assert data.get_message(new_message['message_id']) is None
@@ -177,7 +177,7 @@ def test_edit_good():
     assert message_norm.message == "owner_change"
 
     # case 3
-    new_message = fun_send(data, user_in_channel.token, channel.channel_id, "new")
+    new_message = send_message(data, user_in_channel.token, channel.channel_id, "new")
     output = message_operation(data, user_in_channel.token, new_message["message_id"], "norm user change")
     assert output == {}
     assert data.get_message(new_message['message_id']).message == "norm user change"

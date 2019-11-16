@@ -14,10 +14,27 @@ from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 from flask_mail import Mail, Message
 from server.Data_class import Data
-from server.message_function import fun_send, message_operation, react_unreact, \
-    pin_unpin
-from server.extra_function import message_search, permission_change, standup_message, standup_active, standup_begin
-from server.user_function import usersetemail, usersetname, usersethandle, getprofile, get_all_users
+from server.message_function import (
+    send_message,
+    message_operation,
+    react_unreact,
+    pin_unpin,
+)
+from server.extra_function import (
+    message_search,
+    permission_change,
+    standup_message,
+    standup_active,
+    standup_begin,
+)
+from server.user_function import (
+    usersetemail,
+    usersetname,
+    usersethandle,
+    getprofile,
+    get_all_users,
+    useruploadphoto,
+)
 from server.channel_function import (
     ch_create,
     ch_invite,
@@ -28,14 +45,8 @@ from server.channel_function import (
     fun_message,
 )
 from server.auth_functions import login, logout, register, reset_request, reset
-import re
-import urllib.request
-import requests
-from PIL import Image
 
-"""
-import functions from another file
-"""
+
 def defaultHandler(err):
     response = err.get_response()
     response.data = dumps({
@@ -83,78 +94,33 @@ class AccessError(HTTPException):
 # FIX ABOVE
 
 
+def catch_error_and_return(returned_value):
+    if 'ValueError' in returned_value:
+        raise ValueError(description=returned_value['ValueError'])
+    elif 'AccessError' in returned_value:
+        raise AccessError(description=returned_value['AccessError'])
+
+
 def save():
     global data
     with open('save.dat', 'wb') as FILE:
         pickle.dump(data, FILE, True)
 
 
-def getHttpStatusCode(url):
-    try:
-
-        request = requests.get(url)
-
-        httpStatusCode = request.status_code
-
-        return httpStatusCode
-
-    except requests.exceptions.HTTPError as e:
-
-        return e
-
-
-def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
-
-    wrongmessage = None
-
-    try:
-        status = getHttpStatusCode(img_url)
-
-        if status != 200:
-            wrongmessage = "img_url is returns an HTTP status other than 200."
-            return wrongmessage
-    except Exception as e:
-        print(e)
-        wrongmessage = "img_url is returns an HTTP status other than 200."
-        return wrongmessage
-        
-
-    user = data.get_user('token', token)
-    handle_str = user.handle_str
-
-    imagesource = '../static/' + handle_str + '.jpg'
-    urllib.request.urlretrieve(img_url, imagesource)
-
-    imageObject = Image.open(imagesource)
-
-    if imageObject.format != 'JPEG':
-        wrongmessage = "Image uploaded is not a JPG"
-        return wrongmessage
-
-    if x_start < 0 or x_start > imageObject.size[0] or x_end < 0 or x_end > imageObject.size[0] \
-            or y_start < 0 or y_start > imageObject.size[1] or y_end < 0 or y_end > imageObject.size[1] \
-            or x_start < x_end or y_start < y_end:
-        wrongmessage = "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."
-        return wrongmessage
-
-    cropped = imageObject.crop((x_start, y_start, x_end, y_end))
-    cropped.save(imagesource)
-
-    new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
-    user.set_photo(new_photo)
-    return wrongmessage
-    
-#decorator below
+# decorator below
 def unmarshall(function):
-    def wrapper(httpSrc, req: list=[]):
+    def wrapper(httpSrc, req=None):
+        if req is None:
+            req = []
         args = [httpSrc.get(r) for r in req]
-        return function *args
+        return function(args)
     return wrapper
+
 
 @unmarshall
 def do_get(item):
     return item
-#decorator above
+# decorator above
 
 
 @APP.route("/auth/login", methods=['POST'])
@@ -162,14 +128,10 @@ def auth_login():
 
     global data
 
-    #email = request.form.get('email')
-    #password = request.form.get('password')
-    
-    #email = do_get(request.form, ['email']) 
-    #password = do_get(request.form, ['password'])
     email, password = do_get(request.form, ['email', 'password'])
     
     result = login(data, email, password)
+    catch_error_and_return(result)
     save()
     return dumps(result)
 
@@ -178,10 +140,9 @@ def auth_login():
 def auth_logout():
     global data
 
-    #token = request.form.get('token')
     token = do_get(request.form, ['token'])
-    
     result = logout(data, token)
+    catch_error_and_return(result)
     save()
 
     return dumps(result)
@@ -191,14 +152,10 @@ def auth_logout():
 def auth_register():
     global data
 
-    #email = request.form.get('email')
-    #password = request.form.get('password')
-    #name_first = request.form.get('name_first')
-    #name_last = request.form.get('name_last')
-    
     email, password, name_first, name_last = do_get(request.form, ['email', 'password', 'name_first', 'name_last'])
 
     result = register(data, email, password, name_first, name_last)
+    catch_error_and_return(result)
     save()
     return dumps(result)
 
@@ -207,18 +164,16 @@ def auth_register():
 def auth_reset_request():
     global data
 
-    #email = request.form.get('email')
     email = do_get(request.form, ['email'])
     
-    code = reset_request(data, email)
-
+    result = reset_request(data, email)
+    catch_error_and_return(result)
     mail = Mail(APP)
-
     try:
         msg = Message("Password reset",
                       sender="ourteamie4@gmail.com",
                       recipients=[email])
-        msg.body = code
+        msg.body = result
         mail.send(msg)
     except Exception as e:
         return {'exception': str(e)}
@@ -231,12 +186,10 @@ def auth_reset_request():
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
 def auth_reset():
     global data
-    #reset_code = request.form.get('reset_code')
-    #new_password = request.form.get('new_password')
-    
     reset_code, new_password = do_get(request.form, ['reset_code', 'new_password'])
 
     result = reset(data, reset_code, new_password)
+    catch_error_and_return(result)
     save()
 
     return dumps(result)
@@ -246,34 +199,26 @@ def auth_reset():
 def channel_create():
     global data
 
-    token = request.form.get('token')
-    channel_name = request.form.get('name')
-    is_public = request.form.get('is_public')
+    token, channel_name, is_public = do_get(request.form, ['token', 'name', 'is_public'])
     if is_public == "true":
         is_public = True
     else:
         is_public = False
-    channel_id = ch_create(data, token, channel_name, is_public)
-    if 'ValueError' in channel_id:
-        raise ValueError(description=channel_id['ValueError'])
+    result = ch_create(data, token, channel_name, is_public)
+    catch_error_and_return(result)
 
     save()
 
-    return dumps(channel_id)
+    return dumps(result)
 
 
 @APP.route('/channel/invite', methods=['POST'])
 def channel_invite():
     global data
 
-    token = request.form.get('token')
-    u_id = int(request.form.get('u_id'))
-    channel_id = int(request.form.get('channel_id'))
-    result = ch_invite(data, token, u_id, channel_id)
-    if 'ValueError' in result:
-        raise ValueError(description=result['ValueError'])
-    elif 'AccessError' in result:
-        raise AccessError(description=result['AccessError'])
+    token, u_id, channel_id = do_get(request.form, ['token', 'u_id', 'channel_id'])
+    result = ch_invite(data, token, int(u_id), int(channel_id))
+    catch_error_and_return(result)
     save()
 
     return dumps(result)
@@ -283,242 +228,189 @@ def channel_invite():
 def channel_details():
     global data
 
-    token = request.args.get('token')
-    channel_id = int(request.args.get('channel_id'))
-    channel_detail = ch_details(data, token, channel_id)
-    if 'ValueError' in channel_detail:
-        raise ValueError(description=channel_detail['ValueError'])
-    elif 'AccessError' in channel_detail:
-        raise AccessError(description=channel_detail['AccessError'])
+    token, channel_id = do_get(request.args, ['token', 'channel_id'])
+    result = ch_details(data, token, int(channel_id))
+    catch_error_and_return(result)
     save()
 
-    return dumps(channel_detail)
+    return dumps(result)
 
 
 @APP.route('/channel/messages', methods=['GET'])
 def channel_message():
 
-    channel_id = int(request.args.get('channel_id'))
-    token = request.args.get('token')
-    start = int(request.args.get('start'))
-    messages = fun_message(data, token, channel_id, start)
-    if 'ValueError' in messages:
-        raise ValueError(description=messages['ValueError'])
-    elif 'AccessError' in messages:
-        raise AccessError(description=messages['AccessError'])
+    global data
+    channel_id, token, start = do_get(request.args, ['channel_id', 'token', 'start'])
+    result = fun_message(data, token, int(channel_id), int(start))
+    catch_error_and_return(result)
     save()
 
-    return dumps(messages)
+    return dumps(result)
 
 
 @APP.route('/message/sendlater', methods=['POST'])
 def message_send_later():
     global data
-    message = request.form.get('message')
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    time_create = int(float(request.form.get('time_sent')))
 
-    output = fun_send(data, token, channel_id, message, time_create)
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
+    message, token, channel_id, time_sent = do_get(request.form, ['message', 'token', 'channel_id', 'time_sent'])
+    result = send_message(data, token, int(channel_id), message, float(time_sent))
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/message/send', methods=['POST'])
 def message_send():
     global data
-    message = request.form.get('message')
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    output = fun_send(data, token, channel_id, message)
 
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
+    message, token, channel_id = do_get(request.form, ['message', 'token', 'channel_id'])
+    result = send_message(data, token, int(channel_id), message)
+
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/message/remove', methods=['DELETE'])
 def message_remove():
     global data
-    message_id = int(request.form.get('message_id'))
-    token = request.form.get('token')
-    output = message_operation(data, token, message_id)
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+
+    message_id, token = do_get(request.form, ['message_id', 'token'])
+    result = message_operation(data, token, int(message_id))
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/message/edit', methods=['POST', 'PUT'])
 def message_edit():
     global data
-    message_id = int(request.form.get('message_id'))
-    message = request.form.get('message')
-    token = request.form.get('token')
-    output = message_operation(data, token, message_id, message)
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+
+    message_id, message, token = do_get(request.form, ['message_id', 'message', 'token'])
+    result = message_operation(data, token, int(message_id), message)
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/message/react', methods=['POST'])
 def message_react():
     global data
-    message_id = int(request.form.get('message_id'))
-    react_id = int(request.form.get('react_id'))
-    token = request.form.get('token')
 
-    output = react_unreact(data, token, message_id, react_id, 'react')
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
+    message_id, react_id, token = do_get(request.form, ['message_id', 'react_id', 'token'])
+    result = react_unreact(data, token, int(message_id), int(react_id), 'react')
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/message/unreact', methods=['POST'])
 def message_unreact():
     global data
-    message_id = int(request.form.get('message_id'))
-    react_id = int(request.form.get('react_id'))
-    token = request.form.get('token')
-    output = react_unreact(data, token, message_id, react_id, 'unreact')
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
+
+    message_id, react_id, token = do_get(request.form, ['message_id', 'react_id', 'token'])
+    result = react_unreact(data, token, int(message_id), int(react_id), 'unreact')
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/message/pin', methods=['POST'])
 def message_pin():
     global data
 
-    message_id = int(request.form.get('message_id'))
-    token = request.form.get('token')
-    output = pin_unpin(data, token, message_id, 'pin')
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+    message_id, token = do_get(request.form, ['message_id', 'token'])
+    result = pin_unpin(data, token, int(message_id), 'pin')
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/message/unpin', methods=['POST'])
 def message_unpin():
     global data
 
-    message_id = int(request.form.get('message_id'))
-    token = request.form.get('token')
-    output = pin_unpin(data, token, message_id, 'unpin')
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+    message_id, token = do_get(request.form, ['message_id', 'token'])
+    result = pin_unpin(data, token, int(message_id), 'unpin')
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/channel/leave', methods=['POST'])
 def channel_leave():
     global data
 
-    channel_id = int(request.form.get('channel_id'))
-    token = request.form.get('token')
-    output = ch_join_leave(data, token, channel_id, 'leave')
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
+    channel_id, token = do_get(request.form, ['channel_id', 'token'])
+    result = ch_join_leave(data, token, int(channel_id), 'leave')
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/channel/join', methods=['POST'])
 def channel_join():
     global data
 
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    join = ch_join_leave(data, token, channel_id, 'join')
-    if 'ValueError' in join:
-        raise ValueError(description=join['ValueError'])
-    elif 'AccessError' in join:
-        raise AccessError(description=join['AccessError'])
+    channel_id, token = do_get(request.form, ['channel_id', 'token'])
+    result = ch_join_leave(data, token, int(channel_id), 'join')
+    catch_error_and_return(result)
     save()
 
-    return dumps(join)
+    return dumps(result)
 
 
 @APP.route('/channel/addowner', methods=['POST'])
 def channel_addowner():
     global data
 
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    u_id = int(request.form.get('u_id'))
-    addowner = ch_add_remove_owner(data, token, channel_id, u_id, 'add')
-    if 'ValueError' in addowner:
-        raise ValueError(description=addowner['ValueError'])
-    elif 'AccessError' in addowner:
-        raise AccessError(description=addowner['AccessError'])
+    channel_id, token, u_id = do_get(request.form, ['channel_id', 'token', 'u_id'])
+    result = ch_add_remove_owner(data, token, int(channel_id), int(u_id), 'add')
+    catch_error_and_return(result)
 
     save()
-    return dumps(addowner)
+    return dumps(result)
 
 
 @APP.route('/channel/removeowner', methods=['POST'])
 def channel_removeowner():
     global data
 
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    u_id = int(request.form.get('u_id'))
-    removeowner = ch_add_remove_owner(data, token, channel_id,
-                                      u_id, 'remove')
-    if 'ValueError' in removeowner:
-        raise ValueError(description=removeowner['ValueError'])
-    elif 'AccessError' in removeowner:
-        raise AccessError(description=removeowner['AccessError'])
+    channel_id, token, u_id = do_get(request.form, ['channel_id', 'token', 'u_id'])
+    result = ch_add_remove_owner(data, token, int(channel_id), int(u_id), 'remove')
+    catch_error_and_return(result)
     save()
 
-    return dumps(removeowner)
+    return dumps(result)
 
 
 @APP.route('/channels/list', methods=['GET'])
 def channel_list():
     global data
 
-    token = request.args.get('token')
-    print(token)
-    return dumps(ch_lists_listall(data, token, 'lists'))
+    token = do_get(request.args, ['token'])[0]
+    result = ch_lists_listall(data, token, 'lists')
+    catch_error_and_return(result)
+    return dumps(result)
 
 
 @APP.route('/channels/listall', methods=['GET'])
 def channel_listall():
     global data
 
-    token = request.args.get('token')
-    listall = ch_lists_listall(data, token, 'listall')
-    return dumps(listall)
+    token = do_get(request.args, ['token'])[0]
+    result = ch_lists_listall(data, token, 'listall')
+    catch_error_and_return(result)
+    return dumps(result)
 
 
 @APP.route('/static/<path:path>')
@@ -530,114 +422,86 @@ def send_js(path):
 def profile():
     global data
 
-    token = request.args.get('token')
-    u_id = request.args.get('u_id')
+    token, u_id = do_get(request.args, ['token', 'u_id'])
+    result = getprofile(data, token, int(u_id))
 
-    (value, Errormessage) = getprofile(data, token, u_id)
-
-    if value == None:
-        raise ValueError(description=Errormessage)
+    catch_error_and_return(result)
     save()
 
-    return dumps(value)
+    return dumps(result)
 
 
 @APP.route('/users/all', methods=['GET'])
 def users_all():
     global data
 
-    token = request.args.get('token')
-    (value, Errormessage) = get_all_users(data, token)
-    if value is None:
-        raise ValueError(description=Errormessage)
+    token = do_get(request.args, ['token'])[0]
+    result = get_all_users(data, token)
+    catch_error_and_return(result)
     save()
 
-    return dumps(value)
+    return dumps(result)
     
 
 @APP.route('/user/profile/setname', methods=['PUT'])
 def setname():
     global data
 
-    token = request.form.get('token')
-    name_first = request.form.get('name_first')
-    name_last = request.form.get('name_last')
+    token, name_first, name_last = do_get(request.form, ['token', 'name_first', 'name_last'])
+    result = usersetname(data, token, name_first, name_last)
 
-    (value, Errormessage) = usersetname(data, token, name_first, name_last)
-
-    if value == None:
-        raise ValueError(description=Errormessage)
+    catch_error_and_return(result)
     save()
-    return dumps({})
+    return dumps(result)
 
 
 @APP.route('/user/profile/setemail', methods=['PUT'])
 def setemail():
     global data
 
-    token = request.form.get('token')
-    email = request.form.get('email')
+    token, email = do_get(request.form, ['token', 'email'])
+    result = usersetemail(data, token, email)
 
-    (value, Errormessage) = usersetemail(data, token, email)
-
-    if value == None:
-        raise ValueError(description=Errormessage)
+    catch_error_and_return(result)
     save()
-
-    return dumps({})
+    return dumps(result)
 
 
 @APP.route('/user/profile/sethandle', methods=['PUT'])
 def sethandle():
     global data
 
-    token = request.form.get('token')
-    handle_str = request.form.get('handle_str')
+    token, handle_str = do_get(request.form, ['token', 'handle_str'])
+    result = usersethandle(data, token, handle_str)
 
-    (value, Errormessage) = usersethandle(data, token, handle_str)
-
-    if value == None:
-        raise ValueError(description=Errormessage)
+    catch_error_and_return(result)
     save()
-
-    return dumps({})
+    return dumps(result)
 
 
 @APP.route('/user/profile/uploadphoto', methods=['POST'])
 def uploadphoto():
-    # (note: this is not requried to be completed until iteration 3)
-    global data
-    
-    token = request.form.get('token')
-    img_url = request.form.get('img_url')
-    x_start = request.form.get('x_start')
-    y_start = request.form.get('y_start')
-    x_end = request.form.get('x_end')
-    y_end = request.form.get('y_end')
-    
-    wrongmesage = useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
-        
-    if wrongmesage != None:
-        raise ValueError(description=wrongmesage)
-    save()
-    
 
-    return dumps({})
+    global data
+
+    token, img_url, x_start, y_start, x_end, y_end  = do_get(request.form, ['token', 'img_url', 'x_start', 'y_start', 'x_end', 'y_end'])
+    result = useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
+
+    catch_error_and_return(result)
+    save()
+    return dumps(result)
 
 
 @APP.route('/search', methods=['GET'])
 def search():
     global data
-    query_str = request.args.get('query_str')
-    token = request.args.get('token')
-    output = message_search(data, token, query_str)
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+
+    token, query_str = do_get(request.args, ['token', 'query_str'])
+    result = message_search(data, token, query_str)
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/admin/userpermission/change', methods=['POST'])
@@ -645,64 +509,50 @@ def change_permission():
 
     global data
 
-    token = request.form.get('token')
-    u_id = request.form.get('u_id')
-    permission_id = int(request.form.get('permission_id'))
-    output = permission_change(data, token, u_id, permission_id)
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+    token, u_id, permission_id = do_get(request.form, ['token', 'u_id', 'permission_id'])
+    result = permission_change(data, token, u_id, int(permission_id))
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/standup/start', methods=['POST'])
 def standup_start():
     global data
 
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    length = int(request.form.get('length'))
-    output = standup_begin(data, token, channel_id, length)
+    token, channel_id, length = do_get(request.form, ['token', 'channel_id', 'length'])
+    result = standup_begin(data, token, int(channel_id), int(length))
 
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 @APP.route('/standup/active', methods=['GET'])
 def standup_activate():
     global data
 
-    token = request.args.get('token')
-    test = request.args.get('channel_id')
-    channel_id = int(test)
-    output = standup_active(data, token, channel_id)
-    return dumps(output)
+    token, channel_id = do_get(request.args, ['token', 'channel_id'])
+    result = standup_active(data, token, int(channel_id))
+    catch_error_and_return(result)
+    save()
+
+    return dumps(result)
 
 
 @APP.route('/standup/send', methods=['POST'])
 def standup_send():
+    global  data
 
-    token = request.form.get('token')
-    channel_id = int(request.form.get('channel_id'))
-    message = request.form.get('message')
+    token, channel_id, message = do_get(request.form, ['token', 'channel_id', 'message'])
+    result = standup_message(data, token, int(channel_id), message)
 
-    output = standup_message(data, token, channel_id, message)
-
-    if 'ValueError' in output:
-        raise ValueError(description=output['ValueError'])
-    if 'AccessError' in output:
-        raise AccessError(description=output['AccessError'])
+    catch_error_and_return(result)
     save()
 
-    return dumps(output)
+    return dumps(result)
 
 
 if __name__ == '__main__':

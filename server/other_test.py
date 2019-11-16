@@ -9,8 +9,8 @@ Created on 2019/10/15
 from server.extra_function import message_search, permission_change, standup_message, standup_active, standup_begin
 from server.auth_functions import register
 from server.channel_function import ch_create, ch_join_leave
-from server.message_function import fun_send, react_unreact
-from datetime import datetime, timedelta, timezone
+from server.message_function import send_message, react_unreact
+from datetime import datetime
 from server.Data_class import Data
 
 
@@ -21,8 +21,8 @@ def get_data():
     register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last')
     channel = ch_create(test_data, user_chowner['token'], 'test_channel', True)
     ch_join_leave(test_data, user_inch['token'], channel['channel_id'], 'join')
-    message_inch = fun_send(test_data, user_inch['token'], channel['channel_id'], 'test2')
-    message_chowner = fun_send(test_data, user_chowner['token'], channel['channel_id'], 'test')
+    message_inch = send_message(test_data, user_inch['token'], channel['channel_id'], 'test2')
+    message_chowner = send_message(test_data, user_chowner['token'], channel['channel_id'], 'test')
     react_unreact(test_data, user_inch['token'], message_inch['message_id'], 1, 'react')
     react_unreact(test_data, user_inch['token'], message_chowner['message_id'], 1, 'react')
     ch_create(test_data, user_chowner['token'], 'test_channel2', True)
@@ -30,7 +30,6 @@ def get_data():
 
 
 def test_standup_start():
-
     data = get_data()
     user = data.users_group[0]
     user_notch = data.users_group[2]
@@ -55,6 +54,21 @@ def test_standup_start():
     }
 
 
+def test_standup_active():
+    data = get_data()
+    user = data.users_group[0]
+    user_notch = data.users_group[2]
+    channel = data.channels_group[0]
+
+    assert standup_active(data, user.token, channel.channel_id)['is_activate'] == False
+
+    # start a standup
+    length = 10
+    output = standup_begin(data, user.token, channel.channel_id, length)
+    assert standup_active(data, user.token, channel.channel_id)['is_activate'] == True
+    assert standup_active(data, user.token, channel.channel_id)['time_finish'] == output['time_finish']
+
+
 def test_standup_send():
     data = get_data()
     user = data.users_group[0]
@@ -68,7 +82,7 @@ def test_standup_send():
 
     # Test in the environment of standup has started
     standup_begin(data, user.token, channel.channel_id, length)
-    
+
     # Testing invalid input
     assert standup_message(data, user.token, -123, 'message_short') == {
         'ValueError': 'Channel ID is not a valid channel'
@@ -93,11 +107,11 @@ def test_standup_send():
 def test_search():
     data = get_data()
     user = data.users_group[0]
-    
+
     # No message match
     output = message_search(data, user.token, "No message match")
     assert output['messages'] == []
-    
+
     # One message match
     output = message_search(data, user.token, "test")
     assert len(output['messages']) == 1
@@ -105,12 +119,10 @@ def test_search():
 
 
 def test_userpermission_change():
-
     data = get_data()
     user = data.users_group[0]
     user_norm1 = data.users_group[2]
     user_norm2 = data.users_group[1]
-    channel = data.channels_group[0]
 
     out = permission_change(data, user.token, user_norm1.u_id, 2)
     assert user_norm1.permission_id == 2

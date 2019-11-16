@@ -6,7 +6,7 @@ Created on 2019/10/15
 @author: Yimeng
 """
 
-from server.user_function import usersetemail, usersetname, usersethandle, getprofile
+from server.user_function import usersetemail, usersetname, usersethandle, getprofile, useruploadphoto
 from server.auth_functions import register
 from server.Data_class import Data
 
@@ -22,21 +22,31 @@ def test_profile():
     auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
 
     # Invalid input
-    value, wrongmessage = getprofile(data, None, None)
-    assert wrongmessage == "Invalid token or u_id"
+    result = getprofile(data, None, None)
+    assert result == {'ValueError': "token not valid"}
 
-    value, wrongmessage = getprofile(data, 'not_valid_token', 'not_valid_u_id')
-    assert wrongmessage == "User with u_id is not a valid user"
+    result = getprofile(data, auth_key['token'], 'not_valid_u_id')
+    assert result == {'ValueError': "User with u_id is not a valid user"}
 
     # Valid input
-    value, wrongmessage = getprofile(data, auth_key["token"], auth_key["u_id"])
-    assert value["email"] == 'email@gmail.com'
-    assert value["name_first"] == 'name_first'
-    assert value["name_last"] == 'name_last'
+    result = getprofile(data, auth_key["token"], auth_key["u_id"])
+    assert result["email"] == 'email@gmail.com'
+    assert result["name_first"] == 'name_first'
+    assert result["name_last"] == 'name_last'
     # Assume the default handle is the first_namelast_name
-    assert value["handle_str"] == 'name_firstname_last'
+    assert result["handle_str"] == 'name_firstname_last'
 
-#test setname
+
+def test_get_all_user():
+    global data
+    user_list = data.get_all_user_detail()
+    assert len(user_list) == 1
+    assert user_list[0]['name_first'] == 'name_first'
+    assert user_list[0]['name_last'] == 'name_last'
+    assert user_list[0]['email'] == 'email@gmail.com'
+
+
+# test setname
 def test_setname():
     global data
     data = Data()
@@ -51,25 +61,26 @@ def test_setname():
     last_long = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
     # Invalid input
-    value, wrongmessage = usersetname(data, None, first_long, last_short)
-    assert wrongmessage == "token doesn't exit"
+    result = usersetname(data, None, first_long, last_short)
+    assert result == {'ValueError': "token not valid"}
 
-    value, wrongmessage = usersetname(data, auth_key["token"], first_long, last_short)
-    assert wrongmessage == 'name_first is not between 1 and 50 characters in length'
+    result = usersetname(data, auth_key["token"], first_long, last_short)
+    assert result == {'ValueError': 'name_first is not between 1 and 50 characters in length'}
 
-    value, wrongmessage = usersetname(data, auth_key["token"], first_short, last_long)
-    assert wrongmessage == 'name_last is not between 1 and 50 characters in length'
+    result = usersetname(data, auth_key["token"], first_short, last_long)
+    assert result == {'ValueError': 'name_last is not between 1 and 50 characters in length'}
 
-    value, wrongmessage = usersetname(data, 'token_not_registed', first_short, last_short)
-    assert wrongmessage == 'User with token is not a valid user'
+    result = usersetname(data, 'token_not_registed', first_short, last_short)
+    assert result == {'ValueError': 'User with token is not a valid user'}
 
     # Valid input
     usersetname(data, auth_key["token"], first_short, last_short)
-    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
-    assert profile["name_first"] == first_short
-    assert profile["name_last"] == last_short
+    result = getprofile(data, auth_key["token"], auth_key["u_id"])
+    assert result["name_first"] == first_short
+    assert result["name_last"] == last_short
 
-#test setemail
+
+# test setemail
 def test_setemail():
     global data
     data = Data()
@@ -81,22 +92,22 @@ def test_setemail():
     email_used_already = 'email@gmail.com'
 
     # Invalid input
-    value, wrongmessage = usersetemail(data, None, invalid_email)
-    assert wrongmessage == "token doesn't exit"
+    result = usersetemail(data, None, invalid_email)
+    assert result == {'ValueError': "token not valid"}
 
-    value, wrongmessage = usersetemail(data, auth_key["token"], invalid_email)
-    assert wrongmessage == 'Email entered is not a valid email'
+    result = usersetemail(data, auth_key["token"], invalid_email)
+    assert result == {'ValueError': 'Email entered is not a valid email'}
 
-    value, wrongmessage = usersetemail(data, auth_key["token"], email_used_already)
-    assert wrongmessage == 'Email address is already being used by another user'
+    result = usersetemail(data, auth_key["token"], email_used_already)
+    assert result == {'ValueError': 'Email address is already being used by another user'}
 
-    value, wrongmessage = usersetemail(data, 'token_not_registed', '123@gmail.com')
-    assert wrongmessage == 'User with token is not a valid user'
+    result = usersetemail(data, 'token_not_registed', '123@gmail.com')
+    assert result == {'ValueError': 'User with token is not a valid user'}
 
     # Valid input
     usersetemail(data, auth_key["token"], 'newemail@gmail.com')
-    profile, error = getprofile(data, auth_key["token"], auth_key["u_id"])
-    assert profile["email"] == 'newemail@gmail.com'
+    result = getprofile(data, auth_key["token"], auth_key["u_id"])
+    assert result["email"] == 'newemail@gmail.com'
 
 
 # test sethanle
@@ -114,40 +125,41 @@ def test_sethandle():
 
     # Invalid input
     # handle_str is no more than 20 charaters
-    value, wrongmessage = usersethandle(data, None, handle_normal)
-    assert wrongmessage == "token doesn't exit"
+    result = usersethandle(data, None, handle_normal)
+    assert result == {'ValueError': "token not valid"}
 
-    value, wrongmessage = usersethandle(data, user["token"], handle_long)
-    assert wrongmessage == "handle_str must be between 3 and 20"
+    result = usersethandle(data, user["token"], handle_long)
+    assert result == {'ValueError': "handle_str must be between 3 and 20"}
 
-    value, wrongmessage = usersethandle(data, user["token"], handle_used)
-    assert wrongmessage == "handle is already used by another user"
+    result = usersethandle(data, user["token"], handle_used)
+    assert result == {'ValueError': "handle is already used by another user"}
 
-    value, wrongmessage = usersethandle(data, 'token_not_registed', handle_normal)
-    assert wrongmessage == "User with token is not a valid user"
+    result = usersethandle(data, 'token_not_registed', handle_normal)
+    assert result == {'ValueError': "User with token is not a valid user"}
 
     # Valid input
     usersethandle(data, user["token"], 'testing')
-    profile, error = getprofile(data, user["token"], user["u_id"])
-    assert profile["handle_str"] == 'testing'
-'''
+    result = getprofile(data, user["token"], user["u_id"])
+    assert result["handle_str"] == 'testing'
+
+"""
 def test_useruploadphoto():
     global data
     data = Data()
 
     user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
     # Invalid input
-    assert useruploadphoto(data, user['token'], 'https://webpagecannotopen.com/', 20, 20, 500, 377) == "img_url is returns an HTTP status other than 200."
+    assert useruploadphoto(data, user['token'], 'https://webpagecannotopen.com/', 20, 20, 500, 377) == {'ValueError': "img_url is returns an HTTP status other than 200."}
 
-    #assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
-     #-1, -1, 500, 377) == "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."
+    assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
+     -1, -1, 500, 377) == {'ValueError': "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."}
 
-    #assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
-     #0, 0, 9999, 9999) == "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."
+    assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
+     0, 0, 9999, 9999) == {'ValueError': "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."}
 
-    #assert useruploadphoto(data, user['token'], 'https://www.google.com.hk/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png', \
-    # 20, 20, 50, 37) == "Image uploaded is not a JPG"
+    assert useruploadphoto(data, user['token'], 'https://www.google.com.hk/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png', \
+     20, 20, 50, 37) == {'ValueError': "Image uploaded is not a JPG"}
 
     # Valid input
-    #useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377)
- '''   
+    assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377) == {}
+"""

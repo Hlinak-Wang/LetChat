@@ -11,7 +11,7 @@ from server.message_class import Message
 
 
 # Send a message from authorised_user to the channel specified by channel_id
-def fun_send(data, token, channel_id, message, time_create=0):
+def send_message(data, token, channel_id, message, time_create=0):
     """ Send message """
     time_now = datetime.now().timestamp()
     if time_create == 0:
