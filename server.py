@@ -549,6 +549,19 @@ def profile():
     return dumps(value)
 
 
+@APP.route('/users/all', methods=['GET'])
+def users_all():
+    global data
+
+    token = request.args.get('token')
+    (value, Errormessage) = get_all_users(data, token)
+    if value is None:
+        raise ValueError(description=Errormessage)
+    save()
+
+    return dumps(value)
+    
+
 @APP.route('/user/profile/setname', methods=['PUT'])
 def setname():
     global data
