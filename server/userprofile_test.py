@@ -142,7 +142,6 @@ def test_sethandle():
     result = getprofile(data, user["token"], user["u_id"])
     assert result["handle_str"] == 'testing'
 
-
 def test_useruploadphoto():
     global data
     data = Data()
@@ -152,7 +151,7 @@ def test_useruploadphoto():
     assert useruploadphoto(data, user['token'], 'https://webpagecannotopen.com/', 20, 20, 500, 377) == {'ValueError': "img_url is returns an HTTP status other than 200."}
 
     assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
-     -1, -1, 500, 377) == {'ValueError': global data
+     -1, -1, 500, 377) == {'ValueError': "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."}
 
     assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', \
      0, 0, 9999, 9999) == {'ValueError': "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."}
@@ -164,4 +163,3 @@ def test_useruploadphoto():
     assert useruploadphoto(data, user['token'], 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3541279145,3369708817&fm=26&gp=0.jpg', 20, 20, 500, 377) == {}
 
     assert useruploadphoto(data, user['token'], 'https://img-bbs.csdn.net/upload/201712/28/1514449450_50879.jpg', 20, 20, 500, 377) == {}
-    
