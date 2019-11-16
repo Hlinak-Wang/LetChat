@@ -5,11 +5,8 @@ Created on 2019/10/15
 
 @author: Yimeng
 """
-import sys
 import re
-import urllib.request
-import requests
-from PIL import Image
+
 
 '''
 def getHttpStatusCode(url):

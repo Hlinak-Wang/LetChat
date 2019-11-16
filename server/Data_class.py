@@ -45,7 +45,8 @@ class Data:
                 value_looking = user.handle_str
             elif key == 'reset_code':
                 value_looking = user.reset_code
-
+            elif key == 'email':
+                value_looking = user.email
             else:
                 return None
             if value_looking == value:
