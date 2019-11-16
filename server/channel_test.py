@@ -11,13 +11,10 @@ from server.message_function import fun_send
 from server.auth_functions import register
 from server.extra_function import (
     standup_message,
-    standup_active,
     standup_begin
 )
 
 from server.Data_class import Data
-
-import time
 
 
 # initial state of testing
@@ -143,10 +140,8 @@ def test_channel_messages_ok():
                                    channel['channel_id'], 0)
     assert message_channel2['start'] == 0
     assert message_channel2['end'] == 50
-    #fun_send(data, user.token, channel['channel_id'], 'again')
-    #message_channel2 = fun_message(data, user.token,
-                                   #channel['channel_id'], 0)
-    #assert message_channel2['end'] == 50
+
+
 # Testing invalid input for channel_message
 def test_channel_messages_bad():
     data = getdata()
