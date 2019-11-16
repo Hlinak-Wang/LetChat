@@ -111,12 +111,14 @@ class Data:
 
     def get_channel_message(self, channel_id, u_id, start):
         channel_message = []
+        counter = 0
         end = start
-        for message in self.messages_group:
+        for message in self.messages_group[start:]:
             if message.channel_id == channel_id:
                 channel_message.append(message.get_message_info(u_id))
-                end += 1
-            if end >= start + 50:
+                counter += 1
+            end += 1
+            if counter >= 3:
                 return {
                     'messages': channel_message,
                     'start': start,
@@ -129,8 +131,10 @@ class Data:
             'end': -1
         }
 
-    def count_message(self):
-        count = 0
-        for message in self.messages_group:
-            count = count + 1
-        return count
+    def get_earliest_index(self, channel_id):
+        total_message = len(self.messages_group)
+        for index in reversed(range(total_message)):
+            message = self.messages_group[index]
+            if message.channel_id == channel_id:
+                return index
+        return 0
