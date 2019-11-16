@@ -40,7 +40,7 @@ def permission_change(data, token, u_id, permission_id):
     return {}
 
 
-def fun_standup_star(data, token, channel_id):
+def standup_begin(data, token, channel_id):
     user = data.get_user('token', token)
     channel = data.get_channel(channel_id)
     time_start = datetime.now().replace(tzinfo=timezone.utc).timestamp()
@@ -61,7 +61,7 @@ def fun_standup_star(data, token, channel_id):
     }
 
 
-def fun_standup_activate(data, token, channel_id):
+def standup_active(data, token, channel_id):
 
     channel = data.get_channel(channel_id)
     time_now = datetime.now().replace(tzinfo=timezone.utc).timestamp()
@@ -76,7 +76,7 @@ def fun_standup_activate(data, token, channel_id):
     }
 
 
-def fun_standup_send(data, token, channel_id, message):
+def standup_message(data, token, channel_id, message):
     user = data.get_user('token', token)
     channel = data.get_channel(channel_id)
     time_now = datetime.now().replace(tzinfo=timezone.utc).timestamp()
