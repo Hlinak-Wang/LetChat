@@ -9,11 +9,8 @@ from server.channel_function import (
 )
 from server.message_function import fun_send
 from server.auth_functions import register
-from server.extra_function import (
-    fun_standup_star,
-    fun_standup_send,
-    fun_standup_activate
-)
+from server.extra_function import standup_message, standup_active, standup_begin
+
 
 from server.Data_class import Data
 
