@@ -133,19 +133,22 @@ def test_channel_messages_ok():
     messages1 = message_channel1['messages']
     assert messages1[1]['message'] == 'test'
     assert messages1[1]['u_id'] == user.u_id
-
-    for i in range(0, 25):
+    standup_begin(data, user.token, channel['channel_id'], 10)
+    for i in range(0, 24):
         fun_send(data, user.token, channel['channel_id'], 'another test')
         fun_send(data, user.token, channel['channel_id'], 'again')
+        standup_message(data, user.token, channel['channel_id'], 'testing')
         i = i + 1
-    standup_begin(data, user.token, channel['channel_id'], 10)
-    standup_message(data, user.token, channel['channel_id'], 'testing')
+    time.sleep(10)
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
+    
     assert message_channel2['start'] == 0
     assert message_channel2['end'] == 50
-
-
+    #fun_send(data, user.token, channel['channel_id'], 'again')
+    #message_channel2 = fun_message(data, user.token,
+                                   #channel['channel_id'], 0)
+    #assert message_channel2['end'] == 50
 # Testing invalid input for channel_message
 def test_channel_messages_bad():
     data = getdata()
