@@ -139,6 +139,7 @@ def test_channel_messages_ok():
     fun_standup_star(data, user.token, channel['channel_id'])
     fun_standup_send(data, user.token, channel['channel_id'], 'testing')
     fun_standup_send(data, user.token, channel['channel_id'], 'testing again')
+    time.sleep(900)
     message_channel2 = fun_message(data, user.token,
                                    channel['channel_id'], 0)
     assert message_channel2['end'] == 50
