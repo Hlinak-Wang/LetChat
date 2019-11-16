@@ -129,12 +129,14 @@ channel'}
             return {'ValueError': 'User is already an owner of the channel'}
 
         channel.add_owner(u_id)
+
     elif action == 'remove':
         # check the remove user is owner or not
         if u_id not in channel.owner_list:
             return {'ValueError': 'User is not an owner of the channel'}
 
         channel.remove_owner(u_id)
+
     return {}
 
 

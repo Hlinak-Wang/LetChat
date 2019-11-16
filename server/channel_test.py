@@ -291,7 +291,7 @@ def test_channel_removeowner_ok():
     ch_join_leave(data, user1.token, channel['channel_id'], 'join')
 
     ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
-                        user1.u_id, 'remove')
+                        user1.u_id, 'add')
     ch_add_remove_owner(data, user_admin.token, channel['channel_id'],
                         user1.u_id, 'remove')
 
