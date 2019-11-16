@@ -118,7 +118,7 @@ class Data:
                 channel_message.append(message.get_message_info(u_id))
                 counter += 1
             end += 1
-            if counter >= 3:
+            if counter >= 50:
                 return {
                     'messages': channel_message,
                     'start': start,
