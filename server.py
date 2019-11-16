@@ -17,7 +17,7 @@ from server.Data_class import Data
 from server.message_function import fun_send, message_operation, react_unreact, \
     pin_unpin
 from server.extra_function import message_search, permission_change, fun_standup_send, fun_standup_activate, fun_standup_star
-from server.user_function import usersetemail, usersetname, usersethandle, getprofile, useruploadphoto
+from server.user_function import usersetemail, usersetname, usersethandle, getprofile
 from server.channel_function import (
     ch_create,
     ch_invite,
@@ -28,6 +28,10 @@ from server.channel_function import (
     fun_message,
 )
 from server.auth_functions import login, logout, register, reset_request, reset
+import re
+import urllib.request
+import requests
+from PIL import Image
 
 """
 import functions from another file
@@ -84,6 +88,63 @@ def save():
     with open('save.dat', 'wb') as FILE:
         pickle.dump(data, FILE, True)
 
+
+def getHttpStatusCode(url):
+    try:
+
+        request = requests.get(url)
+
+        httpStatusCode = request.status_code
+
+        return httpStatusCode
+
+    except requests.exceptions.HTTPError as e:
+
+        return e
+
+
+def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
+
+    wrongmessage = None
+
+    try:
+        status = getHttpStatusCode(img_url)
+
+        if status != 200:
+            wrongmessage = "img_url is returns an HTTP status other than 200."
+            return wrongmessage
+    except Exception as e:
+        print(e)
+        wrongmessage = "img_url is returns an HTTP status other than 200."
+        return wrongmessage
+        
+
+    user = data.get_user('token', token)
+    handle_str = user.handle_str
+
+    imagesource = '../static/' + handle_str + '.jpg'
+    urllib.request.urlretrieve(img_url, imagesource)
+
+    imageObject = Image.open(imagesource)
+
+    if imageObject.format != 'JPEG':
+        wrongmessage = "Image uploaded is not a JPG"
+        return wrongmessage
+
+    if x_start < 0 or x_start > imageObject.size[0] or x_end < 0 or x_end > imageObject.size[0] \
+            or y_start < 0 or y_start > imageObject.size[1] or y_end < 0 or y_end > imageObject.size[1] \
+            or x_start < x_end or y_start < y_end:
+        wrongmessage = "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."
+        return wrongmessage
+
+    cropped = imageObject.crop((x_start, y_start, x_end, y_end))
+    cropped.save(imagesource)
+
+    new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
+    user.set_photo(new_photo)
+    return wrongmessage
+    
+    
 """
 def send_message_buffer():
     global data
@@ -548,7 +609,13 @@ def uploadphoto():
     x_end = request.form.get('x_end')
     y_end = request.form.get('y_end')
     
-    useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
+    wrongmesage = useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
+        
+    if wrongmesage != None:
+        raise ValueError(description=wrongmesage)
+    save()
+    
+
     return dumps({})
 
 

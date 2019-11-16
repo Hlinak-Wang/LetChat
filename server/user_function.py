@@ -11,7 +11,7 @@ import urllib.request
 import requests
 from PIL import Image
 
-
+'''
 def getHttpStatusCode(url):
     try:
 
@@ -25,7 +25,7 @@ def getHttpStatusCode(url):
 
         return e
 
-
+'''
 # Make a regular expression
 
 # Define a function for
@@ -156,7 +156,7 @@ def usersethandle(data, token, handle_str):
 
     return value, wrongmessage
 
-
+'''
 def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
 
     wrongmessage = None
@@ -197,3 +197,4 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     new_photo = 'http://127.0.0.1:5555/static/' + handle_str + '.jpg'
     user.set_photo(new_photo)
     return wrongmessage
+'''
