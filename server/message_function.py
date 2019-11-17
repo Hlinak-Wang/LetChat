@@ -6,13 +6,31 @@ Created on 2019/10/15
 @author: Eric
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from server.message_class import Message
 
 
+def authorise(function):
+    def wrapper(*args):
+        if len(args) >= 2:
+            data = args[0]
+            token = args[1]
+            user = data.get_user('token', token)
+            if user is not None:
+                new_args = list(args)
+                new_args[1] = user
+                args = tuple(new_args)
+                return function(*args)
+            else:
+                return {'ValueError': 'token not valid'}
+
+    return wrapper
+
+
 # Send a message from authorised_user to the channel specified by channel_id
-def send_message(data, token, channel_id, message, time_create=0):
-    """ Send message """
+@authorise
+def send_message(data, user, channel_id, message, time_create=0):
+
     time_now = datetime.now().timestamp()
     if time_create == 0:
         time_create = time_now
@@ -20,7 +38,6 @@ def send_message(data, token, channel_id, message, time_create=0):
     if len(message) > 1000:
         return {"ValueError": "Message is more than 1000 characters"}
 
-    user = data.get_user('token', token)
     channel = data.get_channel(channel_id)
 
     if channel is None or user.u_id not in channel.user_list:
@@ -34,10 +51,10 @@ def send_message(data, token, channel_id, message, time_create=0):
     return {'message_id': new_message.message_id}
 
 
-# Given a message, update it's text with new text
-def message_operation(data, token, message_id, message_edit=""):
+# remove or edit a message
+@authorise
+def message_operation(data, user, message_id, message_edit=""):
 
-    user = data.get_user('token', token)
     message = data.get_message(message_id)
     if message is None:
         return {'ValueError': 'Message (based on ID) no longer exists'}
@@ -63,10 +80,9 @@ def message_operation(data, token, message_id, message_edit=""):
     return {}
 
 
-# Given a message within a channel the authorised user is part of, add a "react" to that particular message
-def react_unreact(data, token, message_id, react_id, action):
+@authorise
+def react_unreact(data, user, message_id, react_id, action):
 
-    user = data.get_user('token', token)
     message = data.get_message(message_id)
     if message is None:
         return {'ValueError': 'Message (based on ID) no longer exists'}
@@ -87,10 +103,9 @@ def react_unreact(data, token, message_id, react_id, action):
     return {}
 
 
-# Given a message within a channel, mark it as "pinned" to be given special display treatment by the frontend
-def pin_unpin(data, token, message_id, action):
+@authorise
+def pin_unpin(data, user, message_id, action):
 
-    user = data.get_user('token', token)
     message = data.get_message(message_id)
     if message is None:
         return {'ValueError': 'message_id is not a valid message'}

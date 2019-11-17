@@ -484,7 +484,7 @@ def uploadphoto():
 
     global data
 
-    token, img_url, x_start, y_start, x_end, y_end  = do_get(request.form, ['token', 'img_url', 'x_start', 'y_start', 'x_end', 'y_end'])
+    token, img_url, x_start, y_start, x_end, y_end = do_get(request.form, ['token', 'img_url', 'x_start', 'y_start', 'x_end', 'y_end'])
     print(token, img_url, x_start, x_end, y_start, y_end)
     result = useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
 

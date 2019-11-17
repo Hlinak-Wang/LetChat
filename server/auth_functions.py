@@ -10,7 +10,6 @@ import re
 import hashlib
 import jwt
 from datetime import datetime
-from server.Data_class import Data
 from server.user_class import User
 
 # HELPER FUNCTIONS BELOW
@@ -23,10 +22,12 @@ def check_valid_email(email):
         return {'ValueError': "This email is not valid"}
     return {}
 
+
 def check_valid_password(password):
     if len(password) < 6:
         return {'ValueError': "This password is too short"}
     return {}
+
 
 def check_name(name_first, name_last):
     if (len(name_first) < 1) or (len(name_last) < 1):
@@ -35,6 +36,7 @@ def check_name(name_first, name_last):
         return {'ValueError': "First name or last name too long"}
 
     return {}
+
 
 def generateToken(email):
     payload = {
@@ -56,6 +58,7 @@ def generate_handle_str(data, first, last):
     return handle_str
 
 # HELPER FUNCTIONS ABOVE
+
 
 def login(data, email, password):
     email_check = check_valid_email(email)
