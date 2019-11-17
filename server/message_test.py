@@ -6,12 +6,7 @@ Created on 2019/10/15
 @author: Eric
 """
 
-from server.message_function import (
-        send_message,
-        message_operation,
-        react_unreact,
-        pin_unpin
-)
+from server.message_function import send_message, message_operation, react_unreact, pin_unpin
 from datetime import datetime
 from server.Data_class import Data
 from server.auth_functions import register
@@ -24,7 +19,7 @@ def generate_data():
     user_admin = register(test_data, 'test1@test.com', 'password',
                           'name_first1', 'name_last', 'http://127.0.0.1:5555/')
     user_channel_owner = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last', 'http://127.0.0.1:5555/')
-    user_in_channel = register(test_data, 'test4@test.com', 'password','name_first4', 'name_last', 'http://127.0.0.1:5555/')
+    user_in_channel = register(test_data, 'test4@test.com', 'password', 'name_first4', 'name_last', 'http://127.0.0.1:5555/')
     user_notin_channel = register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last', 'http://127.0.0.1:5555/')
 
     channel = ch_create(test_data, user_channel_owner['token'], 'test_channel',
@@ -99,7 +94,8 @@ def test_send_late_good():
 
     output = send_message(data, user_admin.token, channel.channel_id,
                           'short_message', time_valid)
-    assert data.get_message(output['message_id']) is not None
+    assert data.get_element('messages_group', 'message_id',
+                            output['message_id']) is not None
 
 
 def test_send_bad():
@@ -115,8 +111,8 @@ def test_send_bad():
         "ValueError": "Message is more than 1000 characters"}
 
     assert send_message(data, user_notin_channel.token, 2, 'short_message') == {
-        'AccessError': 'the authorised user has not joined the channel they \
-are trying to post to'}
+        'AccessError': 'the authorised user has not joined the channel they\
+ are trying to post to'}
 
 
 def test_send_good():
@@ -126,7 +122,8 @@ def test_send_good():
 
     output = send_message(data, user_admin.token, channel.channel_id,
                           'short_message')
-    assert data.get_message(output['message_id']) is not None
+    assert data.get_element('messages_group', 'message_id',
+                            output['message_id']) is not None
 
 
 def test_remove_bad():
@@ -148,12 +145,14 @@ def test_remove_good():
     output = message_operation(data, user_admin.token,
                                message_admin.message_id)
     assert output == {}
-    assert data.get_message(message_admin.message_id) is None
+    assert data.get_element('messages_group', 'message_id',
+                            message_admin.message_id) is None
 
     # case 2
     output = message_operation(data, user_owner.token, message_norm.message_id)
     assert output == {}
-    assert data.get_message(message_norm.message_id) is None
+    assert data.get_element('messages_group', 'message_id',
+                            message_norm.message_id) is None
 
     # case 3
     new_message = send_message(data, user_in_channel.token, channel.channel_id,
@@ -161,7 +160,8 @@ def test_remove_good():
     output = message_operation(data, user_in_channel.token,
                                new_message["message_id"])
     assert output == {}
-    assert data.get_message(new_message['message_id']) is None
+    assert data.get_element('messages_group', 'message_id',
+                            new_message['message_id']) is None
 
 
 def test_edit_bad():
@@ -202,13 +202,14 @@ def test_edit_good():
     output = message_operation(data, user_in_channel.token,
                                new_message["message_id"], "norm user change")
     assert output == {}
-    assert data.get_message(new_message['message_id']).message == "norm user change"
+    assert data.get_element('messages_group', 'message_id',
+                            new_message['message_id']).message == "norm user change"
 
 
 def test_react_bad():
     data = generate_data()
     user_admin = getting_user(data)[0]
-    message_admin = getting_message(data)[0]
+    message_admin= getting_message(data)[0]
 
     assert react_unreact(data, user_admin.token, 100, 1, 'react') == {'ValueError': 'Message (based on ID) no longer exists'}
 
@@ -250,7 +251,8 @@ def test_unreact_bad():
 
     assert react_unreact(data, user_admin.token, 100, 1, 'unreact') == {'ValueError': 'Message (based on ID) no longer exists'}
 
-    assert react_unreact(data, user_admin.token, message_admin.message_id, 100, 'unreact') == {
+    assert react_unreact(data, user_admin.token, message_admin.message_id, 100,
+                         'unreact') == {
         'ValueError': 'react_id is not a valid React ID'}
 
 
@@ -282,7 +284,8 @@ def test_unreact_good():
     assert react_unreact(data, user_owner.token, message_admin.message_id, 1,
                          'unreact') == {'ValueError': 'user has not reacted'}
     assert react_unreact(data, user_in_channel.token, message_admin.message_id,
-                         1, 'unreact') == {'ValueError': 'user has not reacted'}
+                         1, 'unreact') == {'ValueError': 'user has not \
+reacted'}
 
 
 def test_pin_bad():
@@ -291,7 +294,8 @@ def test_pin_bad():
     message_admin = getting_message(data)[0]
 
     # Invalid input
-    assert pin_unpin(data, user_admin.token, 100, 'pin') == {'ValueError': 'message_id is not a valid message'}
+    assert pin_unpin(data, user_admin.token, 100, 'pin') == {'ValueError': '\
+message_id is not a valid message'}
 
     assert pin_unpin(data, user_in_channel.token, message_admin.message_id, 'pin') == {'ValueError': 'The authorised user is not an admin'}
 
@@ -334,9 +338,9 @@ a member of the channel that the message is within'}
 
     # admin leave the channel
     ch_join_leave(data, user_admin.token, channel.channel_id, 'leave')
-    assert pin_unpin(data, user_admin.token, message_admin.message_id,
-                     'unpin') == {'AccessError': 'The authorised user is not \
-a member of the channel that the message is within'}
+    assert pin_unpin(data, user_admin.token, message_admin.message_id, 'unpin') == {
+        'AccessError': 'The authorised user is not a member of the channel \
+that the message is within'}
 
 
 def test_unpin_good():

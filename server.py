@@ -151,7 +151,7 @@ def auth_logout():
 def auth_register():
     global data
     host = request.host_url
-    email, password, name_first, name_last = do_get(request.form,['email', 'password', 'name_first', 'name_last'])
+    email, password, name_first, name_last = do_get(request.form, ['email', 'password', 'name_first', 'name_last'])
     result = register(data, email, password, name_first, name_last, host)
     catch_error_and_return(result)
     save()
@@ -457,7 +457,7 @@ def users_all():
     save()
 
     return dumps(result)
-    
+
 
 @APP.route('/user/profile/setname', methods=['PUT'])
 def setname():
