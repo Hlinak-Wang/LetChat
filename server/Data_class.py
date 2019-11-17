@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import hashlib
-from datetime import datetime
-
-
-=======
->>>>>>> 51fde2d08e5eff4a3ccf0390d465cd011d0d3347
 class Data:
 
     def __init__(self):
@@ -49,35 +42,10 @@ class Data:
                 channel_joined.append(channel.channel_id)
         return channel_joined
 
-<<<<<<< HEAD
-    def get_channel(self, channel_id):
-        for channel in self.channels_group:
-            if channel.channel_id == channel_id:
-                return channel
-        return None
-
-    def get_message(self, message_id):
-        for message in self.messages_group:
-            if message.message_id == message_id:
-                return message
-        return None
-
-    def check_unique(self, key, value):
-        for user in self.users_group:
-            if getattr(user, key) == value:
-                return False
-        return True
-
-    def get_all_user_detail(self, host):
-        all_user_detail = []
-        for user in self.users_group:
-            all_user_detail.append(user.get_user_detail(host))
-=======
     def get_all_user_detail(self, host):
         all_user_detail = []
         for user in self.users_group:
             all_user_detail.append(user.get_user_detail('individual', host))
->>>>>>> 51fde2d08e5eff4a3ccf0390d465cd011d0d3347
         return all_user_detail
 
     def get_earliest_index(self, channel_id):
