@@ -1,5 +1,5 @@
 import uuid
-
+from flask import request
 
 class User:
     def __init__(self, name_first, name_last, email, password, handle, token, permission_id):
@@ -12,7 +12,11 @@ class User:
         self.u_id = int(uuid.uuid1().int / (10**25))
         self.handle_str = handle
         self.reset_code = ''
-        self.profile_img_url = 'http://127.0.0.1:5555/static/default.jpg'
+        
+        current_url = request.base_url
+        want_replace = '/static/default.jpg'
+        new_photo = current_url.replace("/auth/register", want_replace, 1)
+        self.profile_img_url = new_photo
 
     def __getattribute__(self, item):
         return object.__getattribute__(self, item)
