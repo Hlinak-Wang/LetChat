@@ -22,4 +22,4 @@ According to the software design theory **KISS** (keep it simple stupid), large 
 
 ## Single Responsibility Principle
 
-Similar to KISS, we incorporated the **Single Responsibility Principle** by ensuring that complicated logic was broken down into smaller helper functions, which each only had one purpose.
+Similar to KISS, we incorporated the **Single Responsibility Principle** by ensuring that complicated logic was broken down into smaller helper functions, which each only had one purpose. It ensures the readability and modularity of the code. For instance, check if a user is existed in the user list by using token or u_id.
