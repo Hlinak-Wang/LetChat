@@ -1,6 +1,7 @@
 import hashlib
 from datetime import datetime
 
+
 class Data:
 
     def __init__(self):

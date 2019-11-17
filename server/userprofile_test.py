@@ -6,7 +6,13 @@ Created on 2019/10/15
 @author: Yimeng
 """
 
-from server.user_function import usersetemail, usersetname, usersethandle, getprofile, useruploadphoto
+from server.user_function import (
+        usersetemail,
+        usersetname,
+        usersethandle,
+        getprofile,
+        useruploadphoto
+)
 from server.auth_functions import register
 from server.Data_class import Data
 
@@ -20,7 +26,8 @@ host = 'http://127.0.0.1:5555/'
 def test_profile():
     global data, host
     # Create one user for testing
-    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', host)
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first',
+                        'name_last', host)
 
     # Invalid input
     result = getprofile(data, None, None, host)
@@ -52,7 +59,8 @@ def test_setname():
     global data, host
     data = Data()
     # create one user
-    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', host)
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first',
+                        'name_last', host)
 
     # name_first more than 50 characters but not name_last
     first_long = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -66,10 +74,12 @@ def test_setname():
     assert result == {'ValueError': "token not valid"}
 
     result = usersetname(data, auth_key["token"], first_long, last_short)
-    assert result == {'ValueError': 'name_first is not between 1 and 50 characters in length'}
+    assert result == {'ValueError': 'name_first is not between 1 and 50 \
+characters in length'}
 
     result = usersetname(data, auth_key["token"], first_short, last_long)
-    assert result == {'ValueError': 'name_last is not between 1 and 50 characters in length'}
+    assert result == {'ValueError': 'name_last is not between 1 and 50 \
+characters in length'}
 
     result = usersetname(data, 'token_not_registed', first_short, last_short)
     assert result == {'ValueError': 'User with token is not a valid user'}
@@ -86,8 +96,10 @@ def test_setemail():
     global data, host
     data = Data()
     # Register two user for testing
-    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', host)
-    register(data, 'email@gmail.com1', 'password1', 'name_first1', 'name_last1', host)
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first',
+                        'name_last', host)
+    register(data, 'email@gmail.com1', 'password1', 'name_first1',
+             'name_last1', host)
 
     invalid_email = 'dffgfddfsa.com'
     email_used_already = 'email@gmail.com'
@@ -100,7 +112,8 @@ def test_setemail():
     assert result == {'ValueError': 'Email entered is not a valid email'}
 
     result = usersetemail(data, auth_key["token"], email_used_already)
-    assert result == {'ValueError': 'Email address is already being used by another user'}
+    assert result == {'ValueError': 'Email address is already being used by \
+another user'}
 
     result = usersetemail(data, 'token_not_registed', '123@gmail.com')
     assert result == {'ValueError': 'User with token is not a valid user'}
@@ -115,8 +128,10 @@ def test_setemail():
 def test_sethandle():
     global data, host
     data = Data()
-    user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', 'http://127.0.0.1:5555/')
-    other_user = register(data, 'other@gmail.com', 'password', 'first', 'last', 'http://127.0.0.1:5555/')
+    user = register(data, 'email@gmail.com', 'password', 'name_first',
+                    'name_last', 'http://127.0.0.1:5555/')
+    other_user = register(data, 'other@gmail.com', 'password', 'first', 'last',
+                          'http://127.0.0.1:5555/')
 
     handle_long = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww'
     handle_normal = 'normal'
@@ -142,7 +157,7 @@ def test_sethandle():
     usersethandle(data, user["token"], 'testing')
     result = getprofile(data, user["token"], user["u_id"], host)
     assert result["handle_str"] == 'testing'
-    
+
     '''
 def test_useruploadphoto():
     global data

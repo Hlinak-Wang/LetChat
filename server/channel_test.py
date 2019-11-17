@@ -20,9 +20,12 @@ from server.Data_class import Data
 # initial state of testing
 def getdata():
     data = Data()
-    ch_owner = register(data, 'test@test.com', 'testtest', 'test', 'test', 'http://127.0.0.1:5555/')
-    ch_member = register(data, 'test2@test2.com', 'test2test2', 'test2', 'test2', 'http://127.0.0.1:5555/')
-    register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test', 'http://127.0.0.1:5555/')
+    ch_owner = register(data, 'test@test.com', 'testtest', 'test', 'test',
+                        'http://127.0.0.1:5555/')
+    ch_member = register(data, 'test2@test2.com', 'test2test2', 'test2',
+                         'test2', 'http://127.0.0.1:5555/')
+    register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test',
+             'http://127.0.0.1:5555/')
     channel1 = ch_create(data, ch_owner['token'], 'ch_test', True)
     ch_join_leave(data, ch_member['token'], channel1['channel_id'], 'join')
     # data, token, channel_id, message, time_create=datetime.now()
@@ -224,7 +227,8 @@ def test_channel_join_ok():
     channel = ch_create(data, user.token, '12345', True)
     user2 = data.users_group[1]
     ch_join_leave(data, user2.token, channel['channel_id'], 'join')
-    channel_profile = ch_details(data, user2.token, channel['channel_id'], host)
+    channel_profile = ch_details(data, user2.token, channel['channel_id'],
+                                 host)
 
     # Check the new user has join the channel
     member_list = channel_profile["all_members"]

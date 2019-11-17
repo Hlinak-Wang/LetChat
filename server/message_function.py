@@ -25,7 +25,8 @@ def send_message(data, user, channel_id, message, time_create=0):
     channel = data.get_channel(channel_id)
 
     if channel is None or user.u_id not in channel.user_list:
-        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
+        return {'AccessError': 'the authorised user has not joined the channel\
+ they are trying to post to'}
 
     if time_create < time_now:
         return {"ValueError": 'Time sent is a time in the past'}
@@ -98,19 +99,22 @@ def pin_unpin(data, user, message_id, action):
 
     channel = data.get_channel(message.channel_id)
     if channel is None or user.u_id not in channel.user_list:
-        return {'AccessError': 'The authorised user is not a member of the channel that the message is within'}
+        return {'AccessError': 'The authorised user is not a member of the\
+ channel that the message is within'}
 
     if user.permission_id == 3:
         return {'ValueError': 'The authorised user is not an admin'}
 
     if action == 'pin':
         if message.is_pinned:
-            return {"ValueError": "Message with ID message_id is already pinned"}
+            return {"ValueError": "Message with ID message_id is already\
+ pinned"}
         message.user_pin()
 
     elif action == 'unpin':
         if not message.is_pinned:
-            return {"ValueError": "Message with ID message_id is already unpinned"}
+            return {"ValueError": "Message with ID message_id is already \
+unpinned"}
         message.user_unpin()
 
     return {}

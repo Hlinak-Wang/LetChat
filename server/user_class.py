@@ -3,7 +3,8 @@ from flask import request
 
 
 class User:
-    def __init__(self, name_first, name_last, email, password, handle, token, permission_id, host):
+    def __init__(self, name_first, name_last, email, password, handle, token,
+                 permission_id, host):
         self.name_first = name_first
         self.name_last = name_last
         self.email = email

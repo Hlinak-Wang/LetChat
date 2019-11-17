@@ -12,6 +12,7 @@ from PIL import Image
 import urllib.request
 from flask import request
 
+
 def getHttpStatusCode(url):
     try:
 
@@ -61,7 +62,7 @@ def get_all_users(data, token, host):
     return {
         'users': data.get_all_user_detail(host)
     }
-    
+
 
 # set username by token
 def usersetname(data, token, name_first, name_last):
@@ -70,10 +71,12 @@ def usersetname(data, token, name_first, name_last):
         return {'ValueError': 'token not valid'}
 
     if len(name_first) > 50 or len(name_first) < 0:
-        return {'ValueError': "name_first is not between 1 and 50 characters in length"}
+        return {'ValueError': "name_first is not between 1 and 50 characters \
+                in length"}
 
     if len(name_last) > 50 or len(name_last) < 0:
-        return {'ValueError': 'name_last is not between 1 and 50 characters in length'}
+        return {'ValueError': 'name_last is not between 1 and 50 characters in\
+ length'}
 
     user = data.get_user('token', token)
 
@@ -96,7 +99,8 @@ def usersetemail(data, token, email):
         return {'ValueError': 'Email entered is not a valid email'}
 
     if not data.check_unique('email', email):
-        return {'ValueError': 'Email address is already being used by another user'}
+        return {'ValueError': 'Email address is already being used by another \
+user'}
 
     user = data.get_user('token', token)
 
@@ -116,7 +120,7 @@ def usersethandle(data, token, handle_str):
     if len(handle_str) > 20 or len(handle_str) < 3:
         return {'ValueError': "handle_str must be between 3 and 20"}
 
-    if data.check_unique('handle_str', handle_str) == False:
+    if data.check_unique('handle_str', handle_str) is False:
         return {'ValueError': "handle is already used by another user"}
 
     user = data.get_user('token', token)
@@ -134,10 +138,12 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
         status = getHttpStatusCode(img_url)
 
         if status != 200:
-            return {'ValueError': "img_url is returns an HTTP status other than 200."}
+            return {'ValueError': "img_url is returns an HTTP status other \
+than 200."}
     except Exception as e:
         print(e)
-        return {'ValueError': "img_url is returns an HTTP status other than 200."}
+        return {'ValueError': "img_url is returns an HTTP status other than \
+200."}
 
     user = data.get_user('token', token)
     u_id = str(user.u_id)
@@ -149,17 +155,20 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
 
     if imageObject.format != 'JPEG':
         return {'ValueError': "Image uploaded is not a JPG"}
-    
+
     x_start = int(x_start)
     y_start = int(y_start)
     x_end = int(x_end)
     y_end = int(y_end)
-      
-    if x_start < 0 or x_start > imageObject.size[0] or x_end < 0 or x_end > imageObject.size[0] \
-            or y_start < 0 or y_start > imageObject.size[1] or y_end < 0 or y_end > imageObject.size[1] \
+
+    if x_start < 0 or x_start > imageObject.size[0] \
+            or x_end < 0 or x_end > imageObject.size[0] \
+            or y_start < 0 or y_start > imageObject.size[1] \
+            or y_end < 0 or y_end > imageObject.size[1] \
             or x_start > x_end or y_start > y_end:
         return {
-            'ValueError': "any of x_start, y_start, x_end, y_end are not within the dimensions of the image at the URL."
+            'ValueError': "any of x_start, y_start, x_end, y_end are not \
+within the dimensions of the image at the URL."
         }
 
     cropped = imageObject.crop((x_start, y_start, x_end, y_end))
@@ -168,5 +177,3 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
     new_photo = request.host_url + 'static/' + u_id + '.jpg'
     user.set_photo(new_photo)
     return {}
-
-

@@ -64,25 +64,24 @@ APP.register_error_handler(Exception, defaultHandler)
 CORS(APP)
 
 
-
 APP.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
-    MAIL_USERNAME = 'ourteamie4@gmail.com',
-    MAIL_PASSWORD = "73python1128!"
+    MAIL_USERNAME='ourteamie4@gmail.com',
+    MAIL_PASSWORD="73python1128!"
 )
 
 data = Data()
 
-if os.path.exists(os.getcwd() + '/save.dat') == True:
+if os.path.exists(os.getcwd() + '/save.dat') is True:
     if os.path.getsize(os.getcwd() + '/save.dat') > 0:
         data = pickle.load(open('save.dat', 'rb'))
 
 SECRET = 'IE4'
 
 
-#FIX BELOW
+# FIX BELOW
 class ValueError(HTTPException):
     code = 400
     message = 'No message specified'
@@ -129,7 +128,7 @@ def auth_login():
     global data
 
     email, password = do_get(request.form, ['email', 'password'])
-    
+
     result = login(data, email, password)
     catch_error_and_return(result)
     save()
@@ -152,7 +151,7 @@ def auth_logout():
 def auth_register():
     global data
     host = request.host_url
-    email, password, name_first, name_last = do_get(request.form, ['email', 'password', 'name_first', 'name_last'])
+    email, password, name_first, name_last = do_get(request.form,['email', 'password', 'name_first', 'name_last'])
     result = register(data, email, password, name_first, name_last, host)
     catch_error_and_return(result)
     save()
@@ -164,7 +163,7 @@ def auth_reset_request():
     global data
 
     email = do_get(request.form, ['email'])
-    
+
     result = reset_request(data, email)
     catch_error_and_return(result)
     mail = Mail(APP)
@@ -185,7 +184,8 @@ def auth_reset_request():
 @APP.route("/auth/passwordreset/reset", methods=['POST'])
 def auth_reset():
     global data
-    reset_code, new_password = do_get(request.form, ['reset_code', 'new_password'])
+    reset_code, new_password = do_get(request.form,
+                                      ['reset_code', 'new_password'])
 
     result = reset(data, reset_code, new_password)
     catch_error_and_return(result)
@@ -198,7 +198,8 @@ def auth_reset():
 def channel_create():
     global data
 
-    token, channel_name, is_public = do_get(request.form, ['token', 'name', 'is_public'])
+    token, channel_name, is_public = do_get(request.form,
+                                            ['token', 'name', 'is_public'])
     if is_public == "true":
         is_public = True
     else:
@@ -215,7 +216,8 @@ def channel_create():
 def channel_invite():
     global data
 
-    token, u_id, channel_id = do_get(request.form, ['token', 'u_id', 'channel_id'])
+    token, u_id, channel_id = do_get(request.form,
+                                     ['token', 'u_id', 'channel_id'])
     result = ch_invite(data, token, int(u_id), int(channel_id))
     catch_error_and_return(result)
     save()
@@ -240,7 +242,8 @@ def channel_details():
 def channel_message():
 
     global data
-    channel_id, token, start = do_get(request.args, ['channel_id', 'token', 'start'])
+    channel_id, token, start = do_get(request.args,
+                                      ['channel_id', 'token', 'start'])
     result = fun_message(data, token, int(channel_id), int(start))
     catch_error_and_return(result)
     save()
@@ -253,7 +256,8 @@ def message_send_later():
     global data
 
     message, token, channel_id, time_sent = do_get(request.form, ['message', 'token', 'channel_id', 'time_sent'])
-    result = send_message(data, token, int(channel_id), message, float(time_sent))
+    result = send_message(data, token, int(channel_id), message,
+                          float(time_sent))
     catch_error_and_return(result)
     save()
 
@@ -264,7 +268,8 @@ def message_send_later():
 def message_send():
     global data
 
-    message, token, channel_id = do_get(request.form, ['message', 'token', 'channel_id'])
+    message, token, channel_id = do_get(request.form,
+                                        ['message', 'token', 'channel_id'])
     result = send_message(data, token, int(channel_id), message)
 
     catch_error_and_return(result)
@@ -289,7 +294,8 @@ def message_remove():
 def message_edit():
     global data
 
-    message_id, message, token = do_get(request.form, ['message_id', 'message', 'token'])
+    message_id, message, token = do_get(request.form,
+                                        ['message_id', 'message', 'token'])
     result = message_operation(data, token, int(message_id), message)
     catch_error_and_return(result)
     save()
@@ -301,8 +307,10 @@ def message_edit():
 def message_react():
     global data
 
-    message_id, react_id, token = do_get(request.form, ['message_id', 'react_id', 'token'])
-    result = react_unreact(data, token, int(message_id), int(react_id), 'react')
+    message_id, react_id, token = do_get(request.form,
+                                         ['message_id', 'react_id', 'token'])
+    result = react_unreact(data, token, int(message_id),
+                           int(react_id), 'react')
     catch_error_and_return(result)
     save()
 
@@ -313,8 +321,10 @@ def message_react():
 def message_unreact():
     global data
 
-    message_id, react_id, token = do_get(request.form, ['message_id', 'react_id', 'token'])
-    result = react_unreact(data, token, int(message_id), int(react_id), 'unreact')
+    message_id, react_id, token = do_get(request.form,
+                                         ['message_id', 'react_id', 'token'])
+    result = react_unreact(data, token, int(message_id),
+                           int(react_id), 'unreact')
     catch_error_and_return(result)
     save()
 
@@ -373,8 +383,10 @@ def channel_join():
 def channel_addowner():
     global data
 
-    channel_id, token, u_id = do_get(request.form, ['channel_id', 'token', 'u_id'])
-    result = ch_add_remove_owner(data, token, int(channel_id), int(u_id), 'add')
+    channel_id, token, u_id = do_get(request.form, ['channel_id', 'token',
+                                                    'u_id'])
+    result = ch_add_remove_owner(data, token, int(channel_id),
+                                 int(u_id), 'add')
     catch_error_and_return(result)
 
     save()
@@ -385,8 +397,10 @@ def channel_addowner():
 def channel_removeowner():
     global data
 
-    channel_id, token, u_id = do_get(request.form, ['channel_id', 'token', 'u_id'])
-    result = ch_add_remove_owner(data, token, int(channel_id), int(u_id), 'remove')
+    channel_id, token, u_id = do_get(request.form, ['channel_id', 'token',
+                                                    'u_id'])
+    result = ch_add_remove_owner(data, token, int(channel_id),
+                                 int(u_id), 'remove')
     catch_error_and_return(result)
     save()
 
@@ -449,7 +463,8 @@ def users_all():
 def setname():
     global data
 
-    token, name_first, name_last = do_get(request.form, ['token', 'name_first', 'name_last'])
+    token, name_first, name_last = do_get(request.form,
+                                          ['token', 'name_first', 'name_last'])
     result = usersetname(data, token, name_first, name_last)
 
     catch_error_and_return(result)
@@ -488,7 +503,8 @@ def uploadphoto():
 
     token, img_url, x_start, y_start, x_end, y_end = do_get(request.form, ['token', 'img_url', 'x_start', 'y_start', 'x_end', 'y_end'])
     print(token, img_url, x_start, x_end, y_start, y_end)
-    result = useruploadphoto(data,token, img_url, x_start, x_end, y_start, y_end)
+    result = useruploadphoto(data,token, img_url, x_start, x_end, y_start,
+                             y_end)
 
     catch_error_and_return(result)
     save()
@@ -512,7 +528,8 @@ def change_permission():
 
     global data
 
-    token, u_id, permission_id = do_get(request.form, ['token', 'u_id', 'permission_id'])
+    token, u_id, permission_id = do_get(request.form,
+                                        ['token', 'u_id', 'permission_id'])
     result = permission_change(data, token, u_id, int(permission_id))
     catch_error_and_return(result)
     save()
@@ -524,7 +541,8 @@ def change_permission():
 def standup_start():
     global data
 
-    token, channel_id, length = do_get(request.form, ['token', 'channel_id', 'length'])
+    token, channel_id, length = do_get(request.form, ['token', 'channel_id',
+                                                      'length'])
     result = standup_begin(data, token, int(channel_id), int(length))
 
     catch_error_and_return(result)
@@ -547,9 +565,10 @@ def standup_activate():
 
 @APP.route('/standup/send', methods=['POST'])
 def standup_send():
-    global  data
+    global data
 
-    token, channel_id, message = do_get(request.form, ['token', 'channel_id', 'message'])
+    token, channel_id, message = do_get(request.form, ['token', 'channel_id',
+                                                       'message'])
     result = standup_message(data, token, int(channel_id), message)
 
     catch_error_and_return(result)

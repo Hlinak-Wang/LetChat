@@ -9,6 +9,7 @@ Created on 2019/10/15
 from server.channel_class import Channel
 from server.helper import authorise
 
+
 # create a channel
 @authorise
 def ch_create(data, user, channel_name, is_public):
@@ -23,6 +24,7 @@ def ch_create(data, user, channel_name, is_public):
     return {
         'channel_id': new_channel.channel_id
     }
+
 
 @authorise
 def ch_invite(data, user, u_id, channel_id):

@@ -6,7 +6,15 @@ Created on 2019/10/15
 @author: Angeline
 """
 
-from server.auth_functions import login, logout, register, reset_request, reset, generateToken, generate_handle_str
+from server.auth_functions import (
+        login,
+        logout,
+        register,
+        reset_request,
+        reset,
+        generateToken,
+        generate_handle_str
+)
 from server.user_class import User
 from server.Data_class import Data
 import hashlib
@@ -20,7 +28,9 @@ def clearData():
 
 def testData():
     data = Data()
-    user = User("hello", "goodbye", "hi@gmail.com", hashlib.sha256("123456".encode("utf-8")).hexdigest(), "hellogoodbye", "dummytoken", 1, 'http://127.0.0.1:5555/')
+    user = User("hello", "goodbye", "hi@gmail.com",
+                hashlib.sha256("123456".encode("utf-8")).hexdigest(),
+                "hellogoodbye", "dummytoken", 1, 'http://127.0.0.1:5555/')
     data.add_user(user)
     return data
 
@@ -38,9 +48,10 @@ def test_auth_register_valid():
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last, host)
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
     check_token_1 = generateToken(email)
-    
+
     u_id1 = register_output['u_id']
     assert register_output['token'] == check_token_1
     assert data.get_all_user_detail(host) == [{
@@ -60,7 +71,8 @@ def test_auth_register_valid():
     name_first = "hellohowareyou"
     name_last = "imfinethankyou"
 
-    register_output = register(data, email, password, name_first, name_last, host)
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
     check_token_2 = generateToken(email)
 
     u_id2 = register_output['u_id']
@@ -84,6 +96,7 @@ def test_auth_register_valid():
     assert user.password == hashlib.sha256("9876543".encode("utf-8")).hexdigest()
     assert user.permission_id == 3
 
+
 # below is a test to check what happens when a handle is already in use
 def test_auth_register_handle():
     data = testData()
@@ -93,11 +106,13 @@ def test_auth_register_handle():
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last, host)
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
     check_handle = generate_handle_str(data, name_first, name_last, email)
     u_id = register_output['u_id']
     user = data.get_user('u_id', u_id)
     assert user.handle_str == check_handle
+
 
 def test_auth_register_invalid_email():
     data = clearData()
@@ -107,7 +122,8 @@ def test_auth_register_invalid_email():
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last, host)
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
     assert register_output == {'ValueError': "This email is not valid"}
 
 
@@ -119,7 +135,8 @@ def test_auth_register_invalid_password():
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last, host)
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
     assert register_output == {'ValueError': "This password is too short"}
 
 
@@ -131,16 +148,20 @@ def test_auth_register_invalid_name():
     name_first = ""
     name_last = ""
 
-    register_output = register(data, email, password, name_first, name_last, host)
-    assert register_output == {'ValueError': "First name or last name too short"}
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
+    assert register_output == {'ValueError': "First name or last name too \
+short"}
 
     data = clearData()
 
     name_first = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     name_last = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
-    register_output = register(data, email, password, name_first, name_last, host)
-    assert register_output == {'ValueError': "First name or last name too long"}
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
+    assert register_output == {'ValueError': "First name or last name too \
+long"}
 
 
 def test_auth_register_already_user():
@@ -151,9 +172,11 @@ def test_auth_register_already_user():
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last, host)
+    register_output = register(data, email, password, name_first, name_last,
+                               host)
 
-    assert register_output == {'ValueError': "This email is already in use by a registered user"}
+    assert register_output == {'ValueError': "This email is already in use by \
+a registered user"}
 
 
 # END TEST AUTH_REGISTER
@@ -199,7 +222,8 @@ def test_auth_login_invalid_user():
     password = "123456"
 
     login_output = login(data, email, password)
-    assert login_output == {'ValueError': "This email does not belong to a user"}
+    assert login_output == {'ValueError': "This email does not belong to a \
+user"}
 
 
 # END TEST AUTH_LOGIN
@@ -212,10 +236,10 @@ def test_auth_logout_valid():
     logout_output = logout(data, token)
 
     assert logout_output == {'is_sucess': True}
-    
+
     user = data.get_user('handle_str', 'hellogoodbye')
     u_id = user.u_id
-    
+
     assert data.get_all_user_detail(host) == [{
             'u_id': u_id,
             'email': "hi@gmail.com",
@@ -225,6 +249,7 @@ def test_auth_logout_valid():
             'profile_img_url': 'http://127.0.0.1:5555/static/default.jpg'
     }]
     assert user.token == None
+
 
 def test_auth_logout_invalid_token():
     data = testData()
@@ -240,7 +265,9 @@ def test_auth_logout_invalid_token():
 def test_reset_request_invalid():
     data = testData()
     reset_check = reset_request(data, "hello@gmail.com")
-    assert reset_check == {'ValueError': "This email does not belong to a registered user"}
+    assert reset_check == {'ValueError': "This email does not belong to a \
+registered user"}
+
 
 def test_reset_request_valid():
     data = testData()
@@ -259,9 +286,11 @@ def test_passwordreset():
     # Assume the reset request is sent
 
     # Invalid test
-    assert reset(data, code, '') == {'ValueError': "This password is too short"}
+    assert reset(data, code, '') == {'ValueError': "This password is \
+too short"}
 
-    assert reset(data, 'asdf', '1234561') == {'ValueError': "This is not a valid reset code"}
+    assert reset(data, 'asdf', '1234561') == {'ValueError': "This is not a \
+valid reset code"}
 
     # Valid test
     user = data.get_user('handle_str', "hellogoodbye")

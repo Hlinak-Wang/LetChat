@@ -37,7 +37,8 @@ def permission_change(data, token, u_id, permission_id):
         return {'ValueError': 'u_id does not refer to a valid user'}
 
     if permission_id not in range(1, 4):
-        return {'ValueError': 'permission_id does not refer to a value permission'}
+        return {'ValueError': 'permission_id does not refer to a value \
+permission'}
 
     target.set_permission_id(permission_id)
     return {}
@@ -52,10 +53,12 @@ def standup_begin(data, token, channel_id, length):
         return {'ValueError': 'Channel ID is not a valid channel'}
 
     if user.u_id not in channel.user_list:
-        return {'AccessError': 'The authorised user is not a member of the channel that the message is within'}
+        return {'AccessError': 'The authorised user is not a member of the \
+channel that the message is within'}
 
     if time_start < channel.standup['time_finish']:
-        return {'ValueError': 'An active standup is currently running in this channel'}
+        return {'ValueError': 'An active standup is currently running in this \
+channel'}
 
     channel.set_standup(time_start + length, user.u_id)
 
@@ -92,15 +95,16 @@ def standup_message(data, token, channel_id, message):
         return {'ValueError': 'Channel ID is not a valid channel'}
 
     if time_now > channel.standup['time_finish']:
-        return {'ValueError': 'An active standup is not currently running in this channel'}
+        return {'ValueError': 'An active standup is not currently running in \
+this channel'}
 
     if len(message) > 1000:
         return {'ValueError': 'Message is more than 1000 characters'}
 
     if user.u_id not in channel.user_list:
-        return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
+        return {'AccessError': 'the authorised user has not joined the channel\
+ they are trying to post to'}
 
     channel.standup_send(message)
 
     return {}
-

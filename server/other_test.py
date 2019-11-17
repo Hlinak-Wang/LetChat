@@ -6,7 +6,13 @@ Created on 2019/10/15
 @author: Eric
 """
 
-from server.extra_function import message_search, permission_change, standup_message, standup_active, standup_begin
+from server.extra_function import (
+        message_search,
+        permission_change,
+        standup_message,
+        standup_active,
+        standup_begin
+)
 from server.auth_functions import register
 from server.channel_function import ch_create, ch_join_leave
 from server.message_function import send_message, react_unreact
@@ -17,14 +23,20 @@ from server.Data_class import Data
 def get_data():
     test_data = Data()
     user_chowner = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last', 'http://127.0.0.1:5555/')
-    user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last', 'http://127.0.0.1:5555/')
-    register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last', 'http://127.0.0.1:5555/')
+    user_inch = register(test_data, 'test2@test.com', 'password',
+                         'name_first2', 'name_last', 'http://127.0.0.1:5555/')
+    register(test_data, 'test3@test.com', 'password', 'name_first3',
+             'name_last', 'http://127.0.0.1:5555/')
     channel = ch_create(test_data, user_chowner['token'], 'test_channel', True)
     ch_join_leave(test_data, user_inch['token'], channel['channel_id'], 'join')
-    message_inch = send_message(test_data, user_inch['token'], channel['channel_id'], 'test2')
-    message_chowner = send_message(test_data, user_chowner['token'], channel['channel_id'], 'test')
-    react_unreact(test_data, user_inch['token'], message_inch['message_id'], 1, 'react')
-    react_unreact(test_data, user_inch['token'], message_chowner['message_id'], 1, 'react')
+    message_inch = send_message(test_data, user_inch['token'],
+                                channel['channel_id'], 'test2')
+    message_chowner = send_message(test_data, user_chowner['token'],
+                                   channel['channel_id'], 'test')
+    react_unreact(test_data, user_inch['token'], message_inch['message_id'],
+                  1, 'react')
+    react_unreact(test_data, user_inch['token'], message_chowner['message_id'],
+                  1, 'react')
     ch_create(test_data, user_chowner['token'], 'test_channel2', True)
     return test_data
 
@@ -124,7 +136,7 @@ def test_userpermission_change():
     user_norm1 = data.users_group[2]
     user_norm2 = data.users_group[1]
 
-    out = permission_change(data, user.token, user_norm1.u_id, 2)
+    permission_change(data, user.token, user_norm1.u_id, 2)
     assert user_norm1.permission_id == 2
 
     # invalid input
