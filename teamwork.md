@@ -1,6 +1,6 @@
 Our team worked well and in a very similar fashion to how we worked during iteration 2. By the time iteration 3 began, our team members had gotten very comfortable with working collaboratively with each other.
 
-We met once or twice a week, and our meeting times were Monday and Thursday 10-12. We didn’t commit to two meetings every week since we were happy to work on the code ourselves and then message on our group chat/ask each other during our lab time if we had any questions, concerns or updates (such as a new function addition to our class).
+We met once or twice a week, and our meeting times were Monday and Thursday 10-12. We didn’t commit to two meetings every week since we were happy to work on the code ourselves and then message on our group chat/ask each other during our lab time if we had any questions, concerns or updates (such as a new function added to our class).
 
 To ensure our meetings were successful, we started and ended the meetings by discussing with the group what we had accomplished so far, and what we planned to do next. We also updated the task board so that there would be written documentation of our meeting.
 
