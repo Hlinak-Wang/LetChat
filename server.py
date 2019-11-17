@@ -139,7 +139,7 @@ def auth_login():
 def auth_logout():
     global data
 
-    token = do_get(request.form, ['token'])
+    token = do_get(request.form, ['token'])[0]
     result = logout(data, token)
     catch_error_and_return(result)
     save()
