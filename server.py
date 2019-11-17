@@ -69,7 +69,7 @@ APP.config.update(
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
     MAIL_USERNAME='ourteamie4@gmail.com',
-    MAIL_PASSWORD="HiHelloGoodbye123!"
+    MAIL_PASSWORD="HiHelloGoodbye123"
 )
 
 data = Data()
