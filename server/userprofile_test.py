@@ -13,23 +13,24 @@ from server.Data_class import Data
 
 # fet global data
 data = Data()
+host = 'http://127.0.0.1:5555/'
 
 
 # test getproflie
 def test_profile():
-    global data
+    global data, host
     # Create one user for testing
-    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', host)
 
     # Invalid input
-    result = getprofile(data, None, None)
+    result = getprofile(data, None, None, host)
     assert result == {'ValueError': "token not valid"}
 
-    result = getprofile(data, auth_key['token'], 'not_valid_u_id')
+    result = getprofile(data, auth_key['token'], 'not_valid_u_id', host)
     assert result == {'ValueError': "User with u_id is not a valid user"}
 
     # Valid input
-    result = getprofile(data, auth_key["token"], auth_key["u_id"])
+    result = getprofile(data, auth_key["token"], auth_key["u_id"], host)
     assert result["email"] == 'email@gmail.com'
     assert result["name_first"] == 'name_first'
     assert result["name_last"] == 'name_last'
@@ -39,7 +40,7 @@ def test_profile():
 
 def test_get_all_user():
     global data
-    user_list = data.get_all_user_detail()
+    user_list = data.get_all_user_detail(host)
     assert len(user_list) == 1
     assert user_list[0]['name_first'] == 'name_first'
     assert user_list[0]['name_last'] == 'name_last'
@@ -48,10 +49,10 @@ def test_get_all_user():
 
 # test setname
 def test_setname():
-    global data
+    global data, host
     data = Data()
     # create one user
-    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', host)
 
     # name_first more than 50 characters but not name_last
     first_long = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -75,18 +76,18 @@ def test_setname():
 
     # Valid input
     usersetname(data, auth_key["token"], first_short, last_short)
-    result = getprofile(data, auth_key["token"], auth_key["u_id"])
+    result = getprofile(data, auth_key["token"], auth_key["u_id"], host)
     assert result["name_first"] == first_short
     assert result["name_last"] == last_short
 
 
 # test setemail
 def test_setemail():
-    global data
+    global data, host
     data = Data()
     # Register two user for testing
-    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
-    register(data, 'email@gmail.com1', 'password1', 'name_first1', 'name_last1')
+    auth_key = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', host)
+    register(data, 'email@gmail.com1', 'password1', 'name_first1', 'name_last1', host)
 
     invalid_email = 'dffgfddfsa.com'
     email_used_already = 'email@gmail.com'
@@ -106,16 +107,16 @@ def test_setemail():
 
     # Valid input
     usersetemail(data, auth_key["token"], 'newemail@gmail.com')
-    result = getprofile(data, auth_key["token"], auth_key["u_id"])
+    result = getprofile(data, auth_key["token"], auth_key["u_id"], host)
     assert result["email"] == 'newemail@gmail.com'
 
 
 # test sethanle
 def test_sethandle():
-    global data
+    global data, host
     data = Data()
-    user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last')
-    other_user = register(data, 'other@gmail.com', 'password', 'first', 'last')
+    user = register(data, 'email@gmail.com', 'password', 'name_first', 'name_last', 'http://127.0.0.1:5555/')
+    other_user = register(data, 'other@gmail.com', 'password', 'first', 'last', 'http://127.0.0.1:5555/')
 
     handle_long = 'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww'
     handle_normal = 'normal'
@@ -139,7 +140,7 @@ def test_sethandle():
 
     # Valid input
     usersethandle(data, user["token"], 'testing')
-    result = getprofile(data, user["token"], user["u_id"])
+    result = getprofile(data, user["token"], user["u_id"], host)
     assert result["handle_str"] == 'testing'
     
     '''

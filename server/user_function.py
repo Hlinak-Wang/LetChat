@@ -40,7 +40,7 @@ def check(email):
 
 
 # get user profile by token
-def getprofile(data, token, u_id):
+def getprofile(data, token, u_id, host):
 
     user_observer = data.get_user('token', token)
     if user_observer is None:
@@ -50,16 +50,16 @@ def getprofile(data, token, u_id):
     if user is None:
         return {'ValueError': "User with u_id is not a valid user"}
 
-    return user.get_user_detail()
+    return user.get_user_detail(host)
 
 
-def get_all_users(data, token):
+def get_all_users(data, token, host):
 
     if data.get_user('token', token) is None:
         return {'ValueError': 'token not valid'}
 
     return {
-        'users': data.get_all_user_detail()
+        'users': data.get_all_user_detail(host)
     }
     
 
@@ -140,9 +140,9 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
         return {'ValueError': "img_url is returns an HTTP status other than 200."}
 
     user = data.get_user('token', token)
-    handle_str = user.handle_str
+    u_id = str(user.u_id)
 
-    imagesource = './static/' + handle_str + '.jpg'
+    imagesource = './static/' + u_id + '.jpg'
     urllib.request.urlretrieve(img_url, imagesource)
 
     imageObject = Image.open(imagesource)
@@ -164,9 +164,8 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
 
     cropped = imageObject.crop((x_start, y_start, x_end, y_end))
     cropped.save(imagesource)
-    current_url = request.base_url
-    want_replace = 'static/' + handle_str + '.jpg'
-    new_photo = current_url.replace("user/profiles/uploadphoto", want_replace, 1)
+
+    new_photo = request.host_url + 'static/' + u_id + '.jpg'
     user.set_photo(new_photo)
     return {}
 

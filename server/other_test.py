@@ -16,9 +16,9 @@ from server.Data_class import Data
 
 def get_data():
     test_data = Data()
-    user_chowner = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last')
-    user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last')
-    register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last')
+    user_chowner = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last', 'http://127.0.0.1:5555/')
+    user_inch = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last', 'http://127.0.0.1:5555/')
+    register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last', 'http://127.0.0.1:5555/')
     channel = ch_create(test_data, user_chowner['token'], 'test_channel', True)
     ch_join_leave(test_data, user_inch['token'], channel['channel_id'], 'join')
     message_inch = send_message(test_data, user_inch['token'], channel['channel_id'], 'test2')

@@ -46,14 +46,14 @@ def generateToken(email):
     return str(jwt.encode(payload, SECRET, algorithm='HS256').decode('utf-8'))
 
 
-def generate_handle_str(data, first, last):
+def generate_handle_str(data, first, last, email):
     handle_str = first + last
     excess = len(handle_str) - 20
     if excess > 0:
         handle_str = handle_str[:20]
 
     if (data.get_user('handle_str', handle_str) is not None) or (len(handle_str) < 3):
-        handle_str = datetime.strftime(datetime.now(), "%m/%d/%Y, %H:%M:%S")
+        handle_str = email
 
     return handle_str
 
@@ -90,7 +90,7 @@ def logout(data, token):
     return {'is_sucess': is_success}
 
 
-def register(data, email, password, name_first, name_last):
+def register(data, email, password, name_first, name_last, host):
     email_check = check_valid_email(email)
     
     password_check = check_valid_password(password)
@@ -113,7 +113,7 @@ def register(data, email, password, name_first, name_last):
 
     token = generateToken(email)
 
-    handle_str = generate_handle_str(data, name_first, name_last)
+    handle_str = generate_handle_str(data, name_first, name_last, email)
     
     password = hashlib.sha256(password.encode("utf-8")).hexdigest()
 
@@ -122,7 +122,7 @@ def register(data, email, password, name_first, name_last):
     else:
         permission_id = 3
     
-    new_user = User(name_first, name_last, email, password, handle_str, token, permission_id)
+    new_user = User(name_first, name_last, email, password, handle_str, token, permission_id, host)
     
     data.add_user(new_user)
 

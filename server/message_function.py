@@ -8,23 +8,7 @@ Created on 2019/10/15
 
 from datetime import datetime
 from server.message_class import Message
-
-
-def authorise(function):
-    def wrapper(*args):
-        if len(args) >= 2:
-            data = args[0]
-            token = args[1]
-            user = data.get_user('token', token)
-            if user is not None:
-                new_args = list(args)
-                new_args[1] = user
-                args = tuple(new_args)
-                return function(*args)
-            else:
-                return {'ValueError': 'token not valid'}
-
-    return wrapper
+from server.helper import authorise
 
 
 # Send a message from authorised_user to the channel specified by channel_id
@@ -96,10 +80,12 @@ def react_unreact(data, user, message_id, react_id, action):
         if user.u_id in react.u_ids:
             return {'ValueError': 'user has reacted'}
         react.user_react(user.u_id)
+
     elif action == 'unreact':
         if user.u_id not in react.u_ids:
             return {'ValueError': 'user has not reacted'}
         react.user_unreact(user.u_id)
+
     return {}
 
 
@@ -120,12 +106,11 @@ def pin_unpin(data, user, message_id, action):
     if action == 'pin':
         if message.is_pinned:
             return {"ValueError": "Message with ID message_id is already pinned"}
-
         message.user_pin()
+
     elif action == 'unpin':
         if not message.is_pinned:
             return {"ValueError": "Message with ID message_id is already unpinned"}
-
         message.user_unpin()
 
     return {}

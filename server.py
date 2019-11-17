@@ -151,10 +151,9 @@ def auth_logout():
 @APP.route("/auth/register", methods=['POST'])  # done, not checked
 def auth_register():
     global data
-
+    host = request.host_url
     email, password, name_first, name_last = do_get(request.form, ['email', 'password', 'name_first', 'name_last'])
-
-    result = register(data, email, password, name_first, name_last)
+    result = register(data, email, password, name_first, name_last, host)
     catch_error_and_return(result)
     save()
     return dumps(result)
@@ -227,9 +226,10 @@ def channel_invite():
 @APP.route('/channel/details', methods=['GET'])
 def channel_details():
     global data
+    host = request.host_url
 
     token, channel_id = do_get(request.args, ['token', 'channel_id'])
-    result = ch_details(data, token, int(channel_id))
+    result = ch_details(data, token, int(channel_id), host)
     catch_error_and_return(result)
     save()
 
@@ -421,9 +421,10 @@ def send_js(path):
 @APP.route('/user/profile', methods=['GET'])
 def profile():
     global data
+    host = request.host_url
 
     token, u_id = do_get(request.args, ['token', 'u_id'])
-    result = getprofile(data, token, int(u_id))
+    result = getprofile(data, token, int(u_id), host)
 
     catch_error_and_return(result)
     save()
@@ -434,9 +435,10 @@ def profile():
 @APP.route('/users/all', methods=['GET'])
 def users_all():
     global data
+    host = request.host_url
 
     token = do_get(request.args, ['token'])[0]
-    result = get_all_users(data, token)
+    result = get_all_users(data, token, host)
     catch_error_and_return(result)
     save()
 

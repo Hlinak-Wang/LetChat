@@ -79,10 +79,10 @@ class Data:
                 return False
         return True
 
-    def get_all_user_detail(self):
+    def get_all_user_detail(self, host):
         all_user_detail = []
         for user in self.users_group:
-            all_user_detail.append(user.get_user_detail())
+            all_user_detail.append(user.get_user_detail(host))
         return all_user_detail
 
     def get_channel_list(self, u_id):

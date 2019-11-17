@@ -17,28 +17,33 @@ def clearData():
     data = Data()
     return data
 
+
 def testData():
     data = Data()
-    user = User("hello", "goodbye", "hi@gmail.com", hashlib.sha256("123456".encode("utf-8")).hexdigest(), "hellogoodbye", "dummytoken", 1)
+    user = User("hello", "goodbye", "hi@gmail.com", hashlib.sha256("123456".encode("utf-8")).hexdigest(), "hellogoodbye", "dummytoken", 1, 'http://127.0.0.1:5555/')
     data.add_user(user)
     return data
+
+
+def get_host():
+    return 'http://127.0.0.1:5555/'
 
 
 # START TEST AUTH_REGISTER
 def test_auth_register_valid():
     data = clearData()
-
+    host = get_host()
     email = "hi@gmail.com"
     password = "123456"
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
     check_token_1 = generateToken(email)
     
     u_id1 = register_output['u_id']
     assert register_output['token'] == check_token_1
-    assert data.get_all_user_detail() ==  [{
+    assert data.get_all_user_detail(host) == [{
         'u_id': u_id1,
         'email': "hi@gmail.com",
         'name_first': "hello",
@@ -55,12 +60,12 @@ def test_auth_register_valid():
     name_first = "hellohowareyou"
     name_last = "imfinethankyou"
 
-    register_output = register(data, email, password, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
     check_token_2 = generateToken(email)
 
     u_id2 = register_output['u_id']
     assert register_output['token'] == check_token_2
-    assert data.get_all_user_detail() == [{
+    assert data.get_all_user_detail(host) == [{
         'u_id': u_id1,
         'email': "hi@gmail.com",
         'name_first': "hello",
@@ -82,51 +87,51 @@ def test_auth_register_valid():
 # below is a test to check what happens when a handle is already in use
 def test_auth_register_handle():
     data = testData()
-
+    host = get_host()
     email = "bye@gmail.com"
     password = "123456"
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last)
-    check_handle = generate_handle_str(data, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
+    check_handle = generate_handle_str(data, name_first, name_last, email)
     u_id = register_output['u_id']
     user = data.get_user('u_id', u_id)
     assert user.handle_str == check_handle
 
 def test_auth_register_invalid_email():
     data = clearData()
-
+    host = get_host()
     email = "hi"
     password = "123456"
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
     assert register_output == {'ValueError': "This email is not valid"}
 
 
 def test_auth_register_invalid_password():
     data = clearData()
-
+    host = get_host()
     email = "hi@gmail.com"
     password = "123"
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
     assert register_output == {'ValueError': "This password is too short"}
 
 
 def test_auth_register_invalid_name():
     data = clearData()
-
+    host = get_host()
     email = "hi@gmail.com"
     password = "123456"
     name_first = ""
     name_last = ""
 
-    register_output = register(data, email, password, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
     assert register_output == {'ValueError': "First name or last name too short"}
 
     data = clearData()
@@ -134,19 +139,19 @@ def test_auth_register_invalid_name():
     name_first = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     name_last = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
-    register_output = register(data, email, password, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
     assert register_output == {'ValueError': "First name or last name too long"}
 
 
 def test_auth_register_already_user():
     data = testData()
-
+    host = get_host()
     email = "hi@gmail.com"
     password = "123456"
     name_first = "hello"
     name_last = "goodbye"
 
-    register_output = register(data, email, password, name_first, name_last)
+    register_output = register(data, email, password, name_first, name_last, host)
 
     assert register_output == {'ValueError': "This email is already in use by a registered user"}
 
@@ -202,6 +207,7 @@ def test_auth_login_invalid_user():
 # START TEST AUTH_LOGOUT
 def test_auth_logout_valid():
     data = testData()
+    host = get_host()
     token = "dummytoken"
     logout_output = logout(data, token)
 
@@ -210,7 +216,7 @@ def test_auth_logout_valid():
     user = data.get_user('handle_str', 'hellogoodbye')
     u_id = user.u_id
     
-    assert data.get_all_user_detail() == [{
+    assert data.get_all_user_detail(host) == [{
             'u_id': u_id,
             'email': "hi@gmail.com",
             'name_first': "hello",

@@ -7,17 +7,14 @@ Created on 2019/10/15
 """
 
 from server.channel_class import Channel
-
+from server.helper import authorise
 
 # create a channel
-def ch_create(data, token, channel_name, is_public):
+@authorise
+def ch_create(data, user, channel_name, is_public):
     # check is the channel name is valid
     if len(channel_name) > 20:
         return {'ValueError': 'The maximum characters of name is 20.'}
-    # check the existence of the auth user
-    user = data.get_user('token', token)
-    if user is None:
-        return {'ValueError': 'The user is not exist'}
     # new channel data
     new_channel = Channel(channel_name, is_public, user.u_id)
     data.add_channel(new_channel)
@@ -27,8 +24,8 @@ def ch_create(data, token, channel_name, is_public):
         'channel_id': new_channel.channel_id
     }
 
-
-def ch_invite(data, token, u_id, channel_id):
+@authorise
+def ch_invite(data, user, u_id, channel_id):
 
     # check validation of channel id
     channel = data.get_channel(channel_id)
@@ -39,8 +36,7 @@ def ch_invite(data, token, u_id, channel_id):
     if new_member is None:
         return {'ValueError': 'Invalid u_id'}
 
-    user_invite = data.get_user('token', token)
-    if user_invite.u_id not in channel.user_list:
+    if user.u_id not in channel.user_list:
         return {'AccessError': 'The authorised user is not already a member of\
  the channel'}
 
@@ -53,14 +49,13 @@ channel'}
     return {}
 
 
-def ch_details(data, token, channel_id):
+@authorise
+def ch_details(data, user, channel_id, host):
 
     channel = data.get_channel(channel_id)
     # check validation of channel id
     if channel is None:
         return {'ValueError': 'Invalid channel id'}
-    # check auth user is a member or not
-    user = data.get_user('token', token)
 
     if user.u_id not in channel.user_list:
         return {'AccessError': 'User is not a member of Channel'}
@@ -68,13 +63,13 @@ def ch_details(data, token, channel_id):
     channelowner_list = []
     for uids in channel.owner_list:
             user = data.get_user('u_id', uids)
-            member = user.get_member_detail()
+            member = user.get_member_detail(host)
             channelowner_list.append(member)
 
     channeluser_list = []
     for uids in channel.user_list:
             user = data.get_user('u_id', uids)
-            member = user.get_member_detail()
+            member = user.get_member_detail(host)
             channeluser_list.append(member)
 
     return {
@@ -84,12 +79,12 @@ def ch_details(data, token, channel_id):
     }
 
 
-def ch_join_leave(data, token, channel_id, action):
+@authorise
+def ch_join_leave(data, user, channel_id, action):
     # check validation of ch_id
     channel = data.get_channel(channel_id)
     if channel is None:
         return {'ValueError': 'Channel ID is invalid'}
-    user = data.get_user('token', token)
     if action == 'join':
         # check the channel is public or private
         # when the authorised user is not an admin
@@ -107,7 +102,8 @@ def ch_join_leave(data, token, channel_id, action):
     return {}
 
 
-def ch_add_remove_owner(data, token, channel_id, u_id, action):
+@authorise
+def ch_add_remove_owner(data, user, channel_id, u_id, action):
     # check validation of the channel id
     channel = data.get_channel(channel_id)
     if channel is None:
@@ -118,8 +114,7 @@ def ch_add_remove_owner(data, token, channel_id, u_id, action):
         return {'AccessError': 'Not a member of this channel'}
 
     # accesserror when the auth_user is not an owner of the slackr or channel
-    user = data.get_user('token', token)
-    if user.permission_id == 3 or user.u_id not in channel.owner_list:
+    if user.permission_id == 3 and user.u_id not in channel.owner_list:
         return {'AccessError': 'User is not an owner of the slackr or this \
 channel'}
 
@@ -140,16 +135,17 @@ channel'}
     return {}
 
 
-def ch_lists_listall(data, token, action):
-    user = data.get_user('token', token)
+@authorise
+def ch_lists_listall(data, user, action):
+
     if action == 'lists':
         return data.get_channel_list(user.u_id)
     elif action == 'listall':
         return data.get_channel_list_all(user.u_id)
 
 
-def fun_message(data, token, channel_id, start):
-    user = data.get_user('token', token)
+@authorise
+def fun_message(data, user, channel_id, start):
     channel = data.get_channel(channel_id)
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}

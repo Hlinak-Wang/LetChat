@@ -20,10 +20,9 @@ from server.Data_class import Data
 # initial state of testing
 def getdata():
     data = Data()
-    ch_owner = register(data, 'test@test.com', 'testtest', 'test', 'test')
-    ch_member = register(data, 'test2@test2.com', 'test2test2', 'test2',
-                         'test2')
-    register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test')
+    ch_owner = register(data, 'test@test.com', 'testtest', 'test', 'test', 'http://127.0.0.1:5555/')
+    ch_member = register(data, 'test2@test2.com', 'test2test2', 'test2', 'test2', 'http://127.0.0.1:5555/')
+    register(data, 'tests2@tests2.com', 'tests2', 'not in channel', 'test', 'http://127.0.0.1:5555/')
     channel1 = ch_create(data, ch_owner['token'], 'ch_test', True)
     ch_join_leave(data, ch_member['token'], channel1['channel_id'], 'join')
     # data, token, channel_id, message, time_create=datetime.now()
@@ -32,9 +31,14 @@ def getdata():
     return data
 
 
+def get_host():
+    return 'http://127.0.0.1:5555/'
+
+
 # Testing valid input for channel_invite
 def test_channel_invite_ok():
     data = getdata()
+    host = get_host()
     user = data.users_group[0]
     user1 = data.users_group[1]
     # it takes in data, token, channel_name and is_public
@@ -44,7 +48,7 @@ def test_channel_invite_ok():
 
     # Check the user is successfully added into channel
     # it takes in data, token and channel_id
-    channel_profile = ch_details(data, user.token, channel['channel_id'])
+    channel_profile = ch_details(data, user.token, channel['channel_id'], host)
     member_list = channel_profile['all_members']
     assert member_list[0]['u_id'] == user.u_id
     assert member_list[1]['u_id'] == user1.u_id
@@ -53,6 +57,7 @@ def test_channel_invite_ok():
 # Testing invalid input for channel_invite
 def test_channel_invite_bad():
     data = getdata()
+
     user = data.users_group[0]
     user1 = data.users_group[1]
     user2 = data.users_group[2]
@@ -77,11 +82,12 @@ member of the channel'}
 # Testing valid input for channel_details
 def test_channel_details_ok():
     data = getdata()
+    host = get_host()
     user = data.users_group[0]
     # it takes in data, token, channel_name and is_public
     channel = ch_create(data, user.token, '12345', True)
 
-    channel_profile = ch_details(data, user.token, channel['channel_id'])
+    channel_profile = ch_details(data, user.token, channel['channel_id'], host)
     # Checking the output of channel detail
     assert channel_profile['name'] == "12345"
 
@@ -95,15 +101,16 @@ def test_channel_details_ok():
 # Testing invalid input for channel detail
 def test_channel_details_bad():
     data = getdata()
+    host = get_host()
     user = data.users_group[0]
     user1 = data.users_group[2]
     # it takes in data, token, channel_name and is_public
     channel = ch_create(data, user.token, '12345', True)
 
-    res1 = ch_details(data, user.token, '123456')
+    res1 = ch_details(data, user.token, '123456', host)
     assert res1 == {'ValueError': 'Invalid channel id'}
 
-    res2 = ch_details(data, user1.token, channel['channel_id'])
+    res2 = ch_details(data, user1.token, channel['channel_id'], host)
     assert res2 == {'AccessError': 'User is not a member of Channel'}
 
 
@@ -177,6 +184,7 @@ the channel they are trying to post to'}
 # Testing valid input for channel_leave
 def test_channel_leave_ok():
     data = getdata()
+    host = get_host()
     user = data.users_group[0]
     user1 = data.users_group[1]
     # it takes in data, token, channel_name and is_public and return channel_id
@@ -190,7 +198,7 @@ def test_channel_leave_ok():
     ch_join_leave(data, user1.token, channel['channel_id'], 'leave')
 
     # Check the member in channel
-    channel_profile = ch_details(data, user.token, channel['channel_id'])
+    channel_profile = ch_details(data, user.token, channel['channel_id'], host)
     owner_list = channel_profile['owner_members']
     member_list = channel_profile['all_members']
     assert len(owner_list) == 1
@@ -211,11 +219,12 @@ def test_channel_leave_bad():
 # Testing valid input for channel_join
 def test_channel_join_ok():
     data = getdata()
+    host = get_host()
     user = data.users_group[0]
     channel = ch_create(data, user.token, '12345', True)
     user2 = data.users_group[1]
     ch_join_leave(data, user2.token, channel['channel_id'], 'join')
-    channel_profile = ch_details(data, user2.token, channel['channel_id'])
+    channel_profile = ch_details(data, user2.token, channel['channel_id'], host)
 
     # Check the new user has join the channel
     member_list = channel_profile["all_members"]
@@ -246,6 +255,7 @@ def test_channel_join_bad():
 # Testing valid input for channel_addowner
 def test_channel_addowner_ok():
     data = getdata()
+    host = get_host()
     user = data.users_group[0]
     channel = ch_create(data, user.token, '12345', True)
     user2 = data.users_group[2]
@@ -253,7 +263,7 @@ def test_channel_addowner_ok():
 
     ch_add_remove_owner(data, user.token, channel['channel_id'], user2.u_id,
                         'add')
-    channel_profile = ch_details(data, user.token, channel['channel_id'])
+    channel_profile = ch_details(data, user.token, channel['channel_id'], host)
     owner_list = channel_profile['owner_members']
     # Checking there is two owner in this channel
     assert owner_list[0]['u_id'] == user.u_id
@@ -295,6 +305,7 @@ def test_channel_addowner_bad():
 # Testing valid input for channel_removeowner
 def test_channel_removeowner_ok():
     data = getdata()
+    host = get_host()
     user_admin = data.users_group[0]
     user1 = data.users_group[1]
     channel = ch_create(data, user_admin.token, '12345', True)
@@ -307,7 +318,7 @@ def test_channel_removeowner_ok():
                         user1.u_id, 'remove')
 
     channel_profile = ch_details(data, user_admin.token,
-                                 channel['channel_id'])
+                                 channel['channel_id'], host)
     owner_list = channel_profile["owner_members"]
     # if user1["u_id"] is in the owner list
     # Means channel_removeowner is not working
@@ -413,4 +424,4 @@ def test_channels_create_bad():
     assert res1 == {'ValueError': 'The maximum characters of name is 20.'}
 
     res2 = ch_create(data, 'jwerjhlw', '1128', True)
-    assert res2 == {'ValueError': 'The user is not exist'}
+    assert res2 == {'ValueError': 'token not valid'}

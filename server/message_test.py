@@ -16,10 +16,10 @@ from server.channel_function import ch_create, ch_join_leave
 # initial state of testing
 def generate_data():
     test_data = Data()
-    user_admin = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last')
-    user_channel_owner = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last')
-    user_in_channel = register(test_data, 'test4@test.com', 'password', 'name_first4', 'name_last')
-    user_notin_channel = register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last')
+    user_admin = register(test_data, 'test1@test.com', 'password', 'name_first1', 'name_last', 'http://127.0.0.1:5555/')
+    user_channel_owner = register(test_data, 'test2@test.com', 'password', 'name_first2', 'name_last', 'http://127.0.0.1:5555/')
+    user_in_channel = register(test_data, 'test4@test.com', 'password', 'name_first4', 'name_last', 'http://127.0.0.1:5555/')
+    user_notin_channel = register(test_data, 'test3@test.com', 'password', 'name_first3', 'name_last', 'http://127.0.0.1:5555/')
 
     channel = ch_create(test_data, user_channel_owner['token'], 'test_channel', True)
     ch_join_leave(test_data, user_admin['token'], channel['channel_id'], 'join')
