@@ -22,7 +22,7 @@ def send_message(data, user, channel_id, message, time_create=0):
     if len(message) > 1000:
         return {"ValueError": "Message is more than 1000 characters"}
 
-    channel = data.get_channel(channel_id)
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
 
     if channel is None or user.u_id not in channel.user_list:
         return {'AccessError': 'the authorised user has not joined the channel they are trying to post to'}
@@ -39,11 +39,11 @@ def send_message(data, user, channel_id, message, time_create=0):
 @authorise
 def message_operation(data, user, message_id, message_edit=""):
 
-    message = data.get_message(message_id)
+    message = data.get_element('messages_group', 'message_id', message_id)
     if message is None:
         return {'ValueError': 'Message (based on ID) no longer exists'}
 
-    channel = data.get_channel(message.channel_id)
+    channel = data.get_element('channels_group', 'channel_id', message.channel_id)
 
     if user.u_id in channel.owner_list:
         is_owner = True
@@ -67,7 +67,7 @@ def message_operation(data, user, message_id, message_edit=""):
 @authorise
 def react_unreact(data, user, message_id, react_id, action):
 
-    message = data.get_message(message_id)
+    message = data.get_element('messages_group', 'message_id', message_id)
     if message is None:
         return {'ValueError': 'Message (based on ID) no longer exists'}
 
@@ -92,11 +92,11 @@ def react_unreact(data, user, message_id, react_id, action):
 @authorise
 def pin_unpin(data, user, message_id, action):
 
-    message = data.get_message(message_id)
+    message = data.get_element('messages_group', 'message_id', message_id)
     if message is None:
         return {'ValueError': 'message_id is not a valid message'}
 
-    channel = data.get_channel(message.channel_id)
+    channel = data.get_element('channels_group', 'channel_id', message.channel_id)
     if channel is None or user.u_id not in channel.user_list:
         return {'AccessError': 'The authorised user is not a member of the channel that the message is within'}
 

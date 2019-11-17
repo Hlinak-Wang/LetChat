@@ -72,7 +72,7 @@ def test_setname():
     assert result == {'ValueError': 'name_last is not between 1 and 50 characters in length'}
 
     result = usersetname(data, 'token_not_registed', first_short, last_short)
-    assert result == {'ValueError': 'User with token is not a valid user'}
+    assert result == {'ValueError': 'token not valid'}
 
     # Valid input
     usersetname(data, auth_key["token"], first_short, last_short)
@@ -103,7 +103,7 @@ def test_setemail():
     assert result == {'ValueError': 'Email address is already being used by another user'}
 
     result = usersetemail(data, 'token_not_registed', '123@gmail.com')
-    assert result == {'ValueError': 'User with token is not a valid user'}
+    assert result == {'ValueError': 'token not valid'}
 
     # Valid input
     usersetemail(data, auth_key["token"], 'newemail@gmail.com')
@@ -136,7 +136,7 @@ def test_sethandle():
     assert result == {'ValueError': "handle is already used by another user"}
 
     result = usersethandle(data, 'token_not_registed', handle_normal)
-    assert result == {'ValueError': "User with token is not a valid user"}
+    assert result == {'ValueError': 'token not valid'}
 
     # Valid input
     usersethandle(data, user["token"], 'testing')

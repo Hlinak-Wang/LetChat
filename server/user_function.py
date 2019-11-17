@@ -11,6 +11,7 @@ import requests
 from PIL import Image
 import urllib.request
 from flask import request
+from server.helper import check_valid_email, authorise
 
 def getHttpStatusCode(url):
     try:
@@ -26,37 +27,20 @@ def getHttpStatusCode(url):
         return e
 
 
-# Make a regular expression
-
-# Define a function for
-# for validating an Email
-def check(email):
-    # pass the regualar expression
-    Regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
-    # and the string in search() method
-    if re.search(Regex, email):
-        return 1
-    return 0
-
-
 # get user profile by token
-def getprofile(data, token, u_id, host):
+@authorise
+def getprofile(data, user, u_id, host):
 
-    user_observer = data.get_user('token', token)
-    if user_observer is None:
-        return {'ValueError': 'token not valid'}
-    user = data.get_user('u_id', u_id)
+    user_target = data.get_element('users_group', 'u_id', u_id)
 
-    if user is None:
+    if user_target is None:
         return {'ValueError': "User with u_id is not a valid user"}
 
-    return user.get_user_detail(host)
+    return user_target.get_user_detail('individual', host)
 
 
-def get_all_users(data, token, host):
-
-    if data.get_user('token', token) is None:
-        return {'ValueError': 'token not valid'}
+@authorise
+def get_all_users(data, user, host):
 
     return {
         'users': data.get_all_user_detail(host)
@@ -64,18 +48,14 @@ def get_all_users(data, token, host):
     
 
 # set username by token
-def usersetname(data, token, name_first, name_last):
-
-    if token is None:
-        return {'ValueError': 'token not valid'}
+@authorise
+def usersetname(data, user, name_first, name_last):
 
     if len(name_first) > 50 or len(name_first) < 0:
         return {'ValueError': "name_first is not between 1 and 50 characters in length"}
 
     if len(name_last) > 50 or len(name_last) < 0:
         return {'ValueError': 'name_last is not between 1 and 50 characters in length'}
-
-    user = data.get_user('token', token)
 
     if user is None:
         return {'ValueError': 'User with token is not a valid user'}
@@ -87,48 +67,35 @@ def usersetname(data, token, name_first, name_last):
 
 
 # set user email by token
-def usersetemail(data, token, email):
+@authorise
+def usersetemail(data, user, email):
 
-    if token is None:
-        return {'ValueError': "token not valid"}
-
-    if check(email) == 0:
+    if check_valid_email(email) != {}:
         return {'ValueError': 'Email entered is not a valid email'}
 
-    if not data.check_unique('email', email):
+    if not data.check_unique('users_group', 'email', email):
         return {'ValueError': 'Email address is already being used by another user'}
-
-    user = data.get_user('token', token)
-
-    if user is None:
-        return {'ValueError': 'User with token is not a valid user'}
 
     user.set_email(email)
     return {}
 
 
 # set user handle by token
-def usersethandle(data, token, handle_str):
-
-    if token is None:
-        return {'ValueError': "token not valid"}
+@authorise
+def usersethandle(data, user, handle_str):
 
     if len(handle_str) > 20 or len(handle_str) < 3:
         return {'ValueError': "handle_str must be between 3 and 20"}
 
-    if data.check_unique('handle_str', handle_str) == False:
+    if not data.check_unique('users_group', 'handle_str', handle_str):
         return {'ValueError': "handle is already used by another user"}
-
-    user = data.get_user('token', token)
-
-    if user is None:
-        return {'ValueError': "User with token is not a valid user"}
 
     user.set_handle(handle_str)
     return {}
 
 
-def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
+@authorise
+def useruploadphoto(data, user, img_url, x_start, y_start, x_end, y_end):
 
     try:
         status = getHttpStatusCode(img_url)
@@ -139,7 +106,6 @@ def useruploadphoto(data, token, img_url, x_start, y_start, x_end, y_end):
         print(e)
         return {'ValueError': "img_url is returns an HTTP status other than 200."}
 
-    user = data.get_user('token', token)
     u_id = str(user.u_id)
 
     imagesource = './static/' + u_id + '.jpg'

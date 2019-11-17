@@ -49,35 +49,30 @@ class User:
     def set_permission_id(self, new_permission):
         self.permission_id = new_permission
 
-    def get_user_detail(self, host):
+    def get_user_detail(self, action, host):
 
         if self.profile_img_url.find('default.jpg') == -1:
             self.profile_img_url = host + 'static/' + str(self.u_id) + '.jpg'
         else:
             self.profile_img_url = host + 'static/default.jpg'
 
-        user_detail = {
-            'u_id': self.u_id,
-            'email': self.email,
-            'name_first': self.name_first,
-            'name_last': self.name_last,
-            'handle_str': self.handle_str,
-            'profile_img_url': self.profile_img_url
-        }
+        user_detail = {}
+        if action == 'individual':
+            user_detail = {
+                'u_id': self.u_id,
+                'email': self.email,
+                'name_first': self.name_first,
+                'name_last': self.name_last,
+                'handle_str': self.handle_str,
+                'profile_img_url': self.profile_img_url
+            }
+        elif action == 'member':
+            user_detail = {
+                'u_id': self.u_id,
+                'name_first': self.name_first,
+                'name_last': self.name_last,
+                'profile_img_url': self.profile_img_url
+            }
+
         return user_detail
 
-    def get_member_detail(self, host):
-
-        if self.profile_img_url.find('default.jpg') == -1:
-            self.profile_img_url = host + 'static/' + str(self.u_id) + '.jpg'
-        else:
-            self.profile_img_url = host + 'static/default.jpg'
-
-        member_detail = {
-            'u_id': self.u_id,
-            'name_first': self.name_first,
-            'name_last': self.name_last,
-            'profile_img_url': self.profile_img_url
-        }
-
-        return member_detail

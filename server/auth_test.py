@@ -51,7 +51,7 @@ def test_auth_register_valid():
         'handle_str': "hellogoodbye",
         'profile_img_url': 'http://127.0.0.1:5555/static/default.jpg'
     }]
-    user = data.get_user('u_id', u_id1)
+    user = data.get_element('users_group',  'u_id', u_id1)
     assert user.password == hashlib.sha256("123456".encode("utf-8")).hexdigest()
     assert user.permission_id == 1
 
@@ -80,7 +80,7 @@ def test_auth_register_valid():
         'handle_str': "hellohowareyouimfine",
         'profile_img_url': 'http://127.0.0.1:5555/static/default.jpg'
     }]
-    user = data.get_user('u_id', u_id2)
+    user = data.get_element('users_group',  'u_id', u_id2)
     assert user.password == hashlib.sha256("9876543".encode("utf-8")).hexdigest()
     assert user.permission_id == 3
 
@@ -96,7 +96,7 @@ def test_auth_register_handle():
     register_output = register(data, email, password, name_first, name_last, host)
     check_handle = generate_handle_str(data, name_first, name_last, email)
     u_id = register_output['u_id']
-    user = data.get_user('u_id', u_id)
+    user = data.get_element('users_group',  'u_id', u_id)
     assert user.handle_str == check_handle
 
 def test_auth_register_invalid_email():
@@ -213,7 +213,7 @@ def test_auth_logout_valid():
 
     assert logout_output == {'is_sucess': True}
     
-    user = data.get_user('handle_str', 'hellogoodbye')
+    user = data.get_element('users_group',  'handle_str', 'hellogoodbye')
     u_id = user.u_id
     
     assert data.get_all_user_detail(host) == [{
@@ -230,7 +230,7 @@ def test_auth_logout_invalid_token():
     data = testData()
     token = "incorrect"
     logout_output = logout(data, token)
-    assert logout_output == {'is_sucess': False}
+    assert logout_output == {'ValueError': 'token not valid'}
 
 
 # END TEST AUTH_LOGOUT
@@ -245,7 +245,7 @@ def test_reset_request_invalid():
 def test_reset_request_valid():
     data = testData()
     reset_code = reset_request(data, "hi@gmail.com")
-    user = data.get_user('handle_str', "hellogoodbye")
+    user = data.get_element('users_group',  'handle_str', "hellogoodbye")
     assert user.reset_code == reset_code
 
 
@@ -264,7 +264,7 @@ def test_passwordreset():
     assert reset(data, 'asdf', '1234561') == {'ValueError': "This is not a valid reset code"}
 
     # Valid test
-    user = data.get_user('handle_str', "hellogoodbye")
+    user = data.get_element('users_group',  'handle_str', "hellogoodbye")
     u_id = user.u_id
     user.password_code(code)
     output = reset(data, code, 'abcdsdg')

@@ -7,7 +7,7 @@ Created on 2019/10/15
 """
 
 from server.channel_class import Channel
-from server.helper import authorise
+from server.helper import authorise, get_channel_message
 
 # create a channel
 @authorise
@@ -28,11 +28,11 @@ def ch_create(data, user, channel_name, is_public):
 def ch_invite(data, user, u_id, channel_id):
 
     # check validation of channel id
-    channel = data.get_channel(channel_id)
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     if channel is None:
         return {'ValueError': 'Invalid channel id'}
 
-    new_member = data.get_user('u_id', u_id)
+    new_member = data.get_element('users_group', 'u_id', u_id)
     if new_member is None:
         return {'ValueError': 'Invalid u_id'}
 
@@ -52,7 +52,7 @@ channel'}
 @authorise
 def ch_details(data, user, channel_id, host):
 
-    channel = data.get_channel(channel_id)
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     # check validation of channel id
     if channel is None:
         return {'ValueError': 'Invalid channel id'}
@@ -62,14 +62,14 @@ def ch_details(data, user, channel_id, host):
 
     channelowner_list = []
     for uids in channel.owner_list:
-            user = data.get_user('u_id', uids)
-            member = user.get_member_detail(host)
+            user = data.get_element('users_group', 'u_id', uids)
+            member = user.get_user_detail('member', host)
             channelowner_list.append(member)
 
     channeluser_list = []
     for uids in channel.user_list:
-            user = data.get_user('u_id', uids)
-            member = user.get_member_detail(host)
+            user = data.get_element('users_group', 'u_id', uids)
+            member = user.get_user_detail('member', host)
             channeluser_list.append(member)
 
     return {
@@ -82,7 +82,7 @@ def ch_details(data, user, channel_id, host):
 @authorise
 def ch_join_leave(data, user, channel_id, action):
     # check validation of ch_id
-    channel = data.get_channel(channel_id)
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     if channel is None:
         return {'ValueError': 'Channel ID is invalid'}
     if action == 'join':
@@ -105,7 +105,7 @@ def ch_join_leave(data, user, channel_id, action):
 @authorise
 def ch_add_remove_owner(data, user, channel_id, u_id, action):
     # check validation of the channel id
-    channel = data.get_channel(channel_id)
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     if channel is None:
         return {'ValueError': 'Invalid Channel ID'}
 
@@ -138,15 +138,26 @@ channel'}
 @authorise
 def ch_lists_listall(data, user, action):
 
-    if action == 'lists':
-        return data.get_channel_list(user.u_id)
-    elif action == 'listall':
-        return data.get_channel_list_all(user.u_id)
+    channel_list = []
+    for channel in data.channels_group:
+        if action == 'lists' and user.u_id not in channel.user_list:
+            continue
+        if action == 'listall' and not (channel.is_public or user.u_id in channel.user_list):
+            continue
+
+        channel_list.append({
+            'name': channel.channel_name,
+            'channel_id': channel.channel_id
+        })
+
+    return {
+        'channels': channel_list
+    }
 
 
 @authorise
 def fun_message(data, user, channel_id, start):
-    channel = data.get_channel(channel_id)
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}
 
@@ -157,4 +168,4 @@ channel they are trying to post to'}
         return {'ValueError': 'start is greater than or equal to the total \
 number of messages in the channel'}
 
-    return data.get_channel_message(channel_id, user.u_id, start)
+    return get_channel_message(data, channel_id, user.u_id, start)

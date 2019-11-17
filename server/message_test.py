@@ -86,7 +86,7 @@ def test_send_late_good():
     time_valid = datetime.now().timestamp() + 10
 
     output = send_message(data, user_admin.token, channel.channel_id, 'short_message', time_valid)
-    assert data.get_message(output['message_id']) is not None
+    assert data.get_element('messages_group', 'message_id', output['message_id']) is not None
 
 
 def test_send_bad():
@@ -111,7 +111,7 @@ def test_send_good():
     channel = getting_channel(data)
 
     output = send_message(data, user_admin.token, channel.channel_id, 'short_message')
-    assert data.get_message(output['message_id']) is not None
+    assert data.get_element('messages_group', 'message_id', output['message_id']) is not None
 
 
 def test_remove_bad():
@@ -132,18 +132,18 @@ def test_remove_good():
     # case 1
     output = message_operation(data, user_admin.token, message_admin.message_id)
     assert output == {}
-    assert data.get_message(message_admin.message_id) is None
+    assert data.get_element('messages_group', 'message_id', message_admin.message_id) is None
 
     # case 2
     output = message_operation(data, user_owner.token, message_norm.message_id)
     assert output == {}
-    assert data.get_message(message_norm.message_id) is None
+    assert data.get_element('messages_group', 'message_id', message_norm.message_id) is None
 
     # case 3
     new_message = send_message(data, user_in_channel.token, channel.channel_id, "new")
     output = message_operation(data, user_in_channel.token, new_message["message_id"])
     assert output == {}
-    assert data.get_message(new_message['message_id']) is None
+    assert data.get_element('messages_group', 'message_id', new_message['message_id']) is None
 
 
 def test_edit_bad():
@@ -180,7 +180,7 @@ def test_edit_good():
     new_message = send_message(data, user_in_channel.token, channel.channel_id, "new")
     output = message_operation(data, user_in_channel.token, new_message["message_id"], "norm user change")
     assert output == {}
-    assert data.get_message(new_message['message_id']).message == "norm user change"
+    assert data.get_element('messages_group', 'message_id', new_message['message_id']).message == "norm user change"
 
 
 def test_react_bad():

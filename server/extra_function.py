@@ -8,10 +8,11 @@ Created on 2019/10/15
 
 from datetime import datetime
 from server.message_function import send_message
+from server.helper import authorise
 
 
-def message_search(data, token, query_str):
-    user = data.get_user('token', token)
+@authorise
+def message_search(data, user, query_str):
 
     channel_join = data.get_channels_joined(user.u_id)
     output_list = []
@@ -26,13 +27,13 @@ def message_search(data, token, query_str):
     }
 
 
-def permission_change(data, token, u_id, permission_id):
-    user = data.get_user('token', token)
+@authorise
+def permission_change(data, user, u_id, permission_id):
 
     if user.permission_id == 3:
         return {'AcessError': 'The authorised user is not an admin or owner'}
 
-    target = data.get_user('u_id', u_id)
+    target = data.get_element('users_group', 'u_id', u_id)
     if target is None:
         return {'ValueError': 'u_id does not refer to a valid user'}
 
@@ -43,9 +44,10 @@ def permission_change(data, token, u_id, permission_id):
     return {}
 
 
-def standup_begin(data, token, channel_id, length):
-    user = data.get_user('token', token)
-    channel = data.get_channel(channel_id)
+@authorise
+def standup_begin(data, user, channel_id, length):
+
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     time_start = datetime.now().timestamp()
 
     if channel is None:
@@ -64,18 +66,19 @@ def standup_begin(data, token, channel_id, length):
     }
 
 
-def standup_active(data, token, channel_id):
+@authorise
+def standup_active(data, user, channel_id):
 
-    channel = data.get_channel(channel_id)
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     time_now = datetime.now().timestamp()
     if channel.standup['time_finish'] < time_now:
         is_activate = False
     else:
         is_activate = True
 
-    user = data.get_user('u_id', channel.standup['u_id'])
+    user_beginer = data.get_element('users_group', 'u_id', channel.standup['u_id'])
     if not is_activate and channel.standup_message != '':
-        send_message(data, user.token, channel_id, channel.standup_message)
+        send_message(data, user_beginer.token, channel_id, channel.standup_message)
         channel.standup_message = ''
 
     return {
@@ -84,9 +87,10 @@ def standup_active(data, token, channel_id):
     }
 
 
-def standup_message(data, token, channel_id, message):
-    user = data.get_user('token', token)
-    channel = data.get_channel(channel_id)
+@authorise
+def standup_message(data, user, channel_id, message):
+
+    channel = data.get_element('channels_group', 'channel_id', channel_id)
     time_now = datetime.now().timestamp()
     if channel is None:
         return {'ValueError': 'Channel ID is not a valid channel'}

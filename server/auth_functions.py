@@ -6,36 +6,14 @@ Created on 2019/10/15
 @author: Angeline
 """
 
-import re
 import hashlib
 import jwt
 from datetime import datetime
 from server.user_class import User
-
+from server.helper import check_name, check_valid_password, check_valid_email, authorise, user_login_verify
 # HELPER FUNCTIONS BELOW
 
 SECRET = 'IE4'
-
-def check_valid_email(email):
-    regex = "^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
-    if not re.search(regex, email):
-        return {'ValueError': "This email is not valid"}
-    return {}
-
-
-def check_valid_password(password):
-    if len(password) < 6:
-        return {'ValueError': "This password is too short"}
-    return {}
-
-
-def check_name(name_first, name_last):
-    if (len(name_first) < 1) or (len(name_last) < 1):
-        return {'ValueError': "First name or last name too short"}
-    elif len(name_first) > 50 or (len(name_last) > 50):
-        return {'ValueError': "First name or last name too long"}
-
-    return {}
 
 
 def generateToken(email):
@@ -52,7 +30,7 @@ def generate_handle_str(data, first, last, email):
     if excess > 0:
         handle_str = handle_str[:20]
 
-    if (data.get_user('handle_str', handle_str) is not None) or (len(handle_str) < 3):
+    if (data.get_element('users_group', 'handle_str', handle_str) is not None) or (len(handle_str) < 3):
         handle_str = email
 
     return handle_str
@@ -63,7 +41,7 @@ def generate_handle_str(data, first, last, email):
 def login(data, email, password):
     email_check = check_valid_email(email)
     
-    user = data.user_login_verify(email, password)
+    user = user_login_verify(data, email, password)
     
     if 'ValueError' in email_check:
         return email_check
@@ -78,10 +56,10 @@ def login(data, email, password):
     return {'u_id': user.u_id, 'token': user.token}
 
 
-def logout(data, token):
-    user = data.get_user('token', token)
+@authorise
+def logout(data, user):
     
-    if user is not None:
+    if user.token is not None:
         user.logout()
         is_success = True
     else:
@@ -97,7 +75,7 @@ def register(data, email, password, name_first, name_last, host):
     
     name_check = check_name(name_first, name_last)
     
-    unique = data.check_unique('email', email) #check if the user already exists
+    unique = data.check_unique('users_group', 'email', email) #check if the user already exists
 
     if 'ValueError' in email_check:
         return email_check
@@ -117,7 +95,7 @@ def register(data, email, password, name_first, name_last, host):
     
     password = hashlib.sha256(password.encode("utf-8")).hexdigest()
 
-    if data.get_user_number() == 0:
+    if len(data.users_group) == 0:
         permission_id = 1
     else:
         permission_id = 3
@@ -130,7 +108,7 @@ def register(data, email, password, name_first, name_last, host):
 
 
 def reset_request(data, email):
-    user = data.get_user('email', email)
+    user = data.get_element('users_group', 'email', email)
     
     if user is None:
         return {'ValueError': "This email does not belong to a registered user"}
@@ -148,7 +126,7 @@ def reset(data, reset_code, new_password):
     if 'ValueError' in password_check:
         return password_check
     
-    user = data.get_user('reset_code', reset_code)
+    user = data.get_element('users_group', 'reset_code', reset_code)
 
     if user is None:
         return {'ValueError': "This is not a valid reset code"}
